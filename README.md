@@ -61,6 +61,25 @@ npm run db:seed      # load 34 test drivers, 15 locations, 14 routes
 npm run dev          # http://localhost:3000
 ```
 
+### Demo data vs launch data
+
+`db:seed` builds a full synthetic marketplace — 34 fake drivers with fabricated
+ratings, trip counts and "verified" languages. That is right for development
+and wrong for a public site: real visitors would see social proof nothing
+earned, and could book drivers who do not exist.
+
+When you are ready to trade, reset to reference data only:
+
+```bash
+ADMIN_EMAIL=you@yourdomain npm run db:seed:launch
+```
+
+Locations, routes, price bands and tours stay; supply is empty until real
+drivers are onboarded at `/admin/drivers`; one administrator is created and
+its one-time password printed once. Both seeds refuse to run against a
+database that already contains bookings unless `FORCE_RESET=yes` — seeding
+must never be able to erase trading history by accident.
+
 ### Sign-in accounts
 
 `db:seed` prints a **freshly generated password** for all seeded accounts —

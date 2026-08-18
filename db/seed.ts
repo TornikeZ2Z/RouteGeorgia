@@ -286,7 +286,37 @@ const rand = () => {
 const pick = <T,>(arr: readonly T[]): T => arr[Math.floor(rand() * arr.length)]!;
 const int = (min: number, max: number) => min + Math.floor(rand() * (max - min + 1));
 
+/**
+ * Two modes, one file:
+ *
+ *   npm run db:seed          demo — full synthetic marketplace for development
+ *   npm run db:seed:launch   launch — real reference data only, zero fiction
+ *
+ * The demo seed fabricates ratings, trip counts and verified languages, which
+ * is useful on a laptop and dishonest on a public domain: a real visitor
+ * would see social proof nothing ever earned, and could book a driver who
+ * does not exist. Launch mode seeds locations, routes, price bands and tours
+ * — the operator's reference data — plus one real admin account, and leaves
+ * supply empty for real drivers onboarded through the console.
+ */
+const LAUNCH = process.env.SEED_MODE === "launch";
+
 async function main() {
+  // Refuse to wipe a database that has taken real bookings. Seeding is for
+  // set-up, not something that should ever be able to erase trading history
+  // because someone ran the wrong command against the wrong DATABASE_URL.
+  const [existing] = await sql<{ bookings: number }[]>`
+    SELECT count(*)::int AS bookings FROM bookings`;
+  if (existing!.bookings > 0 && process.env.FORCE_RESET !== "yes") {
+    console.error(
+      `REFUSING TO SEED: this database contains ${existing!.bookings} booking(s).\n` +
+      `Seeding truncates everything. If you are certain, run again with FORCE_RESET=yes.`,
+    );
+    await sql.end();
+    process.exit(1);
+  }
+
+  console.log(`Seeding in ${LAUNCH ? "LAUNCH" : "demo"} mode …`);
   console.log("Clearing existing data …");
   // Note: truncating driver_profiles CASCADEs to ledger_accounts, so the
   // platform-wide accounts created by migration 0002 are recreated below.
@@ -345,6 +375,73 @@ async function main() {
     INSERT INTO exchange_rates (base, quote, rate_micro, as_of, provider) VALUES
       ('GEL','USD', 370000, now(), 'seed'),
       ('GEL','EUR', 340000, now(), 'seed')`;
+
+
+  console.log("Seeding tours …");
+  for (const t of TOURS) {
+    const [tour] = await sql<{ id: string }[]>`
+      INSERT INTO tours (slug, origin_id, duration_days, distance_km, drive_minutes,
+                         return_km, deadhead_recovery_bps, risk_factor_bps,
+                         min_fare_minor, requires_4x4)
+      VALUES (${t.slug}, ${locIds.get(t.origin)!}::uuid, ${t.days}, ${t.km}, ${t.minutes},
+              0, 0, ${t.risk}, ${t.minFare}, ${t.fourByFour ?? false})
+      RETURNING id`;
+
+    await sql`
+      INSERT INTO tour_translations (tour_id, locale, title, summary, body)
+      VALUES (${tour!.id}::uuid, 'en', ${t.title}, ${t.summary}, ${t.body})`;
+
+    // Georgian and Russian get the title and summary — the parts a traveller
+    // reads before deciding. The long body still falls back to English and is
+    // logged as an outstanding translation.
+    for (const [locale, copy] of [["ka", t.ka], ["ru", t.ru]] as const) {
+      await sql`
+        INSERT INTO tour_translations (tour_id, locale, title, summary, body)
+        VALUES (${tour!.id}::uuid, ${locale}, ${copy.title}, ${copy.summary},
+                ${TOUR_BODIES[t.slug]?.[locale] ?? ""})`;
+    }
+
+    for (const [index, [slug, legKm, day, notes]] of t.stops.entries()) {
+      await sql`
+        INSERT INTO tour_stops (tour_id, location_id, day_index, position, leg_km, notes)
+        VALUES (${tour!.id}::uuid, ${locIds.get(slug as string)!}::uuid,
+                ${day as number}, ${index}, ${legKm as number}, ${notes as string})`;
+    }
+  }
+
+  if (LAUNCH) {
+    // One real administrator, from the environment. The generated password is
+    // printed once; everything else — more staff, drivers — is created from
+    // inside the console where it is audited.
+    const adminEmail = process.env.ADMIN_EMAIL;
+    if (!adminEmail || !adminEmail.includes("@")) {
+      console.error("LAUNCH mode needs ADMIN_EMAIL=you@yourdomain to create the first admin.");
+      await sql.end();
+      process.exit(1);
+    }
+    const [admin] = await sql<{ id: string }[]>`
+      INSERT INTO users (email, password_hash, email_verified_at, status)
+      VALUES (${adminEmail}, ${hash}, now(), 'ACTIVE') RETURNING id`;
+    await sql`INSERT INTO user_roles (user_id, role) VALUES (${admin!.id}::uuid, 'SUPER_ADMIN')`;
+
+    console.log(`
+Launch seed complete.
+  ${LOCATIONS.length} locations, ${ROUTES.length} route families, ${TOURS.length} tours, ${BANDS.length} price bands
+  0 drivers — onboard real ones at /admin/drivers
+  1 administrator: ${adminEmail}
+
+One-time password (shown once, change it after first sign-in):
+
+    ${PASSWORD}
+
+Before real customers:
+  * review every route family's deadhead %, risk % and minimum fare — they are estimates
+  * review the price bands per vehicle class with real driver economics
+  * make sure the support mailbox on the contact page actually exists
+`);
+    await sql.end();
+    return;
+  }
 
   console.log("Seeding staff accounts …");
   const staff = [
@@ -509,45 +606,6 @@ async function main() {
     }
   }
 
-
-  console.log("Seeding tours …");
-  for (const t of TOURS) {
-    const [tour] = await sql<{ id: string }[]>`
-      INSERT INTO tours (slug, origin_id, duration_days, distance_km, drive_minutes,
-                         return_km, deadhead_recovery_bps, risk_factor_bps,
-                         min_fare_minor, requires_4x4)
-      VALUES (${t.slug}, ${locIds.get(t.origin)!}::uuid, ${t.days}, ${t.km}, ${t.minutes},
-              0, 0, ${t.risk}, ${t.minFare}, ${t.fourByFour ?? false})
-      RETURNING id`;
-
-    await sql`
-      INSERT INTO tour_translations (tour_id, locale, title, summary, body)
-      VALUES (${tour!.id}::uuid, 'en', ${t.title}, ${t.summary}, ${t.body})`;
-
-    // Georgian and Russian get the title and summary — the parts a traveller
-    // reads before deciding. The long body still falls back to English and is
-    // logged as an outstanding translation.
-    for (const [locale, copy] of [["ka", t.ka], ["ru", t.ru]] as const) {
-      await sql`
-        INSERT INTO tour_translations (tour_id, locale, title, summary, body)
-        VALUES (${tour!.id}::uuid, ${locale}, ${copy.title}, ${copy.summary},
-                ${TOUR_BODIES[t.slug]?.[locale] ?? ""})`;
-    }
-
-    for (const [index, [slug, legKm, day, notes]] of t.stops.entries()) {
-      await sql`
-        INSERT INTO tour_stops (tour_id, location_id, day_index, position, leg_km, notes)
-        VALUES (${tour!.id}::uuid, ${locIds.get(slug as string)!}::uuid,
-                ${day as number}, ${index}, ${legKm as number}, ${notes as string})`;
-    }
-  }
-
-  await sql`
-    INSERT INTO content_pages (slug, locale, kind, title, body, published) VALUES
-      ('faq','en','FAQ','Frequently asked questions',
-       'Prices are per vehicle, not per person. Driving times exclude stops, traffic and weather delays.', true),
-      ('faq','ka','FAQ','ხშირად დასმული კითხვები',
-       'ფასი მოცემულია მთელ ავტომობილზე და არა ერთ მგზავრზე.', true)`;
 
   const counted = await sql<{ count: number }[]>`SELECT count(*)::int AS count FROM driver_profiles WHERE published`;
   const count = counted[0]?.count ?? 0;

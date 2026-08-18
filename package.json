@@ -21,7 +21,8 @@
     "test": "vitest run",
     "test:watch": "vitest",
     "setup": "node scripts/pg.mjs start && npm run db:migrate && npm run db:seed",
-    "ship": "node scripts/ship.mjs"
+    "ship": "node scripts/ship.mjs",
+    "db:seed:launch": "tsx db/seed-launch-entry.mjs"
   },
   "dependencies": {
     "bcryptjs": "^3.0.3",

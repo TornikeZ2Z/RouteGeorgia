@@ -81,11 +81,13 @@ export default async function Home({ params }: { params: Promise<{ locale: strin
           </p>
 
           <dl className="mt-10 flex flex-wrap gap-x-12 gap-y-5">
+            {/* A zero is not a statistic. Pre-launch, "0 verified drivers"
+                would advertise the empty supply; the row simply hides. */}
             {[
               [stats[0]?.drivers ?? 0, t("home.statDrivers")],
               [stats[0]?.routes ?? 0, t("home.statRoutes")],
               [tours.length, t("home.statTours")],
-            ].map(([value, label]) => (
+            ].filter(([value]) => (value as number) > 0).map(([value, label]) => (
               <div key={label as string}>
                 <dt className="font-display text-3xl text-gold-300">{value as number}</dt>
                 <dd className="mt-0.5 text-sm text-forest-200">{label as string}</dd>
