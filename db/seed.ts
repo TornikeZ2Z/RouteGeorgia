@@ -225,6 +225,16 @@ async function main() {
     await sql`INSERT INTO user_roles (user_id, role) VALUES (${u!.id}::uuid,
               ${bucket === "DRAFT" ? "DRIVER_APPLICANT" : "DRIVER"}::app_role)`;
 
+    // Ratings must be generated as individual scores and then summed. Drawing
+    // the total and the count independently produces averages above 5, which
+    // is both impossible and the first thing a visitor notices.
+    const ratingCount = isPublished ? int(0, 13) : 0;
+    let ratingSum = 0;
+    for (let r = 0; r < ratingCount; r++) {
+      // Real marketplaces skew high: mostly 4s and 5s, an occasional 3.
+      ratingSum += rand() < 0.75 ? 5 : rand() < 0.8 ? 4 : 3;
+    }
+
     const base = pick(["tbilisi", "kutaisi", "batumi", "telavi"]);
     const [d] = await sql<{ id: string }[]>`
       INSERT INTO driver_profiles
@@ -238,7 +248,7 @@ async function main() {
               ${status}::driver_status, ${isPublished},
               ${bucket === "DRAFT" ? null : new Date().toISOString()}::timestamptz,
               ${isPublished ? new Date().toISOString() : null}::timestamptz,
-              ${isPublished ? int(0, 60) : 0}, ${isPublished ? int(0, 13) : 0},
+              ${ratingSum}, ${ratingCount},
               ${isPublished ? int(0, 40) : 0}, ${int(0, 20)}, ${int(0, 22)})
       RETURNING id`;
     const driverId = d!.id;
