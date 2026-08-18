@@ -11,6 +11,7 @@ import { randomBytes } from "node:crypto";
 import { parseMajor } from "@/lib/money";
 import { hashPassword } from "@/lib/auth/password";
 import { config } from "@/lib/config";
+import { getStorage, assertUploadAllowed, UploadRejectedError } from "@/lib/storage";
 import { cancelBooking } from "@/lib/booking";
 import { dispatchPending } from "@/lib/notifications";
 import { reassignBooking, refundBooking, recordCashSettlement } from "@/lib/operations";
@@ -890,4 +891,80 @@ export async function saveContentAction(_prev: ActionState, formData: FormData):
   revalidatePath("/admin/content");
   revalidatePath(`/${v.locale}/${v.slug}`);
   return { ok: true, message: `Saved ${v.slug} (${v.locale}).` };
+}
+
+const ImageTargetSchema = z.object({
+  target: z.enum(["location", "route", "tour"]),
+  id: z.string().uuid(),
+  alt: z.string().min(3, "Describe the photo — screen readers and search engines both use it.").max(200),
+});
+
+/**
+ * Upload a photograph for a place, route or tour.
+ *
+ * Until one exists the public pages draw a generated illustration, which is
+ * deliberate: shipping stock photography of Georgia would be both a licensing
+ * problem and a promise about a specific view we cannot keep. Upload only
+ * photographs you own or have cleared.
+ */
+export async function uploadPlaceImageAction(_prev: ActionState, formData: FormData): Promise<ActionState> {
+  const actor = await requirePermission("admin.content.write");
+  const parsed = ImageTargetSchema.safeParse({
+    target: formData.get("target"), id: formData.get("id"), alt: formData.get("alt"),
+  });
+  if (!parsed.success) return { ok: false, errors: parsed.error.issues.map((i) => i.message) };
+
+  const file = formData.get("image");
+  if (!(file instanceof File) || file.size === 0) return { ok: false, message: "Choose an image." };
+  if (file.type === "application/pdf") return { ok: false, message: "Photos must be images." };
+
+  let stored;
+  try {
+    const buffer = Buffer.from(await file.arrayBuffer());
+    assertUploadAllowed(file.type, buffer.byteLength);
+    stored = await getStorage().put("public-media", buffer, file.type);
+  } catch (err) {
+    if (err instanceof UploadRejectedError) return { ok: false, message: err.message };
+    throw err;
+  }
+
+  const { target, id, alt } = parsed.data;
+  if (target === "location") {
+    await sql`UPDATE locations SET image_key = ${stored.key}, image_alt = ${alt} WHERE id = ${id}::uuid`;
+  } else if (target === "route") {
+    await sql`UPDATE route_families SET image_key = ${stored.key}, image_alt = ${alt} WHERE id = ${id}::uuid`;
+  } else {
+    await sql`UPDATE tours SET hero_image_key = ${stored.key}, hero_image_alt = ${alt} WHERE id = ${id}::uuid`;
+  }
+
+  await writeAudit({
+    actorUserId: actor.id, action: "place_image.uploaded", objectType: target,
+    objectId: id, after: { alt, sizeBytes: stored.sizeBytes }, reason: "imagery updated",
+  });
+  revalidatePath("/admin/images");
+  return { ok: true, message: "Uploaded. It replaces the illustration on every page that shows this." };
+}
+
+export async function removePlaceImageAction(_prev: ActionState, formData: FormData): Promise<ActionState> {
+  const actor = await requirePermission("admin.content.write");
+  const target = String(formData.get("target") ?? "");
+  const id = String(formData.get("id") ?? "");
+  if (!["location", "route", "tour"].includes(target) || !id) {
+    return { ok: false, message: "Unknown item." };
+  }
+
+  if (target === "location") {
+    await sql`UPDATE locations SET image_key = NULL, image_alt = NULL WHERE id = ${id}::uuid`;
+  } else if (target === "route") {
+    await sql`UPDATE route_families SET image_key = NULL, image_alt = NULL WHERE id = ${id}::uuid`;
+  } else {
+    await sql`UPDATE tours SET hero_image_key = NULL, hero_image_alt = NULL WHERE id = ${id}::uuid`;
+  }
+
+  await writeAudit({
+    actorUserId: actor.id, action: "place_image.removed", objectType: target, objectId: id,
+    reason: "reverted to the generated illustration",
+  });
+  revalidatePath("/admin/images");
+  return { ok: true, message: "Removed — the illustration is shown again." };
 }

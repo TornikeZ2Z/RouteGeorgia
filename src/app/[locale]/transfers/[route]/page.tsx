@@ -9,6 +9,7 @@ import { getDisplayCurrency, getRate, convert, CANONICAL } from "@/lib/currency"
 import { config } from "@/lib/config";
 import { Alert, Badge, Card } from "@/components/ui";
 import { formatDuration, formatDistance } from "@/lib/format";
+import { PlaceImage } from "@/components/place-image";
 import { SearchForm } from "@/components/search-form";
 import { sql } from "@db/client";
 
@@ -103,6 +104,14 @@ export default async function RoutePage({ params }: Props) {
         <span className="mx-2" aria-hidden>/</span>
         <span className="text-ink-700">{data.originName} → {data.destinationName}</span>
       </nav>
+
+      <PlaceImage
+        imageKey={data.imageKey}
+        alt={data.imageAlt ?? `${data.originName} to ${data.destinationName}`}
+        seedText={data.slug}
+        className="h-52 w-full sm:h-64"
+        rounded="rounded-2xl"
+      />
 
       <header>
         <h1 className="font-display text-4xl text-ink-900 sm:text-5xl">

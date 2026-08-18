@@ -102,32 +102,8 @@ body {
   text-transform: uppercase;
 }
 
-/* ---------------------------------------------------------------------------
-   The signature: topographic contour lines.
-
-   ONE repeating gradient, deliberately. Two overlapping repeating patterns
-   interfere and produce a moiré that reads as a rendering fault rather than a
-   texture — it looked like corduroy across a full-height page. A single set of
-   wide, soft rings stays a contour map at any size.
-   --------------------------------------------------------------------------- */
-.contours {
-  background-image: repeating-radial-gradient(
-    ellipse 150% 75% at 12% 118%,
-    transparent 0 44px,
-    color-mix(in oklab, currentColor 11%, transparent) 44px 46px,
-    transparent 46px 48px
-  );
-}
-
-/* Softer still where the pattern covers a whole screen rather than a band. */
-.contours-quiet {
-  background-image: repeating-radial-gradient(
-    ellipse 170% 85% at 8% 120%,
-    transparent 0 64px,
-    color-mix(in oklab, currentColor 7%, transparent) 64px 66px,
-    transparent 66px 68px
-  );
-}
+/* The contour motif is drawn in SVG — see src/components/contour-field.tsx.
+   CSS repeating gradients were tried twice and shimmer at every size. */
 
 /* A hairline that fades out — used under section headings. */
 .rule-fade {

@@ -20,6 +20,8 @@ export interface RouteSummary {
   driveMinutes: number;
   requires4x4: boolean;
   seasonalNote: string | null;
+  imageKey: string | null;
+  imageAlt: string | null;
 }
 
 const NAME_COLUMN: Record<Locale, string> = { en: "name_en", ka: "name_ka", ru: "name_ru" };
@@ -31,7 +33,8 @@ export async function listRoutes(locale: Locale = "en"): Promise<RouteSummary[]>
            o.slug AS origin_slug, d.slug AS destination_slug,
            coalesce(${sql.unsafe(`o.${col}`)}, o.name_en) AS origin_name,
            coalesce(${sql.unsafe(`d.${col}`)}, d.name_en) AS destination_name,
-           rf.distance_km, rf.drive_minutes, rf.requires_4x4, rf.seasonal_note
+           rf.distance_km, rf.drive_minutes, rf.requires_4x4, rf.seasonal_note,
+           rf.image_key, rf.image_alt
     FROM route_families rf
     JOIN locations o ON o.id = rf.origin_id
     JOIN locations d ON d.id = rf.destination_id
@@ -47,7 +50,8 @@ export async function getRoute(slug: string, locale: Locale = "en"): Promise<Rou
            o.slug AS origin_slug, d.slug AS destination_slug,
            coalesce(${sql.unsafe(`o.${col}`)}, o.name_en) AS origin_name,
            coalesce(${sql.unsafe(`d.${col}`)}, d.name_en) AS destination_name,
-           rf.distance_km, rf.drive_minutes, rf.requires_4x4, rf.seasonal_note
+           rf.distance_km, rf.drive_minutes, rf.requires_4x4, rf.seasonal_note,
+           rf.image_key, rf.image_alt
     FROM route_families rf
     JOIN locations o ON o.id = rf.origin_id
     JOIN locations d ON d.id = rf.destination_id
@@ -72,6 +76,7 @@ interface RouteRow {
   slug: string; origin_slug: string; destination_slug: string;
   origin_name: string; destination_name: string;
   distance_km: string; drive_minutes: number; requires_4x4: boolean; seasonal_note: string | null;
+  image_key: string | null; image_alt: string | null;
 }
 
 const map = (r: RouteRow): RouteSummary => ({
@@ -84,4 +89,6 @@ const map = (r: RouteRow): RouteSummary => ({
   driveMinutes: r.drive_minutes,
   requires4x4: r.requires_4x4,
   seasonalNote: r.seasonal_note,
+  imageKey: r.image_key,
+  imageAlt: r.image_alt,
 });

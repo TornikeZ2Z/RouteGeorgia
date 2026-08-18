@@ -113,6 +113,10 @@ const TOURS = [
     minutes: 100,
     minFare: 12000,
     risk: 10000,
+    ka: { title: "მცხეთა და ჯვარი ერთ დღეში",
+          summary: "ძველი დედაქალაქი, მეექვსე საუკუნის მონასტერი ორი მდინარის შესართავთან და სადილი წყლის პირას — მარტივი ნახევარი დღე თბილისიდან." },
+    ru: { title: "Мцхета и Джвари за один день",
+          summary: "Древняя столица, монастырь VI века над слиянием двух рек и обед у воды — лёгкие полдня из Тбилиси." },
     title: "Mtskheta and Jvari in a day",
     summary: "The old capital, a sixth-century monastery above the meeting of two rivers, and lunch by the water — an easy half day from Tbilisi.",
     body: "Start at Jvari Monastery on the ridge, where the Aragvi and Mtkvari rivers meet below and visibly refuse to mix. Take a jacket: it is windy up there whatever the forecast says.\n\nDown in Mtskheta you have Svetitskhoveli Cathedral, an eleventh-century building that was the coronation and burial church of Georgian kings. The town itself is small enough to walk in an hour and has good churchkhela.\n\nMost drivers will suggest a riverside restaurant on the way back if you want lunch. Say so when you book and they will plan the timing around it.",
@@ -130,6 +134,10 @@ const TOURS = [
     minutes: 330,
     minFare: 28000,
     risk: 10000,
+    ka: { title: "კახეთის ღვინის მხარე",
+          summary: "სიღნაღი მთის წვერზე, ბოდბის მონასტერი და მოქმედი მარანი ველზე, სადაც ქარვისფერი ღვინო დაიბადა." },
+    ru: { title: "Винная Кахетия",
+          summary: "Сигнахи на холме, монастырь Бодбе и работающая винодельня в долине, где родилось янтарное вино." },
     title: "Kakheti wine country",
     summary: "Sighnaghi on its hilltop, the Bodbe convent, and a working winery in the valley that invented amber wine.",
     body: "Kakheti is where Georgian wine actually comes from, and where qvevri — clay vessels buried in the ground — have been used for eight thousand years.\n\nBodbe Monastery comes first, with the Alazani Valley laid out below and the Caucasus behind it. Then Sighnaghi, a walled town on a ridge that takes about two hours to walk properly.\n\nThe winery stop is where the day earns its keep. Tastings are paid separately and directly — we do not mark them up, and your driver will not push you toward a particular cellar.",
@@ -149,6 +157,10 @@ const TOURS = [
     minFare: 42000,
     risk: 12500,
     fourByFour: true,
+    ka: { title: "ყაზბეგი და გერგეტის ტაძარი",
+          summary: "საქართველოს სამხედრო გზა რუსეთის საზღვრამდე და მეთოთხმეტე საუკუნის ტაძარი 2170 მეტრზე, მყინვარწვერის ფონზე." },
+    ru: { title: "Казбеги и Гергетская церковь",
+          summary: "Военно-Грузинская дорога до российской границы и церковь XIV века на высоте 2170 метров с Казбеком за спиной." },
     title: "Kazbegi and the Gergeti church",
     summary: "The Georgian Military Highway to the Russian border, and a fourteenth-century church at 2,170 metres with Mount Kazbek behind it.",
     body: "This is the drive people come to Georgia for. The Military Highway climbs through Ananuri fortress and the Jvari Pass to Stepantsminda, and the road itself is the attraction for most of the way.\n\nGergeti Trinity Church sits above the town with Mount Kazbek at 5,054 metres behind it when the cloud lifts. The final ascent is a rough track — this tour requires a 4x4 and the driver will take you up it.\n\nBe realistic about the day: seven hours of driving plus stops means leaving early and returning late. From November to April the pass can close at short notice, and we will move or refund rather than risk it.",
@@ -167,6 +179,10 @@ const TOURS = [
     minutes: 480,
     minFare: 48000,
     risk: 11000,
+    ka: { title: "ბორჯომი და ვარძიის კლდის ქალაქი",
+          summary: "მინერალური წყლები ტყიან ხეობაში, შემდეგ კი მეთორმეტე საუკუნის მონასტერი, კლდეში ამოკვეთილი ცამეტ იარუსად." },
+    ru: { title: "Боржоми и пещерный город Вардзиа",
+          summary: "Минеральные источники в лесистом ущелье, затем монастырь XII века, вырубленный в скале на тринадцати уровнях." },
     title: "Borjomi and the Vardzia cave city",
     summary: "Mineral springs in a forested gorge, then a twelfth-century monastery carved into a cliff face over thirteen levels.",
     body: "Borjomi is a spa town in a wooded gorge, and the park is worth the walk even if you do not drink the water — which is famously not to everyone's taste.\n\nVardzia is the reason to make the longer drive. Queen Tamar's monastery was cut into the rock in the twelfth century and once held hundreds of rooms across thirteen levels; an earthquake in 1283 sheared the outer wall away and exposed the whole thing in cross-section.\n\nIt is a long day — around eight hours of driving. Worth doing, but not to be combined with anything else.",
@@ -186,6 +202,10 @@ const TOURS = [
     minFare: 120000,
     risk: 13000,
     fourByFour: true,
+    ka: { title: "ზემო სვანეთი სამ დღეში",
+          summary: "შუასაუკუნეების კოშკები ოთხკილომეტრიანი მწვერვალების ქვეშ, ხეობაში, რომელიც წლის დიდი ნაწილი მიუწვდომელი იყო." },
+    ru: { title: "Верхняя Сванетия за три дня",
+          summary: "Средневековые башни под четырёхтысячниками, в долине, которая большую часть года была практически недоступна." },
     title: "Upper Svaneti in three days",
     summary: "Medieval tower houses under 4,000-metre peaks, in a valley that was effectively unreachable for most of the year until recently.",
     body: "Svaneti is the most remote place in Georgia that you can reasonably drive to, and the defensive tower houses of Mestia and Ushguli have stood since the ninth century.\n\nDay one is the drive up from Kutaisi through the Enguri gorge — five hours, and genuinely spectacular. Day two goes to Ushguli, one of the highest continuously inhabited settlements in Europe, on a track that needs a 4x4 and a driver who has done it before. Day three returns.\n\nYour accommodation is booked and paid by you; the price here covers the vehicle, the driver, and their own lodging and meals for the two nights. That overnight cost is shown as a separate line in the quote rather than hidden in a per-kilometre rate.",
@@ -475,6 +495,15 @@ async function main() {
     await sql`
       INSERT INTO tour_translations (tour_id, locale, title, summary, body)
       VALUES (${tour!.id}::uuid, 'en', ${t.title}, ${t.summary}, ${t.body})`;
+
+    // Georgian and Russian get the title and summary — the parts a traveller
+    // reads before deciding. The long body still falls back to English and is
+    // logged as an outstanding translation.
+    for (const [locale, copy] of [["ka", t.ka], ["ru", t.ru]] as const) {
+      await sql`
+        INSERT INTO tour_translations (tour_id, locale, title, summary, body)
+        VALUES (${tour!.id}::uuid, ${locale}, ${copy.title}, ${copy.summary}, '')`;
+    }
 
     for (const [index, [slug, legKm, day, notes]] of t.stops.entries()) {
       await sql`

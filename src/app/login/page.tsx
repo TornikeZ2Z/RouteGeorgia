@@ -1,6 +1,7 @@
 import { redirect } from "next/navigation";
 import { getSessionUser } from "@/lib/auth/session";
 import { Button, Card, Field, Input } from "@/components/ui";
+import { ContourField } from "@/components/contour-field";
 
 export const dynamic = "force-dynamic";
 export const metadata = { title: "Sign in", robots: { index: false } };
@@ -13,8 +14,9 @@ export default async function LoginPage({
   const { error, next } = await searchParams;
 
   return (
-    <div className="contours-quiet flex min-h-dvh flex-col justify-center bg-forest-800 px-4 py-12 text-forest-100">
-      <div className="mx-auto w-full max-w-md">
+    <div className="relative flex min-h-dvh flex-col justify-center overflow-hidden bg-forest-800 px-4 py-12 text-forest-100">
+      <ContourField className="text-forest-300" opacity={0.13} seed={5} />
+      <div className="relative mx-auto w-full max-w-md">
         <div className="mb-8 flex items-center gap-3">
           <span aria-hidden className="grid size-10 place-items-center rounded-full bg-wine-600 text-white">
             <svg viewBox="0 0 24 24" className="size-5" fill="none" stroke="currentColor" aria-hidden>

@@ -8,6 +8,7 @@ import { formatDuration, formatDistance } from "@/lib/format";
 import { getDisplayCurrency, getRate, convert, CANONICAL } from "@/lib/currency";
 import { config } from "@/lib/config";
 import { Badge, EmptyState } from "@/components/ui";
+import { PlaceImage } from "@/components/place-image";
 
 export const revalidate = 3600;
 
@@ -66,7 +67,13 @@ export default async function ToursIndex({ params }: Props) {
                 >
                   {/* An abstract route illustration rather than stock photography
                       of a place the traveller has not yet chosen. */}
-                  <div className="contours relative h-40 bg-forest-700 text-forest-200">
+                  <div className="relative">
+                    <PlaceImage
+                      imageKey={tour.heroImageKey}
+                      alt={tour.heroImageAlt ?? tour.title}
+                      seedText={tour.slug}
+                      className="h-44 w-full"
+                    />
                     <div className="absolute left-4 top-4 flex gap-2">
                       <Badge tone="neutral">
                         {tour.durationDays === 1 ? "Day trip" : `${tour.durationDays} days`}

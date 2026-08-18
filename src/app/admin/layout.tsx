@@ -16,6 +16,7 @@ const NAV = [
   { href: "/admin/locations", label: "Locations & routes", permission: "admin.locations.write" },
   { href: "/admin/pricing", label: "Price bands", permission: "admin.pricing.approve" },
   { href: "/admin/content", label: "Content", permission: "admin.content.write" },
+  { href: "/admin/images", label: "Photography", permission: "admin.content.write" },
   { href: "/admin/staff", label: "Staff", permission: "admin.rbac.write" },
   { href: "/admin/audit", label: "Audit log", permission: "admin.audit.read" },
 ] as const;

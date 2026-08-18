@@ -33,6 +33,7 @@ export interface Tour {
   driveMinutes: number;
   requires4x4: boolean;
   heroImageKey: string | null;
+  heroImageAlt: string | null;
   stops: TourStop[];
 }
 
@@ -41,7 +42,7 @@ const NAME_COLUMN: Record<Locale, string> = { en: "name_en", ka: "name_ka", ru: 
 export async function listTours(locale: Locale = "en"): Promise<Tour[]> {
   const rows = await sql<TourRow[]>`
     SELECT t.id, t.slug, t.duration_days, t.distance_km, t.drive_minutes,
-           t.requires_4x4, t.hero_image_key,
+           t.requires_4x4, t.hero_image_key, t.hero_image_alt,
            o.slug AS origin_slug, coalesce(${sql.unsafe(`o.${NAME_COLUMN[locale]}`)}, o.name_en) AS origin_name,
            coalesce(tr.title, en.title) AS title,
            coalesce(tr.summary, en.summary) AS summary,
@@ -58,7 +59,7 @@ export async function listTours(locale: Locale = "en"): Promise<Tour[]> {
 export async function getTour(slug: string, locale: Locale = "en"): Promise<Tour | null> {
   const [row] = await sql<TourRow[]>`
     SELECT t.id, t.slug, t.duration_days, t.distance_km, t.drive_minutes,
-           t.requires_4x4, t.hero_image_key,
+           t.requires_4x4, t.hero_image_key, t.hero_image_alt,
            o.slug AS origin_slug, coalesce(${sql.unsafe(`o.${NAME_COLUMN[locale]}`)}, o.name_en) AS origin_name,
            coalesce(tr.title, en.title) AS title,
            coalesce(tr.summary, en.summary) AS summary,
@@ -145,7 +146,7 @@ export async function tourPriceFrom(slug: string): Promise<{ fromMinor: bigint; 
 
 interface TourRow {
   id: string; slug: string; duration_days: number; distance_km: string; drive_minutes: number;
-  requires_4x4: boolean; hero_image_key: string | null;
+  requires_4x4: boolean; hero_image_key: string | null; hero_image_alt: string | null;
   origin_slug: string; origin_name: string; title: string; summary: string; body: string;
 }
 interface StopRow { name: string; day_index: number; position: number; leg_km: string | null; notes: string | null }
@@ -159,5 +160,6 @@ const map = (r: TourRow) => ({
   id: r.id, slug: r.slug, title: r.title, summary: r.summary, body: r.body,
   originSlug: r.origin_slug, originName: r.origin_name,
   durationDays: r.duration_days, distanceKm: Number(r.distance_km),
-  driveMinutes: r.drive_minutes, requires4x4: r.requires_4x4, heroImageKey: r.hero_image_key,
+  driveMinutes: r.drive_minutes, requires4x4: r.requires_4x4,
+  heroImageKey: r.hero_image_key, heroImageAlt: r.hero_image_alt,
 });

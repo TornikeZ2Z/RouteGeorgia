@@ -5,6 +5,7 @@ import { isLocale, LOCALES } from "@/lib/i18n";
 import { listRoutes } from "@/lib/routes-content";
 import { config } from "@/lib/config";
 import { Badge } from "@/components/ui";
+import { PlaceImage } from "@/components/place-image";
 import { formatDuration, formatDistance } from "@/lib/format";
 
 export const revalidate = 3600;
@@ -48,8 +49,15 @@ export default async function TransfersIndex({ params }: Props) {
           <li key={r.slug}>
             <Link
               href={`/${locale}/transfers/${r.slug}`}
-              className="block h-full rounded-xl border border-ink-200 bg-white p-4 hover:border-wine-300"
+              className="block h-full overflow-hidden rounded-xl border border-ink-200 bg-white hover:border-wine-300"
             >
+              <PlaceImage
+                imageKey={r.imageKey}
+                alt={r.imageAlt ?? `${r.originName} to ${r.destinationName}`}
+                seedText={r.slug}
+                className="h-28 w-full"
+              />
+              <div className="p-4">
               <p className="font-medium text-ink-900">
                 {r.originName} <span className="text-ink-400" aria-hidden>→</span> {r.destinationName}
               </p>
@@ -57,6 +65,7 @@ export default async function TransfersIndex({ params }: Props) {
                 {formatDistance(r.distanceKm)} · {formatDuration(r.driveMinutes)}
               </p>
               {r.requires4x4 && <span className="mt-2 inline-block"><Badge tone="warning">4x4 required</Badge></span>}
+              </div>
             </Link>
           </li>
         ))}

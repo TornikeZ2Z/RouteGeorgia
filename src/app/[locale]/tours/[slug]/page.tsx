@@ -9,6 +9,7 @@ import { formatDuration, formatDistance } from "@/lib/format";
 import { getDisplayCurrency, getRate, convert, CANONICAL } from "@/lib/currency";
 import { config } from "@/lib/config";
 import { Alert, Badge, Card } from "@/components/ui";
+import { PlaceImage } from "@/components/place-image";
 import { SearchForm } from "@/components/search-form";
 
 export const revalidate = 3600;
@@ -86,6 +87,14 @@ export default async function TourPage({ params }: Props) {
         <span className="mx-2" aria-hidden>/</span>
         <span className="text-ink-700">{tour.title}</span>
       </nav>
+
+      <PlaceImage
+        imageKey={tour.heroImageKey}
+        alt={tour.heroImageAlt ?? tour.title}
+        seedText={tour.slug}
+        className="h-56 w-full sm:h-72"
+        rounded="rounded-2xl"
+      />
 
       <header className="max-w-3xl">
         <div className="flex flex-wrap gap-2">

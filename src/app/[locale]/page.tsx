@@ -6,6 +6,8 @@ import { isLocale, getTranslator, LOCALES } from "@/lib/i18n";
 import { listRoutes } from "@/lib/routes-content";
 import { config } from "@/lib/config";
 import { Badge, Card } from "@/components/ui";
+import { ContourField } from "@/components/contour-field";
+import { PlaceImage } from "@/components/place-image";
 import { listTours } from "@/lib/tours";
 import { formatApproxDuration, formatDistance } from "@/lib/format";
 import { SearchForm } from "@/components/search-form";
@@ -66,7 +68,8 @@ export default async function Home({ params }: { params: Promise<{ locale: strin
     <div className="space-y-20">
       {/* Full-bleed: the hero should meet the edges of the window, not sit inside
           the page gutter like another card. */}
-      <section className="contours relative left-1/2 -mt-10 w-screen -translate-x-1/2 overflow-hidden bg-forest-800 px-6 pb-28 pt-14 text-forest-50 sm:-mt-12 sm:px-10 sm:pb-32 sm:pt-20">
+      <section className="relative left-1/2 -mt-10 w-screen -translate-x-1/2 overflow-hidden bg-forest-800 px-6 pb-28 pt-14 text-forest-50 sm:-mt-12 sm:px-10 sm:pb-32 sm:pt-20">
+        <ContourField className="text-forest-200" opacity={0.18} />
         <div className="relative mx-auto max-w-6xl">
           <p className="eyebrow text-gold-400">Georgia · private drivers</p>
 
@@ -149,7 +152,13 @@ export default async function Home({ params }: { params: Promise<{ locale: strin
                   href={`/${locale}/tours/${tour.slug}`}
                   className="group flex h-full flex-col overflow-hidden rounded-2xl border border-ink-200 bg-white hover:border-wine-300"
                 >
-                  <div className="contours relative h-36 bg-forest-700 text-forest-200">
+                  <div className="relative">
+                    <PlaceImage
+                      imageKey={tour.heroImageKey}
+                      alt={tour.heroImageAlt ?? tour.title}
+                      seedText={tour.slug}
+                      className="h-40 w-full"
+                    />
                     <span className="absolute left-4 top-4">
                       <Badge tone="neutral">
                         {tour.durationDays === 1 ? "Day trip" : `${tour.durationDays} days`}
@@ -184,13 +193,21 @@ export default async function Home({ params }: { params: Promise<{ locale: strin
               <li key={r.slug}>
                 <Link
                   href={`/${locale}/transfers/${r.slug}`}
-                  className="block h-full rounded-xl border border-ink-200 bg-white px-4 py-3 hover:border-wine-300"
+                  className="block h-full overflow-hidden rounded-xl border border-ink-200 bg-white hover:border-wine-300"
                 >
+                  <PlaceImage
+                    imageKey={r.imageKey}
+                    alt={r.imageAlt ?? `${r.originName} to ${r.destinationName}`}
+                    seedText={r.slug}
+                    className="h-24 w-full"
+                  />
+                  <span className="block px-4 py-3">
                   <span className="font-medium text-ink-800">{r.originName}</span>
                   <span className="mx-2 text-ink-400" aria-hidden>→</span>
                   <span className="font-medium text-ink-800">{r.destinationName}</span>
                   <span className="mt-0.5 block text-xs text-ink-500">
                     {formatDistance(r.distanceKm)} · {formatApproxDuration(r.driveMinutes)} driving
+                  </span>
                   </span>
                 </Link>
               </li>
@@ -214,8 +231,9 @@ export default async function Home({ params }: { params: Promise<{ locale: strin
         </ol>
       </section>
 
-      <section className="contours overflow-hidden rounded-2xl bg-ink-900 px-6 py-12 text-ink-50 sm:px-12">
-        <div className="max-w-2xl">
+      <section className="relative overflow-hidden rounded-2xl bg-ink-900 px-6 py-12 text-ink-50 sm:px-12">
+        <ContourField className="text-ink-300" opacity={0.2} seed={3} />
+        <div className="relative max-w-2xl">
           <p className="eyebrow text-gold-400">For drivers</p>
           <h2 className="font-display mt-3 text-3xl sm:text-4xl">Drive with us</h2>
           <p className="mt-4 leading-relaxed text-ink-200">
