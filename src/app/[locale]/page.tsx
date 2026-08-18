@@ -106,11 +106,16 @@ export default async function Home({ params }: { params: Promise<{ locale: strin
           {PROMISES.map(([title, body], i) => (
             <li key={title} className="rounded-xl border border-ink-200 bg-white p-5">
               <span aria-hidden className="grid size-9 place-items-center rounded-lg bg-wine-50 text-wine-700">
-                <svg viewBox="0 0 20 20" className="size-5" fill="none" strokeWidth="1.8" stroke="currentColor">
-                  {i === 0 && <path d="M10 3v14M6.5 6.5h5.2a2.3 2.3 0 010 4.6H8.3a2.3 2.3 0 000 4.6h5.2" strokeLinecap="round" />}
-                  {i === 1 && <><circle cx="10" cy="7" r="3" /><path d="M4 17a6 6 0 0112 0" strokeLinecap="round" /></>}
-                  {i === 2 && <><circle cx="10" cy="9" r="2.5" /><path d="M10 2.5c3.6 0 6 2.4 6 6 0 4-6 9-6 9s-6-5-6-9c0-3.6 2.4-6 6-6z" /></>}
-                  {i === 3 && <path d="M10 2.5l6 2.5v5c0 4-2.7 6.7-6 7.5-3.3-.8-6-3.5-6-7.5v-5l6-2.5zM7.5 10l1.8 1.8L13 8" strokeLinecap="round" strokeLinejoin="round" />}
+                <svg viewBox="0 0 24 24" className="size-5" fill="none" strokeWidth="1.7"
+                     stroke="currentColor" strokeLinecap="round" strokeLinejoin="round">
+                  {/* price tag */}
+                  {i === 0 && <><path d="M3 12.5V4.5A1.5 1.5 0 014.5 3h8l8.5 8.5a1.5 1.5 0 010 2.1l-6.4 6.4a1.5 1.5 0 01-2.1 0L3 12.5z" /><circle cx="7.5" cy="7.5" r="1.4" /></>}
+                  {/* driver */}
+                  {i === 1 && <><circle cx="12" cy="8" r="3.4" /><path d="M4.5 20a7.5 7.5 0 0115 0" /></>}
+                  {/* route with stops */}
+                  {i === 2 && <><circle cx="5" cy="6" r="2" /><circle cx="19" cy="18" r="2" /><path d="M7 6h6a3 3 0 010 6H11a3 3 0 000 6h6" /></>}
+                  {/* verified shield */}
+                  {i === 3 && <><path d="M12 3l7.5 3v6c0 4.8-3.2 8.1-7.5 9-4.3-.9-7.5-4.2-7.5-9V6L12 3z" /><path d="M9 12l2.2 2.2L15.5 10" /></>}
                 </svg>
               </span>
               <p className="mt-3 font-semibold text-ink-900">{title}</p>

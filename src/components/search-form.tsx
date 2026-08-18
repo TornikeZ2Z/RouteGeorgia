@@ -17,12 +17,15 @@ interface LocationOption { slug: string; name_en: string; type: string }
  * revalidates everything.
  */
 export function SearchForm({
-  locale, locations, initial,
+  locale, locations, initial, layout = "wide",
 }: {
   locale: string;
   locations: LocationOption[];
   initial?: { from?: string; to?: string };
+  /** "compact" stacks every field for narrow sidebars. */
+  layout?: "wide" | "compact";
 }) {
+  const compact = layout === "compact";
   const router = useRouter();
   const [from, setFrom] = useState(initial?.from ?? locations[0]?.slug ?? "");
   const [to, setTo] = useState(initial?.to ?? locations[1]?.slug ?? "");
@@ -61,20 +64,20 @@ export function SearchForm({
 
   return (
     <form onSubmit={submit} className="space-y-4">
-      <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-6">
-        <div className="lg:col-span-2">
+      <div className={compact ? "space-y-4" : "grid gap-4 sm:grid-cols-2 lg:grid-cols-6"}>
+        <div className={compact ? "" : "lg:col-span-2"}>
           <Field label="From" htmlFor="from" required>
             <Select id="from" value={from} onChange={(e) => setFrom(e.target.value)}>{options}</Select>
           </Field>
         </div>
 
-        <div className="lg:col-span-2">
+        <div className={compact ? "" : "lg:col-span-2"}>
           <Field label="To" htmlFor="to" required>
             <Select id="to" value={to} onChange={(e) => setTo(e.target.value)}>{options}</Select>
           </Field>
         </div>
 
-        <div className="lg:col-span-2">
+        <div className={compact ? "" : "lg:col-span-2"}>
           <Field label="Date and time" htmlFor="when" hint="Local time in Georgia (Asia/Tbilisi)" required>
             <Input id="when" type="datetime-local" value={when} onChange={(e) => setWhen(e.target.value)} />
           </Field>
@@ -109,7 +112,7 @@ export function SearchForm({
         </ul>
       )}
 
-      <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-6">
+      <div className={compact ? "grid grid-cols-2 gap-3" : "grid gap-4 sm:grid-cols-2 lg:grid-cols-6"}>
         <Field label="Passengers" htmlFor="pax">
           <Input id="pax" type="number" min={1} max={20} value={passengers}
                  onChange={(e) => setPassengers(Number(e.target.value))} />
@@ -120,7 +123,7 @@ export function SearchForm({
                  onChange={(e) => setLuggage(Number(e.target.value))} />
         </Field>
 
-        <div className="flex items-end lg:col-span-2">
+        <div className={compact ? "col-span-2" : "flex items-end lg:col-span-2"}>
           <Button
             type="button" variant="secondary" className="w-full"
             onClick={() => setStops([...stops, ""])}
@@ -130,8 +133,10 @@ export function SearchForm({
           </Button>
         </div>
 
-        <div className="flex items-end lg:col-span-2">
-          <Button type="submit" className="w-full">Find a driver</Button>
+        <div className={compact ? "col-span-2" : "flex items-end lg:col-span-2"}>
+          <Button type="submit" size={compact ? "md" : "md"} className="w-full">
+            Find a driver
+          </Button>
         </div>
       </div>
 

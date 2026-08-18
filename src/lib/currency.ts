@@ -1,7 +1,10 @@
 import "server-only";
 import { cookies } from "next/headers";
 import { sql } from "@db/client";
-import { divRound, type Minor } from "@/lib/money";
+import {
+  CANONICAL, DISPLAY_CURRENCIES, isDisplayCurrency,
+  type DisplayCurrency, type RateSnapshot,
+} from "@/lib/currency-constants";
 
 /**
  * Display currency.
@@ -11,22 +14,10 @@ import { divRound, type Minor } from "@/lib/money";
  * must always say so — a traveller who thinks they are being charged in USD
  * and then sees a GEL card statement will open a dispute.
  */
-export const DISPLAY_CURRENCIES = ["GEL", "USD", "EUR"] as const;
-export type DisplayCurrency = (typeof DISPLAY_CURRENCIES)[number];
-export const CANONICAL: DisplayCurrency = "GEL";
+export { CANONICAL, DISPLAY_CURRENCIES, isDisplayCurrency, convert } from "@/lib/currency-constants";
+export type { DisplayCurrency, RateSnapshot } from "@/lib/currency-constants";
 
 const COOKIE = "gt_currency";
-
-export interface RateSnapshot {
-  currency: DisplayCurrency;
-  /** 1 GEL = rateMicro / 1e6 of `currency`. Always 1e6 for GEL itself. */
-  rateMicro: bigint;
-  asOf: Date | null;
-}
-
-export function isDisplayCurrency(v: string | undefined): v is DisplayCurrency {
-  return !!v && (DISPLAY_CURRENCIES as readonly string[]).includes(v);
-}
 
 export async function getDisplayCurrency(): Promise<DisplayCurrency> {
   const value = (await cookies()).get(COOKIE)?.value;
@@ -43,15 +34,9 @@ export async function getRate(currency: DisplayCurrency): Promise<RateSnapshot> 
     ORDER BY as_of DESC LIMIT 1`;
 
   const row = rows[0];
-  if (!row) {
-    // No snapshot: show GEL rather than invent a number.
-    return { currency: CANONICAL, rateMicro: 1_000_000n, asOf: null };
-  }
+  // No snapshot: show GEL rather than invent a number.
+  if (!row) return { currency: CANONICAL, rateMicro: 1_000_000n, asOf: null };
   return { currency, rateMicro: BigInt(row.rate_micro), asOf: row.as_of };
 }
 
-/** Convert canonical GEL minor units into the display currency's minor units. */
-export function convert(amountGelMinor: Minor, rate: RateSnapshot): Minor {
-  if (rate.currency === CANONICAL) return amountGelMinor;
-  return divRound(amountGelMinor * rate.rateMicro, 1_000_000n);
-}
+void DISPLAY_CURRENCIES;

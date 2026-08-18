@@ -117,9 +117,9 @@ const TOURS = [
     summary: "The old capital, a sixth-century monastery above the meeting of two rivers, and lunch by the water — an easy half day from Tbilisi.",
     body: "Start at Jvari Monastery on the ridge, where the Aragvi and Mtkvari rivers meet below and visibly refuse to mix. Take a jacket: it is windy up there whatever the forecast says.\n\nDown in Mtskheta you have Svetitskhoveli Cathedral, an eleventh-century building that was the coronation and burial church of Georgian kings. The town itself is small enough to walk in an hour and has good churchkhela.\n\nMost drivers will suggest a riverside restaurant on the way back if you want lunch. Say so when you book and they will plan the timing around it.",
     stops: [
-      ["tbilisi", 0, "Pickup from your accommodation."],
-      ["mtskheta", 22, "Jvari Monastery first, then the town below."],
-      ["tbilisi", 25, "Back to Tbilisi. Return is included in the price."],
+      ["tbilisi", 0, 0, "Pickup from your accommodation."],
+      ["mtskheta", 22, 0, "Jvari Monastery first, then the town below."],
+      ["tbilisi", 25, 0, "Back to Tbilisi. The return is included in the price."],
     ],
   },
   {
@@ -134,10 +134,10 @@ const TOURS = [
     summary: "Sighnaghi on its hilltop, the Bodbe convent, and a working winery in the valley that invented amber wine.",
     body: "Kakheti is where Georgian wine actually comes from, and where qvevri — clay vessels buried in the ground — have been used for eight thousand years.\n\nBodbe Monastery comes first, with the Alazani Valley laid out below and the Caucasus behind it. Then Sighnaghi, a walled town on a ridge that takes about two hours to walk properly.\n\nThe winery stop is where the day earns its keep. Tastings are paid separately and directly — we do not mark them up, and your driver will not push you toward a particular cellar.",
     stops: [
-      ["tbilisi", 0, "Early start is worth it; this is a full day."],
-      ["sighnaghi", 113, "Bodbe Monastery, then the town walls."],
-      ["telavi", 60, "Lunch and a winery in the valley."],
-      ["tbilisi", 96, "Back by early evening."],
+      ["tbilisi", 0, 0, "An early start is worth it; this is a full day."],
+      ["sighnaghi", 113, 0, "Bodbe Monastery, then the town walls."],
+      ["telavi", 60, 0, "Lunch and a winery in the valley."],
+      ["tbilisi", 96, 0, "Back by early evening."],
     ],
   },
   {
@@ -153,10 +153,10 @@ const TOURS = [
     summary: "The Georgian Military Highway to the Russian border, and a fourteenth-century church at 2,170 metres with Mount Kazbek behind it.",
     body: "This is the drive people come to Georgia for. The Military Highway climbs through Ananuri fortress and the Jvari Pass to Stepantsminda, and the road itself is the attraction for most of the way.\n\nGergeti Trinity Church sits above the town with Mount Kazbek at 5,054 metres behind it when the cloud lifts. The final ascent is a rough track — this tour requires a 4x4 and the driver will take you up it.\n\nBe realistic about the day: seven hours of driving plus stops means leaving early and returning late. From November to April the pass can close at short notice, and we will move or refund rather than risk it.",
     stops: [
-      ["tbilisi", 0, "Leave by 08:00 to have daylight at the top."],
-      ["gudauri", 120, "Jvari Pass and the viewpoint over the valley."],
-      ["kazbegi", 36, "Gergeti Trinity Church by 4x4 track."],
-      ["tbilisi", 156, "Long drive back; expect to arrive after dark."],
+      ["tbilisi", 0, 0, "Leave by 08:00 to have daylight at the top."],
+      ["gudauri", 120, 0, "Jvari Pass and the viewpoint over the valley."],
+      ["kazbegi", 36, 0, "Gergeti Trinity Church, up the 4x4 track."],
+      ["tbilisi", 156, 0, "Long drive back; expect to arrive after dark."],
     ],
   },
   {
@@ -171,10 +171,10 @@ const TOURS = [
     summary: "Mineral springs in a forested gorge, then a twelfth-century monastery carved into a cliff face over thirteen levels.",
     body: "Borjomi is a spa town in a wooded gorge, and the park is worth the walk even if you do not drink the water — which is famously not to everyone's taste.\n\nVardzia is the reason to make the longer drive. Queen Tamar's monastery was cut into the rock in the twelfth century and once held hundreds of rooms across thirteen levels; an earthquake in 1283 sheared the outer wall away and exposed the whole thing in cross-section.\n\nIt is a long day — around eight hours of driving. Worth doing, but not to be combined with anything else.",
     stops: [
-      ["tbilisi", 0, "Early departure needed for this one."],
-      ["borjomi", 160, "Mineral park and the gorge."],
-      ["vardzia", 100, "The cave monastery. Allow two hours."],
-      ["tbilisi", 260, "Direct return."],
+      ["tbilisi", 0, 0, "An early departure is needed for this one."],
+      ["borjomi", 160, 0, "Mineral park and the gorge."],
+      ["vardzia", 100, 0, "The cave monastery. Allow two hours."],
+      ["tbilisi", 260, 0, "Direct return."],
     ],
   },
   {
@@ -190,10 +190,10 @@ const TOURS = [
     summary: "Medieval tower houses under 4,000-metre peaks, in a valley that was effectively unreachable for most of the year until recently.",
     body: "Svaneti is the most remote place in Georgia that you can reasonably drive to, and the defensive tower houses of Mestia and Ushguli have stood since the ninth century.\n\nDay one is the drive up from Kutaisi through the Enguri gorge — five hours, and genuinely spectacular. Day two goes to Ushguli, one of the highest continuously inhabited settlements in Europe, on a track that needs a 4x4 and a driver who has done it before. Day three returns.\n\nYour accommodation is booked and paid by you; the price here covers the vehicle, the driver, and their own lodging and meals for the two nights. That overnight cost is shown as a separate line in the quote rather than hidden in a per-kilometre rate.",
     stops: [
-      ["kutaisi", 0, "Depart mid-morning; the drive is long."],
-      ["mestia", 210, "Day 1. Tower houses and the Svaneti museum."],
-      ["mestia", 0, "Day 2. Ushguli and back by 4x4 track."],
-      ["kutaisi", 210, "Day 3. Return through the gorge."],
+      ["kutaisi", 0, 0, "Depart mid-morning; the drive up is around five hours."],
+      ["mestia", 210, 0, "Arrive in Mestia. Tower houses and the Svaneti museum."],
+      ["mestia", 110, 1, "Out to Ushguli and back by 4x4 track — a full day."],
+      ["kutaisi", 210, 2, "Return through the Enguri gorge."],
     ],
   },
 ];
@@ -476,11 +476,11 @@ async function main() {
       INSERT INTO tour_translations (tour_id, locale, title, summary, body)
       VALUES (${tour!.id}::uuid, 'en', ${t.title}, ${t.summary}, ${t.body})`;
 
-    for (const [index, [slug, legKm, notes]] of t.stops.entries()) {
+    for (const [index, [slug, legKm, day, notes]] of t.stops.entries()) {
       await sql`
         INSERT INTO tour_stops (tour_id, location_id, day_index, position, leg_km, notes)
         VALUES (${tour!.id}::uuid, ${locIds.get(slug as string)!}::uuid,
-                ${Math.min(index, t.days - 1)}, ${index}, ${legKm as number}, ${notes as string})`;
+                ${day as number}, ${index}, ${legKm as number}, ${notes as string})`;
     }
   }
 

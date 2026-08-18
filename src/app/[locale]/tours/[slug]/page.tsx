@@ -53,8 +53,6 @@ export default async function TourPage({ params }: Props) {
   ]);
   const rate = await getRate(currency);
 
-  const finalStop = tour.stops[tour.stops.length - 1];
-  const midStops = tour.stops.slice(1, -1);
 
   const jsonLd = {
     "@context": "https://schema.org",
@@ -176,10 +174,8 @@ export default async function TourPage({ params }: Props) {
               <SearchForm
                 locale={locale}
                 locations={locations}
-                initial={{
-                  from: tour.originSlug,
-                  to: midStops[0]?.name ? undefined : undefined,
-                }}
+                layout="compact"
+                initial={{ from: tour.originSlug }}
               />
             </div>
           </Card>
