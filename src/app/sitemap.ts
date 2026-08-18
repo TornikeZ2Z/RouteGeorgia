@@ -1,0 +1,54 @@
+import type { MetadataRoute } from "next";
+import { config } from "@/lib/config";
+import { LOCALES } from "@/lib/i18n";
+import { listRoutes } from "@/lib/routes-content";
+import { sql } from "@db/client";
+
+export const revalidate = 3600;
+
+/**
+ * Only publicly meaningful, indexable URLs. Search, checkout, driver and admin
+ * surfaces are excluded here and additionally noindexed at the header level.
+ */
+export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
+  const [routes, drivers] = await Promise.all([
+    listRoutes("en"),
+    sql<{ handle: string; updated_at: Date }[]>`
+      SELECT handle, updated_at FROM driver_profiles
+      WHERE published AND status = 'APPROVED'`,
+  ]);
+
+  const alternates = (path: string) => ({
+    languages: Object.fromEntries(LOCALES.map((l) => [l, `${config.appUrl}/${l}${path}`])),
+  });
+
+  const entries: MetadataRoute.Sitemap = [];
+
+  for (const locale of LOCALES) {
+    entries.push(
+      { url: `${config.appUrl}/${locale}`, changeFrequency: "weekly", priority: 1, alternates: alternates("") },
+      { url: `${config.appUrl}/${locale}/transfers`, changeFrequency: "weekly", priority: 0.9, alternates: alternates("/transfers") },
+      { url: `${config.appUrl}/${locale}/faq`, changeFrequency: "monthly", priority: 0.4, alternates: alternates("/faq") },
+    );
+
+    for (const r of routes) {
+      entries.push({
+        url: `${config.appUrl}/${locale}/transfers/${r.slug}`,
+        changeFrequency: "weekly",
+        priority: 0.8,
+        alternates: alternates(`/transfers/${r.slug}`),
+      });
+    }
+
+    for (const d of drivers) {
+      entries.push({
+        url: `${config.appUrl}/${locale}/drivers/${d.handle}`,
+        lastModified: d.updated_at,
+        changeFrequency: "monthly",
+        priority: 0.5,
+      });
+    }
+  }
+
+  return entries;
+}
