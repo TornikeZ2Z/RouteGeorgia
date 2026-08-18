@@ -3,6 +3,7 @@
 import { useState } from "react";
 import { useRouter } from "next/navigation";
 import { Button, Field, Input, Select } from "@/components/ui";
+import { getTranslator, isLocale, type Locale } from "@/lib/i18n";
 
 interface LocationOption { slug: string; name_en: string; type: string }
 
@@ -30,6 +31,7 @@ export function SearchForm({
   lockRoute?: boolean;
 }) {
   const compact = layout === "compact";
+  const t = getTranslator(isLocale(locale) ? (locale as Locale) : "en");
   const router = useRouter();
   const [from, setFrom] = useState(initial?.from ?? locations[0]?.slug ?? "");
   const [to, setTo] = useState(initial?.to ?? locations[1]?.slug ?? "");
@@ -41,18 +43,18 @@ export function SearchForm({
 
   function submit(e: React.FormEvent) {
     e.preventDefault();
-    if (!from || !to) return setError("Choose both a pickup and a destination.");
-    if (from === to) return setError("Pickup and destination must be different.");
-    if (stops.some((s) => !s)) return setError("Choose a place for every stop, or remove it.");
+    if (!from || !to) return setError(t("search.errBoth"));
+    if (from === to) return setError(t("search.errSame"));
+    if (stops.some((s) => !s)) return setError(t("search.errStopEmpty"));
 
     // A stop that repeats the point before it adds distance but no journey.
     const sequence = [from, ...stops, to];
     for (let i = 1; i < sequence.length; i++) {
       if (sequence[i] === sequence[i - 1]) {
-        return setError("Two points in a row cannot be the same place.");
+        return setError(t("search.errAdjacent"));
       }
     }
-    if (new Date(when).getTime() < Date.now()) return setError("Choose a time in the future.");
+    if (new Date(when).getTime() < Date.now()) return setError(t("search.errPast"));
 
     setError(null);
     const q = new URLSearchParams({
@@ -77,19 +79,19 @@ export function SearchForm({
           </>
         )}
         <div className={`${compact ? "" : "lg:col-span-2"}${lockRoute ? " hidden" : ""}`}>
-          <Field label="From" htmlFor="from" required>
+          <Field label={t("search.from")} htmlFor="from" required>
             <Select id="from" value={from} onChange={(e) => setFrom(e.target.value)}>{options}</Select>
           </Field>
         </div>
 
         <div className={`${compact ? "" : "lg:col-span-2"}${lockRoute ? " hidden" : ""}`}>
-          <Field label="To" htmlFor="to" required>
+          <Field label={t("search.to")} htmlFor="to" required>
             <Select id="to" value={to} onChange={(e) => setTo(e.target.value)}>{options}</Select>
           </Field>
         </div>
 
         <div className={compact ? "" : "lg:col-span-2"}>
-          <Field label="Date and time" htmlFor="when" hint="Local time in Georgia (Asia/Tbilisi)" required>
+          <Field label={t("search.date")} htmlFor="when" hint={t("search.dateHint")} required>
             <Input id="when" type="datetime-local" value={when} onChange={(e) => setWhen(e.target.value)} />
           </Field>
         </div>
@@ -100,13 +102,13 @@ export function SearchForm({
           {stops.map((stop, i) => (
             <li key={i} className="flex items-end gap-2">
               <div className="flex-1">
-                <Field label={`Stop ${i + 1}`} htmlFor={`stop-${i}`}>
+                <Field label={t("search.stop", { n: i + 1 })} htmlFor={`stop-${i}`}>
                   <Select
                     id={`stop-${i}`}
                     value={stop}
                     onChange={(e) => setStops(stops.map((s, j) => (j === i ? e.target.value : s)))}
                   >
-                    <option value="">Choose a place…</option>
+                    <option value="">{t("search.choosePlace")}</option>
                     {options}
                   </Select>
                 </Field>
@@ -114,9 +116,9 @@ export function SearchForm({
               <Button
                 type="button" variant="secondary"
                 onClick={() => setStops(stops.filter((_, j) => j !== i))}
-                aria-label={`Remove stop ${i + 1}`}
+                aria-label={t("search.stop", { n: i + 1 })}
               >
-                Remove
+                {t("search.removeStop")}
               </Button>
             </li>
           ))}
@@ -124,12 +126,12 @@ export function SearchForm({
       )}
 
       <div className={compact ? "grid grid-cols-2 gap-3" : "grid gap-4 sm:grid-cols-2 lg:grid-cols-6"}>
-        <Field label="Passengers" htmlFor="pax">
+        <Field label={t("search.passengers")} htmlFor="pax">
           <Input id="pax" type="number" min={1} max={20} value={passengers}
                  onChange={(e) => setPassengers(Number(e.target.value))} />
         </Field>
 
-        <Field label="Luggage" htmlFor="bags">
+        <Field label={t("search.luggage")} htmlFor="bags">
           <Input id="bags" type="number" min={0} max={20} value={luggage}
                  onChange={(e) => setLuggage(Number(e.target.value))} />
         </Field>
@@ -148,14 +150,13 @@ export function SearchForm({
 
         <div className={compact ? "col-span-2" : "flex items-end lg:col-span-2"}>
           <Button type="submit" size={compact ? "md" : "md"} className="w-full">
-            Find a driver
+            {t("search.submit")}
           </Button>
         </div>
       </div>
 
       <p className="text-xs text-ink-500">
-        Stops are included in the price. Waiting time at each stop is included — the driver will not
-        start a meter on you.
+        {t("search.stopsNote")}
       </p>
 
       {error && <p className="text-sm text-[--color-danger]" role="alert">{error}</p>}

@@ -39,12 +39,12 @@ export default async function SearchPage({ params, searchParams }: Props) {
   const stops = list(sp.stop).filter(Boolean);
 
   if (!from || !to || !when) {
-    return <EmptyState title="Start a search">Choose a pickup, destination and time on the home page.</EmptyState>;
+    return <EmptyState title={t("search.startTitle")}>{t("search.startBody")}</EmptyState>;
   }
 
   const travelAt = new Date(when);
   if (Number.isNaN(travelAt.getTime())) {
-    return <EmptyState title="That date could not be read">Go back and pick a date and time again.</EmptyState>;
+    return <EmptyState title={t("search.badDateTitle")}>{t("search.badDateBody")}</EmptyState>;
   }
 
   const filterState: FilterState = {
@@ -125,24 +125,25 @@ export default async function SearchPage({ params, searchParams }: Props) {
         </h1>
         <p className="mt-1 text-sm text-ink-600">
           {travelAt.toLocaleString(locale, { dateStyle: "full", timeStyle: "short" })}
-          {stops.length > 0 && <span className="text-ink-500"> · via {stops.length} stop{stops.length > 1 ? "s" : ""}</span>}
+          {stops.length > 0 && <span className="text-ink-500"> · {t("search.viaStops", { count: stops.length })}</span>}
         </p>
         {result.offers.length > 0 && (
           <>
             <p className="mt-1 text-sm text-ink-600">
-              About {formatDuration(result.route.driveMinutes)} driving, {km} km
+              {t("search.driveEstimate", { minutes: formatDuration(result.route.driveMinutes), km })}
             </p>
             <p className="mt-1 text-xs text-ink-500">{t("search.estimateNote")}</p>
           </>
         )}
         <Link href={`/${locale}`} className="mt-2 inline-block text-sm text-wine-700 underline">
-          Change route
+          {t("search.changeRoute")}
         </Link>
       </div>
 
       <div className="grid gap-6 lg:grid-cols-[280px_1fr]">
         <aside className="lg:sticky lg:top-4 lg:self-start">
           <OfferFiltersPanel
+            locale={locale}
             hidden={hidden} state={filterState} facets={facets}
             resultCount={result.offers.length}
           />
@@ -152,9 +153,9 @@ export default async function SearchPage({ params, searchParams }: Props) {
           {result.offers.length === 0 ? (
             <EmptyState title={t("search.empty")}>
               {result.emptyReason === "filtered_out" ? (
-                <p>Drivers are available for this trip, but none match your filters. Try clearing a few.</p>
+                <p>{t("search.emptyFiltered")}</p>
               ) : result.emptyReason === "no_route" ? (
-                <p>We do not serve that combination of locations yet.</p>
+                <p>{t("search.emptyNoRoute")}</p>
               ) : (
                 <p>{t("search.emptyHelp")}</p>
               )}
@@ -165,8 +166,7 @@ export default async function SearchPage({ params, searchParams }: Props) {
                 <p className="text-sm text-ink-600">{t("search.resultsCount", { count: result.offers.length })}</p>
                 {rate.currency !== CANONICAL && rate.asOf && (
                   <p className="text-xs text-ink-500">
-                    {rate.currency} shown for guidance · rate of{" "}
-                    {new Date(rate.asOf).toLocaleDateString(locale)}
+                    {t("search.rateNote", { currency: rate.currency, date: new Date(rate.asOf).toLocaleDateString(locale) })}
                   </p>
                 )}
               </div>
@@ -193,23 +193,23 @@ export default async function SearchPage({ params, searchParams }: Props) {
                           <div className="min-w-0 flex-1">
                             <div className="flex flex-wrap items-center gap-2">
                               <h2 className="font-display text-xl text-ink-900">{offer.driverName}</h2>
-                              <Badge tone="success">{t("driver.verified")}</Badge>
+                              <Badge tone="success">{t("card.verified")}</Badge>
                               {index === 0 && filterState.sort === "recommended" && (
-                                <Badge tone="info">Recommended</Badge>
+                                <Badge tone="info">{t("search.recommended")}</Badge>
                               )}
                             </div>
 
                             <p className="mt-1 text-sm text-ink-600">
                               {offer.vehicle.make} {offer.vehicle.model} ({offer.vehicle.year}) ·{" "}
                               {CLASS_LABEL[offer.vehicle.class] ?? offer.vehicle.class} ·{" "}
-                              {t("driver.seats", { count: offer.vehicle.seats })} ·{" "}
-                              {t("driver.luggage", { count: offer.vehicle.luggage })}
+                              {t("card.seats", { count: offer.vehicle.seats })} ·{" "}
+                              {t("card.luggage", { count: offer.vehicle.luggage })}
                             </p>
 
                             <p className="mt-1 text-sm text-ink-600">
-                              {t("driver.languages")}:{" "}
+                              {t("card.languages")}:{" "}
                               {offer.languages.length === 0 ? "—" : offer.languages.map((l) =>
-                                `${l.language} (${l.level.toLowerCase()}${l.verified ? ", verified" : ""})`).join(", ")}
+                                `${l.language} (${l.level.toLowerCase()}${l.verified ? `, ${t("card.verifiedLevel")}` : ""})`).join(", ")}
                             </p>
 
                             {features.length > 0 && (
@@ -222,8 +222,8 @@ export default async function SearchPage({ params, searchParams }: Props) {
 
                             <p className="mt-2 text-sm text-ink-500">
                               {offer.ratingCount > 0
-                                ? `${offer.ratingAverage?.toFixed(1)} ★ · ${t("driver.trips", { count: offer.completedTrips })}`
-                                : t("driver.noReviews")}
+                                ? `${offer.ratingAverage?.toFixed(1)} ★ · ${t("card.trips", { count: offer.completedTrips })}`
+                                : t("card.noReviews")}
                             </p>
                           </div>
 
@@ -237,20 +237,20 @@ export default async function SearchPage({ params, searchParams }: Props) {
                               href={`/${locale}/checkout?quote=${offer.quoteId}`}
                               className="mt-4 inline-flex min-h-11 w-full items-center justify-center rounded-lg bg-wine-600 px-5 py-2.5 text-sm font-semibold text-white shadow-sm transition-colors hover:bg-wine-700"
                             >
-                              Book this driver
+                              {t("search.bookThis")}
                             </Link>
                             <Link
                               href={`/${locale}/drivers/${offer.handle}`}
                               className="mt-2 block text-xs text-ink-500 underline underline-offset-2 hover:text-ink-800"
                             >
-                              {t("driver.viewProfile")}
+                              {t("card.viewProfile")}
                             </Link>
                           </div>
                         </div>
 
                         <div className="mt-4 flex flex-wrap gap-5 border-t border-ink-100 pt-3">
                           <details className="text-xs">
-                            <summary className="cursor-pointer text-ink-500">Price breakdown</summary>
+                            <summary className="cursor-pointer text-ink-500">{t("search.breakdown")}</summary>
                             <ul className="mt-2 space-y-1 text-ink-600">
                               {offer.breakdown.lines.map((line, i) => (
                                 <li key={i} className="flex justify-between gap-6">
@@ -264,7 +264,7 @@ export default async function SearchPage({ params, searchParams }: Props) {
                           </details>
                           {filterState.sort === "recommended" && (
                             <details className="text-xs">
-                              <summary className="cursor-pointer text-ink-500">Why this ranking?</summary>
+                              <summary className="cursor-pointer text-ink-500">{t("search.whyRanking")}</summary>
                               <p className="mt-1 text-ink-600">{offer.scoreReasons.join(" · ")}</p>
                             </details>
                           )}
@@ -276,9 +276,7 @@ export default async function SearchPage({ params, searchParams }: Props) {
               </ul>
 
               <p className="text-xs text-ink-500">
-                Prices are held until{" "}
-                {result.offers[0]!.expiresAt.toLocaleTimeString(locale, { timeStyle: "short" })}.
-                After that, search again for a fresh quote.
+                {t("search.heldUntil", { time: result.offers[0]!.expiresAt.toLocaleTimeString(locale, { timeStyle: "short" }) })}
               </p>
             </>
           )}

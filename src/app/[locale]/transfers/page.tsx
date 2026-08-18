@@ -1,7 +1,7 @@
 import Link from "next/link";
 import { notFound } from "next/navigation";
 import type { Metadata } from "next";
-import { isLocale, LOCALES } from "@/lib/i18n";
+import { isLocale, LOCALES, getTranslator, type Locale } from "@/lib/i18n";
 import { listRoutes } from "@/lib/routes-content";
 import { config } from "@/lib/config";
 import { Badge } from "@/components/ui";
@@ -28,19 +28,18 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
 export default async function TransfersIndex({ params }: Props) {
   const { locale } = await params;
   if (!isLocale(locale)) notFound();
+  const t = getTranslator(locale as Locale);
   const routes = await listRoutes(locale);
 
   return (
     <div className="space-y-6">
       <header>
-        <p className="eyebrow text-wine-600">Transfers</p>
+        <p className="eyebrow text-wine-600">{t("transfers.eyebrow")}</p>
         <h1 className="font-display mt-3 text-4xl text-ink-900 sm:text-5xl">
-          Private transfers across Georgia
+          {t("transfers.title")}
         </h1>
         <p className="mt-2 max-w-2xl text-ink-600">
-          Every corridor we price directly. Distances and driving times are reviewed by our
-          operations team rather than taken from a live estimate, so the quote you see is the
-          quote your driver has agreed to.
+          {t("transfers.intro")}
         </p>
       </header>
 
@@ -64,7 +63,7 @@ export default async function TransfersIndex({ params }: Props) {
               <p className="mt-1 text-sm text-ink-500">
                 {formatDistance(r.distanceKm)} · {formatDuration(r.driveMinutes)}
               </p>
-              {r.requires4x4 && <span className="mt-2 inline-block"><Badge tone="warning">4x4 required</Badge></span>}
+              {r.requires4x4 && <span className="mt-2 inline-block"><Badge tone="warning">{t("tours.fourByFour")}</Badge></span>}
               </div>
             </Link>
           </li>

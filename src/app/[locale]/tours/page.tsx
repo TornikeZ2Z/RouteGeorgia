@@ -1,7 +1,7 @@
 import Link from "next/link";
 import { notFound } from "next/navigation";
 import type { Metadata } from "next";
-import { isLocale, LOCALES, type Locale } from "@/lib/i18n";
+import { isLocale, LOCALES, getTranslator, type Locale } from "@/lib/i18n";
 import { listTours, tourPriceFrom } from "@/lib/tours";
 import { formatMoney } from "@/lib/money";
 import { formatDuration, formatDistance } from "@/lib/format";
@@ -33,6 +33,7 @@ export default async function ToursIndex({ params }: Props) {
   const { locale } = await params;
   if (!isLocale(locale)) notFound();
 
+  const t = getTranslator(locale as Locale);
   const [tours, currency] = await Promise.all([
     listTours(locale as Locale),
     getDisplayCurrency(),
@@ -43,18 +44,17 @@ export default async function ToursIndex({ params }: Props) {
   return (
     <div className="space-y-10">
       <header className="max-w-3xl">
-        <p className="eyebrow text-wine-600">Tours</p>
+        <p className="eyebrow text-wine-600">{t("tours.eyebrow")}</p>
         <h1 className="font-display mt-3 text-4xl text-ink-900 sm:text-5xl">
-          Routes worth taking, with someone who knows them
+          {t("tours.title")}
         </h1>
         <p className="mt-3 text-lg leading-relaxed text-ink-600">
-          Each of these is a full itinerary with a private driver and vehicle. The price covers the
-          car for the whole trip, including the drive home — not a seat, and not per person.
+          {t("tours.intro")}
         </p>
       </header>
 
       {tours.length === 0 ? (
-        <EmptyState title="No tours published yet" />
+        <EmptyState title={t("tours.empty")} />
       ) : (
         <ul className="grid gap-6 md:grid-cols-2 lg:grid-cols-3">
           {tours.map((tour, index) => {
@@ -76,7 +76,7 @@ export default async function ToursIndex({ params }: Props) {
                     />
                     <div className="absolute left-4 top-4 flex gap-2">
                       <Badge tone="neutral">
-                        {tour.durationDays === 1 ? "Day trip" : `${tour.durationDays} days`}
+                        {tour.durationDays === 1 ? t("tours.dayTrip") : t("tours.days", { count: tour.durationDays })}
                       </Badge>
                       {tour.requires4x4 && <Badge tone="warning">4x4</Badge>}
                     </div>
@@ -88,14 +88,14 @@ export default async function ToursIndex({ params }: Props) {
 
                     <div className="mt-4 flex items-end justify-between border-t border-ink-100 pt-3">
                       <p className="text-xs text-ink-500">
-                        From {tour.originName}
+                        {t("tours.fromPlace", { place: tour.originName })}
                         <span className="mt-0.5 block">
-                          {formatDistance(tour.distanceKm)} · {formatDuration(tour.driveMinutes)} driving
+                          {formatDistance(tour.distanceKm)} · {formatDuration(tour.driveMinutes)} {t("tours.driving")}
                         </span>
                       </p>
                       {price && (
                         <p className="text-right">
-                          <span className="block text-xs text-ink-500">from</span>
+                          <span className="block text-xs text-ink-500">{t("tours.from")}</span>
                           <span className="font-display text-2xl text-ink-900">
                             {formatMoney(price.fromMinor, CANONICAL, locale)}
                           </span>

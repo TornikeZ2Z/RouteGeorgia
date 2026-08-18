@@ -1,0 +1,18 @@
+import type { MetadataRoute } from "next";
+
+/**
+ * Web app manifest. Matters most for drivers: it makes install-to-home-screen
+ * give the console a real name and icon rather than a browser screenshot.
+ */
+export default function manifest(): MetadataRoute.Manifest {
+  return {
+    name: "Route Georgia",
+    short_name: "Route Georgia",
+    description: "Private drivers across Georgia, booked in advance.",
+    start_url: "/",
+    display: "standalone",
+    background_color: "#f6f2ea",
+    theme_color: "#26483e",
+    icons: [{ src: "/icon.svg", sizes: "any", type: "image/svg+xml" }],
+  };
+}

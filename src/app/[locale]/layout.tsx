@@ -35,8 +35,8 @@ export default async function LocaleLayout({
 
   const nav = [
     { href: `/${locale}/transfers`, label: t("nav.transfers") },
-    { href: `/${locale}/tours`, label: "Tours" },
-    { href: `/${locale}/faq`, label: "FAQ" },
+    { href: `/${locale}/tours`, label: t("nav.tours") },
+    { href: `/${locale}/faq`, label: t("nav.faq") },
   ];
 
   return (
@@ -45,7 +45,7 @@ export default async function LocaleLayout({
         href="#main"
         className="sr-only focus:not-sr-only focus:absolute focus:left-4 focus:top-4 focus:z-50 focus:rounded-lg focus:bg-white focus:px-4 focus:py-2.5 focus:shadow-lg"
       >
-        Skip to content
+        {t("common.home")}
       </a>
 
       <header className="sticky top-0 z-30 border-b border-ink-200/80 bg-ink-50/90 backdrop-blur-md">
@@ -131,41 +131,41 @@ export default async function LocaleLayout({
             </p>
             <p className="mt-3 text-sm leading-relaxed text-ink-600">{t("brand.tagline")}</p>
             <p className="mt-4 text-xs leading-relaxed text-ink-500">
-              Working name, pre-launch. Prices are set and charged in Georgian lari.
+              {t("footer.preLaunch")}
             </p>
           </div>
 
           <nav aria-label="Travel">
-            <p className="text-sm font-semibold text-ink-900">Travel</p>
+            <p className="text-sm font-semibold text-ink-900">{t("footer.travel")}</p>
             <ul className="mt-3 space-y-2 text-sm text-ink-600">
-              <li><Link className="hover:text-ink-900" href={`/${locale}/transfers`}>All transfer routes</Link></li>
-              <li><Link className="hover:text-ink-900" href={`/${locale}/tours`}>Day trips and tours</Link></li>
-              <li><Link className="hover:text-ink-900" href={`/${locale}/faq`}>Frequently asked questions</Link></li>
+              <li><Link className="hover:text-ink-900" href={`/${locale}/transfers`}>{t("footer.allRoutes")}</Link></li>
+              <li><Link className="hover:text-ink-900" href={`/${locale}/tours`}>{t("footer.dayTrips")}</Link></li>
+              <li><Link className="hover:text-ink-900" href={`/${locale}/faq`}>{t("footer.faqLink")}</Link></li>
               <li><Link className="hover:text-ink-900" href={`/${locale}/contact`}>{t("footer.support")}</Link></li>
             </ul>
           </nav>
 
           <nav aria-label="Drivers and legal">
-            <p className="text-sm font-semibold text-ink-900">Drivers</p>
+            <p className="text-sm font-semibold text-ink-900">{t("footer.drivers")}</p>
             <ul className="mt-3 space-y-2 text-sm text-ink-600">
               <li><Link className="hover:text-ink-900" href="/driver">{t("nav.becomeDriver")}</Link></li>
               <li><Link className="hover:text-ink-900" href="/login">{t("nav.signIn")}</Link></li>
             </ul>
-            <p className="mt-5 text-sm font-semibold text-ink-900">Legal</p>
+            <p className="mt-5 text-sm font-semibold text-ink-900">{t("footer.legal")}</p>
             <ul className="mt-3 space-y-2 text-sm text-ink-600">
-              <li><Link className="hover:text-ink-900" href={`/${locale}/legal/terms`}>Terms of service</Link></li>
-              <li><Link className="hover:text-ink-900" href={`/${locale}/legal/privacy`}>Privacy notice</Link></li>
-              <li><Link className="hover:text-ink-900" href={`/${locale}/legal/cancellation`}>Cancellation</Link></li>
+              <li><Link className="hover:text-ink-900" href={`/${locale}/legal/terms`}>{t("footer.terms")}</Link></li>
+              <li><Link className="hover:text-ink-900" href={`/${locale}/legal/privacy`}>{t("footer.privacy")}</Link></li>
+              <li><Link className="hover:text-ink-900" href={`/${locale}/legal/cancellation`}>{t("footer.cancellation")}</Link></li>
             </ul>
           </nav>
 
           <div>
-            <p className="text-sm font-semibold text-ink-900">Language and currency</p>
+            <p className="text-sm font-semibold text-ink-900">{t("footer.langCurrency")}</p>
             <div className="mt-3">
               <PreferenceSwitcher locale={locale as Locale} currency={currency} returnTo={`/${locale}`} />
             </div>
             <p className="mt-3 text-xs leading-relaxed text-ink-500">
-              Other currencies are shown for guidance only, converted from a dated rate.
+              {t("footer.gelNote")}
             </p>
           </div>
         </div>

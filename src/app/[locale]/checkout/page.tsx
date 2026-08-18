@@ -1,7 +1,7 @@
 import { notFound } from "next/navigation";
 import Link from "next/link";
 import { sql } from "@db/client";
-import { isLocale, type Locale } from "@/lib/i18n";
+import { isLocale, getTranslator, type Locale } from "@/lib/i18n";
 import { formatMoney } from "@/lib/money";
 import { getDisplayCurrency, getRate, convert, CANONICAL } from "@/lib/currency";
 import { driverBalance } from "@/lib/ledger";
@@ -21,7 +21,8 @@ export default async function CheckoutPage({ params, searchParams }: Props) {
   const { locale } = await params;
   if (!isLocale(locale)) notFound();
   const { quote: quoteId, error } = await searchParams;
-  if (!quoteId) return <EmptyState title="No quote selected">Choose a driver from your search results.</EmptyState>;
+  const t = getTranslator(locale as Locale);
+  if (!quoteId) return <EmptyState title={t("checkout.noQuoteT")}>{t("checkout.noQuoteB")}</EmptyState>;
 
   const [quote] = await sql<QuoteRow[]>`
     SELECT q.id, q.gross_minor, q.currency, q.expires_at, q.status::text AS status,
@@ -37,14 +38,14 @@ export default async function CheckoutPage({ params, searchParams }: Props) {
     JOIN vehicles v ON v.id = q.vehicle_id
     WHERE q.id = ${quoteId}::uuid`;
 
-  if (!quote) return <EmptyState title="That quote could not be found">Please search again.</EmptyState>;
+  if (!quote) return <EmptyState title={t("checkout.expiredT")}>{t("checkout.newSearch")}</EmptyState>;
 
   const expired = new Date(quote.expires_at) <= new Date() || quote.status === "CONSUMED";
   if (expired) {
     return (
-      <EmptyState title="This price has expired">
-        <p>Quotes are held for 15 minutes so drivers are not double-sold.</p>
-        <Link href={`/${locale}`} className="mt-3 inline-block text-wine-700 underline">Start a new search</Link>
+      <EmptyState title={t("checkout.expiredT")}>
+        <p>{t("checkout.expiredB")}</p>
+        <Link href={`/${locale}`} className="mt-3 inline-block text-wine-700 underline">{t("checkout.newSearch")}</Link>
       </EmptyState>
     );
   }
@@ -64,15 +65,15 @@ export default async function CheckoutPage({ params, searchParams }: Props) {
   return (
     <div className="grid gap-8 lg:grid-cols-[1fr_360px]">
       <div>
-        <h1 className="font-display text-3xl text-ink-900">Complete your booking</h1>
+        <h1 className="font-display text-3xl text-ink-900">{t("checkout.title")}</h1>
         <p className="mt-1 text-sm text-ink-600">
-          Your driver is held for you while you fill this in.
+          {t("checkout.held")}
         </p>
 
         {balance.cashBlocked && (
           <div className="mt-4">
-            <Alert tone="warning" title="Card payment only for this driver">
-              This driver cannot take cash bookings right now. You can still book them by card.
+            <Alert tone="warning" title={t("checkout.cardOnlyT")}>
+              {t("checkout.cardOnlyB")}
             </Alert>
           </div>
         )}
@@ -91,7 +92,7 @@ export default async function CheckoutPage({ params, searchParams }: Props) {
 
       <aside className="lg:sticky lg:top-4 lg:self-start">
         <Card className="p-4">
-          <h2 className="font-semibold text-ink-900">Your trip</h2>
+          <h2 className="font-semibold text-ink-900">{t("checkout.tripT")}</h2>
 
           <ol className="mt-3 space-y-1 text-sm text-ink-700">
             {points.map((p, i) => (
@@ -103,21 +104,21 @@ export default async function CheckoutPage({ params, searchParams }: Props) {
           </ol>
 
           <dl className="mt-4 space-y-1 border-t border-ink-100 pt-3 text-sm">
-            <div className="flex justify-between"><dt className="text-ink-500">Departure</dt>
+            <div className="flex justify-between"><dt className="text-ink-500">{t("checkout.departure")}</dt>
               <dd className="text-right">{travelAt.toLocaleString(locale, { dateStyle: "medium", timeStyle: "short" })}</dd></div>
-            <div className="flex justify-between"><dt className="text-ink-500">Driving time</dt>
+            <div className="flex justify-between"><dt className="text-ink-500">{t("checkout.drivingTime")}</dt>
               <dd>{Math.floor((quote.drive_minutes ?? 0) / 60)} h {(quote.drive_minutes ?? 0) % 60} min</dd></div>
-            <div className="flex justify-between"><dt className="text-ink-500">Distance</dt>
+            <div className="flex justify-between"><dt className="text-ink-500">{t("checkout.distance")}</dt>
               <dd>{Math.round((quote.distance_km100 ?? 0) / 100)} km</dd></div>
-            <div className="flex justify-between"><dt className="text-ink-500">Driver</dt>
+            <div className="flex justify-between"><dt className="text-ink-500">{t("checkout.driver")}</dt>
               <dd>{quote.driver_name}</dd></div>
-            <div className="flex justify-between"><dt className="text-ink-500">Vehicle</dt>
+            <div className="flex justify-between"><dt className="text-ink-500">{t("checkout.vehicle")}</dt>
               <dd className="text-right">{quote.make} {quote.model} ({quote.year})</dd></div>
           </dl>
 
           <div className="mt-4 border-t border-ink-100 pt-3">
             <div className="flex items-baseline justify-between">
-              <span className="font-medium text-ink-900">Total</span>
+              <span className="font-medium text-ink-900">{t("checkout.total")}</span>
               <span className="font-display text-2xl text-ink-900">
                 {formatMoney(gross, CANONICAL, locale)}
               </span>
@@ -128,12 +129,12 @@ export default async function CheckoutPage({ params, searchParams }: Props) {
               </p>
             )}
             <p className="mt-1 text-xs text-ink-500">
-              For the whole vehicle, not per person. Charged in Georgian lari.
+              {t("checkout.wholeVehicle")}
             </p>
           </div>
 
           <details className="mt-3 text-xs">
-            <summary className="cursor-pointer text-ink-500">How this price is built</summary>
+            <summary className="cursor-pointer text-ink-500">{t("checkout.howBuilt")}</summary>
             <ul className="mt-2 space-y-1 text-ink-600">
               {breakdown.lines?.map((line, i) => (
                 <li key={i} className="flex justify-between gap-4">
@@ -145,7 +146,7 @@ export default async function CheckoutPage({ params, searchParams }: Props) {
           </details>
 
           <p className="mt-4 border-t border-ink-100 pt-3 text-xs text-ink-500">
-            Free cancellation. We ask for at least 24 hours' notice where possible.
+            {t("checkout.freeCancel")}
           </p>
         </Card>
       </aside>

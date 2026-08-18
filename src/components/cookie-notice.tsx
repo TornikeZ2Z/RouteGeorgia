@@ -1,6 +1,6 @@
 import { cookies } from "next/headers";
 import Link from "next/link";
-import type { Locale } from "@/lib/i18n";
+import { getTranslator, type Locale } from "@/lib/i18n";
 
 /**
  * Cookie notice.
@@ -16,6 +16,7 @@ import type { Locale } from "@/lib/i18n";
 export async function CookieNotice({ locale, returnTo }: { locale: Locale; returnTo: string }) {
   const jar = await cookies();
   if (jar.get("gt_cookie_notice")) return null;
+  const t = getTranslator(locale);
 
   return (
     <div
@@ -25,10 +26,9 @@ export async function CookieNotice({ locale, returnTo }: { locale: Locale; retur
     >
       <div className="mx-auto flex max-w-6xl flex-col gap-3 px-4 py-4 sm:flex-row sm:items-center sm:justify-between">
         <p className="text-sm leading-relaxed text-ink-700">
-          We set three cookies: your sign-in session, your language and your currency. Nothing that
-          tracks you, and nothing shared with anyone.{" "}
+          {t("cookie.body")}{" "}
           <Link href={`/${locale}/legal/privacy`} className="text-wine-700 underline underline-offset-2">
-            How we handle your data
+            {t("cookie.link")}
           </Link>
         </p>
         <form action="/api/consent" method="post" className="shrink-0">
@@ -38,7 +38,7 @@ export async function CookieNotice({ locale, returnTo }: { locale: Locale; retur
             name="choice" value="accept"
             className="min-h-11 w-full rounded-lg bg-ink-900 px-5 py-2.5 text-sm font-medium text-white hover:bg-ink-800 sm:w-auto"
           >
-            Got it
+            {t("cookie.accept")}
           </button>
         </form>
       </div>

@@ -75,7 +75,7 @@ export default async function DriverProfile({ params }: Props) {
           </span>
           <div>
             <h1 className="font-display text-3xl text-ink-900">{driver.public_name}</h1>
-            <span className="mt-1 inline-block"><Badge tone="success">{t("driver.verified")}</Badge></span>
+            <span className="mt-1 inline-block"><Badge tone="success">{t("card.verified")}</Badge></span>
           </div>
         </div>
         <p className="mt-3 text-sm text-ink-600">
@@ -83,16 +83,16 @@ export default async function DriverProfile({ params }: Props) {
           {" · "}
           {driver.rating_count > 0
             ? `${(driver.rating_sum / driver.rating_count).toFixed(1)} ★ (${driver.rating_count})`
-            : t("driver.noReviews")}
+            : t("card.noReviews")}
           {" · "}
-          {t("driver.trips", { count: driver.completed_trips })}
+          {t("card.trips", { count: driver.completed_trips })}
         </p>
       </div>
 
       {driver.bio && <Card className="p-4 text-sm leading-relaxed text-ink-700">{driver.bio}</Card>}
 
       <section>
-        <h2 className="mb-3 text-lg font-semibold text-ink-900">{t("driver.languages")}</h2>
+        <h2 className="mb-3 text-lg font-semibold text-ink-900">{t("card.languages")}</h2>
         {languages.length === 0 ? (
           <p className="text-sm text-ink-500">Not stated.</p>
         ) : (
@@ -112,7 +112,7 @@ export default async function DriverProfile({ params }: Props) {
       </section>
 
       <section>
-        <h2 className="mb-3 text-lg font-semibold text-ink-900">{t("driver.vehicle")}</h2>
+        <h2 className="mb-3 text-lg font-semibold text-ink-900">{t("card.vehicle")}</h2>
         <ul className="grid gap-3 sm:grid-cols-2">
           {vehicles.map((v) => {
             const shots = media.filter((m) => m.vehicle_id === v.id);
@@ -141,8 +141,8 @@ export default async function DriverProfile({ params }: Props) {
                 )}
                 <p className="font-medium text-ink-900">{v.make} {v.model} · {v.year}</p>
                 <p className="mt-1 text-sm text-ink-600">
-                  {v.class.replaceAll("_", " ").toLowerCase()} · {t("driver.seats", { count: v.seats })} ·{" "}
-                  {t("driver.luggage", { count: v.luggage })}
+                  {v.class.replaceAll("_", " ").toLowerCase()} · {t("card.seats", { count: v.seats })} ·{" "}
+                  {t("card.luggage", { count: v.luggage })}
                 </p>
                 <ul className="mt-2 flex flex-wrap gap-1.5">
                   {Object.entries({ ...(v.amenities as object), ...(v.capabilities as object) })

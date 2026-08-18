@@ -1,7 +1,7 @@
 import Link from "next/link";
 import { notFound } from "next/navigation";
 import { sql } from "@db/client";
-import { isLocale, type Locale } from "@/lib/i18n";
+import { isLocale, getTranslator, type Locale, type MessageKey } from "@/lib/i18n";
 import { formatMoney } from "@/lib/money";
 import { verifyManageToken, cancellationOutcome } from "@/lib/booking";
 import { config } from "@/lib/config";
@@ -16,27 +16,28 @@ interface Props {
   searchParams: Promise<{ t?: string; payment?: string }>;
 }
 
-const STATUS_COPY: Record<string, { tone: "neutral" | "info" | "success" | "warning" | "danger"; label: string; note: string }> = {
-  PENDING_PAYMENT:     { tone: "warning", label: "Awaiting payment", note: "We are waiting for your card payment to complete." },
-  CONFIRMED:           { tone: "success", label: "Confirmed", note: "Your driver has been notified and will confirm shortly." },
-  DRIVER_ACKNOWLEDGED: { tone: "success", label: "Driver confirmed", note: "Your driver has accepted this trip." },
-  READY:               { tone: "success", label: "Ready", note: "Everything is set for your pickup." },
-  DRIVER_ARRIVED:      { tone: "info",    label: "Driver arrived", note: "Your driver is at the meeting point." },
-  IN_PROGRESS:         { tone: "info",    label: "In progress", note: "Enjoy your trip." },
-  COMPLETED:           { tone: "success", label: "Completed", note: "Thank you for travelling with us." },
-  CANCELLED:           { tone: "danger",  label: "Cancelled", note: "This booking has been cancelled." },
-  REASSIGNING:         { tone: "warning", label: "Finding a replacement", note: "We are arranging an equivalent driver for you." },
+const STATUS_COPY: Record<string, { tone: "neutral" | "info" | "success" | "warning" | "danger"; label: MessageKey; note: MessageKey }> = {
+  PENDING_PAYMENT:     { tone: "warning", label: "booking.stPending", note: "booking.stPendingN" },
+  CONFIRMED:           { tone: "success", label: "booking.stConfirmed", note: "booking.stConfirmedN" },
+  DRIVER_ACKNOWLEDGED: { tone: "success", label: "booking.stAck", note: "booking.stAckN" },
+  READY:               { tone: "success", label: "booking.stReady", note: "booking.stReadyN" },
+  DRIVER_ARRIVED:      { tone: "info",    label: "booking.stArrived", note: "booking.stArrivedN" },
+  IN_PROGRESS:         { tone: "info",    label: "booking.stProgress", note: "booking.stProgressN" },
+  COMPLETED:           { tone: "success", label: "booking.stCompleted", note: "booking.stCompletedN" },
+  CANCELLED:           { tone: "danger",  label: "booking.stCancelled", note: "booking.stCancelledN" },
+  REASSIGNING:         { tone: "warning", label: "booking.stReassigning", note: "booking.stReassigningN" },
 };
 
 export default async function BookingPage({ params, searchParams }: Props) {
   const { locale, code } = await params;
   if (!isLocale(locale)) notFound();
   const { t: token, payment } = await searchParams;
+  const t = getTranslator(locale as Locale);
 
   if (!token) {
     return (
-      <EmptyState title="This link is incomplete">
-        Use the link in your confirmation email to view this booking.
+      <EmptyState title={t("booking.linkIncompleteT")}>
+        {t("booking.linkIncompleteB")}
       </EmptyState>
     );
   }
@@ -44,8 +45,8 @@ export default async function BookingPage({ params, searchParams }: Props) {
   const bookingId = await verifyManageToken(code, token);
   if (!bookingId) {
     return (
-      <EmptyState title="This link is not valid">
-        It may have expired. Contact support with your booking reference {code}.
+      <EmptyState title={t("booking.linkInvalidT")}>
+        {t("booking.linkInvalidB", { code })}
       </EmptyState>
     );
   }
@@ -74,7 +75,10 @@ export default async function BookingPage({ params, searchParams }: Props) {
       SELECT free_cutoff_hours, late_fee_bps FROM cancellation_policies WHERE version = ${config.policy.version}`,
   ]);
 
-  const status = STATUS_COPY[booking.status] ?? { tone: "neutral" as const, label: booking.status, note: "" };
+  const statusEntry = STATUS_COPY[booking.status];
+  const statusLabel = statusEntry ? t(statusEntry.label) : booking.status.replaceAll("_", " ").toLowerCase();
+  const statusNote = statusEntry ? t(statusEntry.note) : "";
+  const statusTone = statusEntry?.tone ?? ("neutral" as const);
   const startsAt = new Date(booking.service_start_at);
   const gross = BigInt(booking.gross_minor);
   const outcome = cancellationOutcome(
@@ -89,29 +93,28 @@ export default async function BookingPage({ params, searchParams }: Props) {
   return (
     <div className="space-y-6">
       {payment === "failed" && (
-        <Alert tone="danger" title="Your card was declined">
-          Nothing has been charged and your driver is still held. Try another card, or switch to
-          paying cash by contacting support.
+        <Alert tone="danger" title={t("booking.payFailedT")}>
+          {t("booking.payFailedB")}
         </Alert>
       )}
 
       <div className="flex flex-wrap items-start justify-between gap-3">
         <div>
-          <p className="text-sm text-ink-500">Booking reference</p>
+          <p className="text-sm text-ink-500">{t("booking.reference")}</p>
           <h1 className="font-mono text-2xl font-semibold tracking-tight text-ink-900">{booking.code}</h1>
         </div>
-        <Badge tone={status.tone}>{status.label}</Badge>
+        <Badge tone={statusTone}>{statusLabel}</Badge>
       </div>
 
-      {status.note && <Alert tone={status.tone === "danger" ? "danger" : "info"}>{status.note}</Alert>}
+      {statusNote && <Alert tone={statusTone === "danger" ? "danger" : "info"}>{statusNote}</Alert>}
       {booking.cancellation_reason && (
-        <Alert tone="neutral" title="Cancellation reason">{booking.cancellation_reason}</Alert>
+        <Alert tone="neutral" title={t("booking.cancelReason")}>{booking.cancellation_reason}</Alert>
       )}
 
       <div className="grid gap-6 lg:grid-cols-[1fr_320px]">
         <div className="space-y-6">
           <Card className="p-4 sm:p-6">
-            <h2 className="font-semibold text-ink-900">Your trip</h2>
+            <h2 className="font-semibold text-ink-900">{t("booking.tripT")}</h2>
             <ol className="mt-3 space-y-2 text-sm">
               {legs.map((leg) => (
                 <li key={leg.position} className="flex gap-2 text-ink-700">
@@ -123,33 +126,34 @@ export default async function BookingPage({ params, searchParams }: Props) {
               ))}
             </ol>
             <dl className="mt-4 grid gap-2 border-t border-ink-100 pt-3 text-sm sm:grid-cols-2">
-              <div><dt className="text-ink-500">Departure</dt>
+              <div><dt className="text-ink-500">{t("booking.departure")}</dt>
                 <dd className="font-medium">{startsAt.toLocaleString(locale, { dateStyle: "full", timeStyle: "short" })}</dd></div>
-              <div><dt className="text-ink-500">Driving time</dt>
-                <dd>{Math.floor(booking.drive_minutes / 60)} h {booking.drive_minutes % 60} min (excludes stops)</dd></div>
-              <div><dt className="text-ink-500">Pickup</dt><dd>{booking.pickup_address}</dd></div>
-              <div><dt className="text-ink-500">Drop-off</dt><dd>{booking.dropoff_address}</dd></div>
+              <div><dt className="text-ink-500">{t("booking.drivingTime")}</dt>
+                <dd>{Math.floor(booking.drive_minutes / 60)} h {booking.drive_minutes % 60} min {t("booking.excludesStops")}</dd></div>
+              <div><dt className="text-ink-500">{t("booking.pickup")}</dt><dd>{booking.pickup_address}</dd></div>
+              <div><dt className="text-ink-500">{t("booking.dropoff")}</dt><dd>{booking.dropoff_address}</dd></div>
               {booking.flight_number && (
-                <div><dt className="text-ink-500">Flight</dt><dd>{booking.flight_number}</dd></div>
+                <div><dt className="text-ink-500">{t("booking.flight")}</dt><dd>{booking.flight_number}</dd></div>
               )}
-              <div><dt className="text-ink-500">Party</dt>
-                <dd>{booking.passengers} passenger(s){booking.children > 0 && `, ${booking.children} child(ren)`}
-                  {booking.child_seats > 0 && `, ${booking.child_seats} child seat(s)`}
-                  {booking.pets && ", with a pet"}</dd></div>
+              <div><dt className="text-ink-500">{t("booking.party")}</dt>
+                <dd>{t("booking.partyPassengers", { count: booking.passengers })}
+                  {booking.children > 0 && `, ${t("booking.partyChildren", { count: booking.children })}`}
+                  {booking.child_seats > 0 && `, ${t("booking.partySeats", { count: booking.child_seats })}`}
+                  {booking.pets && `, ${t("booking.partyPet")}`}</dd></div>
             </dl>
             {booking.notes && (
               <p className="mt-3 border-t border-ink-100 pt-3 text-sm text-ink-600">
-                <span className="text-ink-500">Your notes: </span>{booking.notes}
+                <span className="text-ink-500">{t("booking.yourNotes")} </span>{booking.notes}
               </p>
             )}
           </Card>
 
-          {active && <MessageThread bookingId={bookingId} code={code} token={token} messages={messages} />}
+          {active && <MessageThread bookingId={bookingId} code={code} token={token} locale={locale} messages={messages} />}
         </div>
 
         <aside className="space-y-4">
           <Card className="p-4">
-            <h2 className="font-semibold text-ink-900">Your driver</h2>
+            <h2 className="font-semibold text-ink-900">{t("booking.driverT")}</h2>
             <p className="mt-2 text-sm font-medium text-ink-900">{booking.driver_name}</p>
             <p className="text-sm text-ink-600">
               {booking.make} {booking.model} ({booking.year})
@@ -159,36 +163,34 @@ export default async function BookingPage({ params, searchParams }: Props) {
               <p className="mt-2 font-mono text-sm text-ink-800">{booking.plate}</p>
             ) : (
               <p className="mt-2 text-xs text-ink-500">
-                The number plate is shown once your driver confirms the trip.
+                {t("booking.plateLater")}
               </p>
             )}
             <Link href={`/${locale}/drivers/${booking.handle}`} className="mt-3 inline-block text-sm text-wine-700 underline">
-              View profile
+              {t("card.viewProfile")}
             </Link>
           </Card>
 
           <Card className="p-4">
-            <h2 className="font-semibold text-ink-900">Payment</h2>
+            <h2 className="font-semibold text-ink-900">{t("booking.paymentT")}</h2>
             <p className="mt-2 text-xl font-semibold text-ink-900">
               {formatMoney(gross, booking.currency, locale)}
             </p>
             <p className="text-sm text-ink-600">
-              {booking.payment_mode === "CASH"
-                ? "Cash to the driver at the end of the trip."
-                : "Paid online by card."}
+              {booking.payment_mode === "CASH" ? t("booking.cashDue") : t("booking.paidOnline")}
             </p>
           </Card>
 
           {active && (
             <Card className="p-4">
-              <h2 className="font-semibold text-ink-900">Need to cancel?</h2>
+              <h2 className="font-semibold text-ink-900">{t("booking.cancelT")}</h2>
               <p className="mt-2 text-sm text-ink-600">
                 {outcome.freeOfCharge
-                  ? "Free of charge. Cancelling early helps your driver find other work."
-                  : `A fee of ${formatMoney(outcome.feeMinor, booking.currency, locale)} applies at this notice period.`}
+                  ? t("booking.cancelFree")
+                  : t("booking.cancelFee", { fee: formatMoney(outcome.feeMinor, booking.currency, locale) })}
               </p>
               <div className="mt-3">
-                <CancelBooking code={code} token={token} />
+                <CancelBooking code={code} token={token} locale={locale} />
               </div>
             </Card>
           )}

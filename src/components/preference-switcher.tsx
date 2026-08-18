@@ -2,7 +2,7 @@
 
 import { useRef } from "react";
 import { DISPLAY_CURRENCIES, type DisplayCurrency } from "@/lib/currency-constants";
-import { LOCALES, LOCALE_LABEL, type Locale } from "@/lib/i18n";
+import { LOCALES, LOCALE_LABEL, getTranslator, type Locale } from "@/lib/i18n";
 
 /**
  * Language and currency pickers.
@@ -14,6 +14,7 @@ import { LOCALES, LOCALE_LABEL, type Locale } from "@/lib/i18n";
 export function PreferenceSwitcher({
   locale, currency, returnTo,
 }: { locale: Locale; currency: DisplayCurrency; returnTo: string }) {
+  const t = getTranslator(locale);
   const localeForm = useRef<HTMLFormElement>(null);
   const currencyForm = useRef<HTMLFormElement>(null);
 
@@ -26,7 +27,7 @@ export function PreferenceSwitcher({
       <form ref={localeForm} action="/api/preferences" method="post" className="contents">
         <input type="hidden" name="returnTo" value={returnTo} />
         <input type="hidden" name="currency" value={currency} />
-        <label htmlFor="locale-select" className="sr-only">Language</label>
+        <label htmlFor="locale-select" className="sr-only">{t("footer.langCurrency")}</label>
         <select
           id="locale-select" name="locale" defaultValue={locale} className={select}
           onChange={() => localeForm.current?.requestSubmit()}
@@ -41,7 +42,7 @@ export function PreferenceSwitcher({
       <form ref={currencyForm} action="/api/preferences" method="post" className="contents">
         <input type="hidden" name="returnTo" value={returnTo} />
         <input type="hidden" name="locale" value={locale} />
-        <label htmlFor="currency-select" className="sr-only">Display currency</label>
+        <label htmlFor="currency-select" className="sr-only">{t("footer.langCurrency")}</label>
         <select
           id="currency-select" name="currency" defaultValue={currency} className={select}
           onChange={() => currencyForm.current?.requestSubmit()}

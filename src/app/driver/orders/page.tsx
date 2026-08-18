@@ -1,4 +1,5 @@
 import { requireUser } from "@/lib/auth/session";
+import { getTranslator, isLocale, type Locale } from "@/lib/i18n";
 import { sql } from "@db/client";
 import { formatMoney } from "@/lib/money";
 import { driverBalance } from "@/lib/ledger";
@@ -12,6 +13,7 @@ const LIVE = ["CONFIRMED", "DRIVER_ACKNOWLEDGED", "READY", "DRIVER_ARRIVED", "IN
 
 export default async function DriverOrders() {
   const user = await requireUser();
+  const t = getTranslator(isLocale(user.locale) ? (user.locale as Locale) : "ka");
   const [driver] = await sql<{ id: string }[]>`SELECT id FROM driver_profiles WHERE user_id = ${user.id}::uuid`;
   if (!driver) return <EmptyState title="Create your driver profile first" />;
 
@@ -42,27 +44,25 @@ export default async function DriverOrders() {
 
   return (
     <div className="space-y-6">
-      <PageHeader title="Your orders" description="Confirm new bookings quickly — travellers are told when you do." />
+      <PageHeader title={t("console.ordersTitle")} description={t("console.ordersDesc")} />
 
       {balance.cashBlocked && (
-        <Alert tone="danger" title="Cash bookings paused">
-          {balance.blockedReason}. You owe {formatMoney(balance.owedToPlatformMinor, "GEL")} in commission.
-          Card-paid work is unaffected. Settle your balance to start receiving cash trips again.
+        <Alert tone="danger" title={t("console.cashBlockedT")}>
+          {t("console.cashBlockedB", { amount: formatMoney(balance.owedToPlatformMinor, "GEL") })}
         </Alert>
       )}
 
       {needsAck.length > 0 && (
-        <Alert tone="warning" title={`${needsAck.length} order(s) need your confirmation`}>
-          Please confirm within {config.policy.driverAckSlaMinutes} minutes, or operations will look for
-          another driver.
+        <Alert tone="warning" title={t("console.needsAckT", { count: needsAck.length })}>
+          {t("console.needsAckB", { minutes: config.policy.driverAckSlaMinutes })}
         </Alert>
       )}
 
-      {orders.length === 0 && <EmptyState title="No orders yet">
-        Make sure your profile is published, your prices are set, and your calendar is open.
+      {orders.length === 0 && <EmptyState title={t("console.noOrdersT")}>
+        {t("console.noOrdersB")}
       </EmptyState>}
 
-      {[["Needs confirmation", needsAck], ["Upcoming", live], ["Past", past]].map(([title, list]) => {
+      {[[t("console.secNeedsAck"), needsAck], [t("console.secUpcoming"), live], [t("console.secPast"), past]].map(([title, list]) => {
         const rows = list as Row[];
         if (rows.length === 0) return null;
         return (
@@ -80,7 +80,7 @@ export default async function DriverOrders() {
                             {o.status.replaceAll("_", " ").toLowerCase()}
                           </Badge>
                           <Badge tone={o.payment_mode === "CASH" ? "warning" : "neutral"}>
-                            {o.payment_mode === "CASH" ? "collect cash" : "paid online"}
+                            {o.payment_mode === "CASH" ? t("console.collectCash") : t("console.paidOnline")}
                           </Badge>
                         </div>
                         <p className="mt-1 font-medium text-ink-900">{o.route}</p>
@@ -95,7 +95,7 @@ export default async function DriverOrders() {
                           {formatMoney(BigInt(o.driver_net_minor), o.currency)}
                         </p>
                         <p className="text-xs text-ink-500">
-                          your earnings · fare {formatMoney(BigInt(o.gross_minor), o.currency)}
+                          {t("console.yourEarnings")} · {t("console.fare", { amount: formatMoney(BigInt(o.gross_minor), o.currency) })}
                         </p>
                       </div>
                     </div>
@@ -103,16 +103,16 @@ export default async function DriverOrders() {
                     {/* Full detail only once the driver has committed to the trip. */}
                     {o.status !== "CONFIRMED" && !["CANCELLED"].includes(o.status) && (
                       <dl className="mt-3 grid gap-2 border-t border-ink-100 pt-3 text-sm sm:grid-cols-2">
-                        <div><dt className="text-ink-500">Pickup</dt><dd>{o.pickup_address}</dd></div>
-                        <div><dt className="text-ink-500">Drop-off</dt><dd>{o.dropoff_address}</dd></div>
-                        <div><dt className="text-ink-500">Traveller</dt>
+                        <div><dt className="text-ink-500">{t("console.pickupLabel")}</dt><dd>{o.pickup_address}</dd></div>
+                        <div><dt className="text-ink-500">{t("console.dropoffLabel")}</dt><dd>{o.dropoff_address}</dd></div>
+                        <div><dt className="text-ink-500">{t("console.travellerLabel")}</dt>
                           <dd>{o.customer_name} · {o.customer_phone}</dd></div>
-                        <div><dt className="text-ink-500">Party</dt>
+                        <div><dt className="text-ink-500">{t("console.partyLabel")}</dt>
                           <dd>{o.passengers} passenger(s){o.children > 0 && `, ${o.children} child(ren)`}
                             {o.child_seats > 0 && `, ${o.child_seats} child seat(s)`}{o.pets && ", pet"}</dd></div>
-                        {o.flight_number && <div><dt className="text-ink-500">Flight</dt><dd>{o.flight_number}</dd></div>}
-                        {o.pickup_sign_name && <div><dt className="text-ink-500">Sign</dt><dd>{o.pickup_sign_name}</dd></div>}
-                        {o.notes && <div className="sm:col-span-2"><dt className="text-ink-500">Notes</dt><dd>{o.notes}</dd></div>}
+                        {o.flight_number && <div><dt className="text-ink-500">{t("console.flightLabel")}</dt><dd>{o.flight_number}</dd></div>}
+                        {o.pickup_sign_name && <div><dt className="text-ink-500">{t("console.signLabel")}</dt><dd>{o.pickup_sign_name}</dd></div>}
+                        {o.notes && <div className="sm:col-span-2"><dt className="text-ink-500">{t("console.notesLabel")}</dt><dd>{o.notes}</dd></div>}
                       </dl>
                     )}
 
@@ -122,6 +122,7 @@ export default async function DriverOrders() {
                         status={o.status}
                         paymentMode={o.payment_mode}
                         cashConfirmed={Boolean(o.cash_confirmed_at)}
+                        locale={user.locale}
                       />
                     </div>
                   </Card>

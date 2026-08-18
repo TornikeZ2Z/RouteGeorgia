@@ -31,19 +31,15 @@ export async function generateMetadata({
   };
 }
 
-/** Claims here must be things the product actually does. */
-const PROMISES = [
-  ["Fixed price, agreed up front", "You see the final price for the whole vehicle before you book. It does not move afterwards unless you change the trip."],
-  ["A named driver and car", "You choose a specific driver and see their car, languages and reviews — not an anonymous vehicle class."],
-  ["Stops are included", "Add stops when you book. Waiting at them is not charged extra."],
-  ["Checked documents", "Licence, insurance and vehicle papers are reviewed by us and must be valid on your travel date."],
+/** Claims here must be things the product actually does. Text lives in the dictionary. */
+const PROMISE_KEYS = [
+  ["home.why1t", "home.why1b"], ["home.why2t", "home.why2b"],
+  ["home.why3t", "home.why3b"], ["home.why4t", "home.why4b"],
 ] as const;
 
-const STEPS = [
-  ["Plan the route", "Pick where you are going and when. Add any stops you want along the way."],
-  ["Compare real drivers", "Filter by language, vehicle, 4x4 or child seat, and see the price each driver charges for your exact trip."],
-  ["See how the price is built", "Every quote itemises distance, the return leg, route conditions and any minimum fare. Nothing is hidden."],
-  ["Book and travel", "Your driver confirms, you get their details, and the price you agreed is the price you pay."],
+const STEP_KEYS = [
+  ["home.how1t", "home.how1b"], ["home.how2t", "home.how2b"],
+  ["home.how3t", "home.how3b"], ["home.how4t", "home.how4b"],
 ] as const;
 
 export default async function Home({ params }: { params: Promise<{ locale: string }> }) {
@@ -71,7 +67,7 @@ export default async function Home({ params }: { params: Promise<{ locale: strin
       <section className="relative left-1/2 -mt-10 w-screen -translate-x-1/2 overflow-hidden bg-forest-800 px-4 pb-28 pt-14 text-forest-50 sm:-mt-12 sm:pb-32 sm:pt-20">
         <ContourField className="text-forest-200" opacity={0.18} />
         <div className="relative mx-auto max-w-6xl">
-          <p className="eyebrow text-gold-400">Georgia · private drivers</p>
+          <p className="eyebrow text-gold-400">{t("home.heroEyebrow")}</p>
 
           <h1 className="font-display mt-5 max-w-4xl text-[2.75rem] leading-[1.05] sm:text-6xl lg:text-7xl">
             {t("home.heroTitle")}
@@ -83,9 +79,9 @@ export default async function Home({ params }: { params: Promise<{ locale: strin
 
           <dl className="mt-10 flex flex-wrap gap-x-12 gap-y-5">
             {[
-              [stats[0]?.drivers ?? 0, "verified drivers"],
-              [stats[0]?.routes ?? 0, "priced routes"],
-              [tours.length, "curated tours"],
+              [stats[0]?.drivers ?? 0, t("home.statDrivers")],
+              [stats[0]?.routes ?? 0, t("home.statRoutes")],
+              [tours.length, t("home.statTours")],
             ].map(([value, label]) => (
               <div key={label as string}>
                 <dt className="font-display text-3xl text-gold-300">{value as number}</dt>
@@ -98,20 +94,20 @@ export default async function Home({ params }: { params: Promise<{ locale: strin
 
       <div className="relative z-10 -mt-20 sm:-mt-24">
         <Card className="p-6 shadow-[0_18px_50px_-24px_rgba(32,38,37,.45)] sm:p-8">
-          <p className="eyebrow text-wine-600">Plan your trip</p>
-          <h2 className="font-display mt-2 mb-6 text-2xl text-ink-900">Where are you going?</h2>
+          <p className="eyebrow text-wine-600">{t("home.planEyebrow")}</p>
+          <h2 className="font-display mt-2 mb-6 text-2xl text-ink-900">{t("home.planTitle")}</h2>
           <SearchForm locale={locale} locations={locations} />
         </Card>
       </div>
 
       <section>
-        <p className="eyebrow text-wine-600">Why book ahead</p>
+        <p className="eyebrow text-wine-600">{t("home.whyEyebrow")}</p>
         <h2 className="font-display mt-2 text-3xl text-ink-900 sm:text-4xl">
-          Everything agreed before you land
+          {t("home.whyTitle")}
         </h2>
         <div className="rule-fade mt-5" />
         <ul className="mt-8 grid gap-px overflow-hidden rounded-xl border border-ink-200 bg-ink-200 sm:grid-cols-2">
-          {PROMISES.map(([title, body], i) => (
+          {PROMISE_KEYS.map(([title, body], i) => (
             <li key={title} className="bg-white p-6">
               <span aria-hidden className="grid size-10 place-items-center rounded-full bg-wine-50 text-wine-700">
                 <svg viewBox="0 0 24 24" className="size-5" fill="none" strokeWidth="1.7"
@@ -126,8 +122,8 @@ export default async function Home({ params }: { params: Promise<{ locale: strin
                   {i === 3 && <><path d="M12 3l7.5 3v6c0 4.8-3.2 8.1-7.5 9-4.3-.9-7.5-4.2-7.5-9V6L12 3z" /><path d="M9 12l2.2 2.2L15.5 10" /></>}
                 </svg>
               </span>
-              <p className="font-display mt-4 text-xl text-ink-900">{title}</p>
-              <p className="mt-2 text-sm leading-relaxed text-ink-600">{body}</p>
+              <p className="font-display mt-4 text-xl text-ink-900">{t(title)}</p>
+              <p className="mt-2 text-sm leading-relaxed text-ink-600">{t(body)}</p>
             </li>
           ))}
         </ul>
@@ -137,11 +133,11 @@ export default async function Home({ params }: { params: Promise<{ locale: strin
         <section>
           <div className="flex flex-wrap items-end justify-between gap-3">
             <div>
-              <p className="eyebrow text-wine-600">Tours</p>
-              <h2 className="font-display mt-2 text-3xl text-ink-900 sm:text-4xl">Routes worth taking</h2>
+              <p className="eyebrow text-wine-600">{t("home.toursEyebrow")}</p>
+              <h2 className="font-display mt-2 text-3xl text-ink-900 sm:text-4xl">{t("home.toursTitle")}</h2>
             </div>
             <Link href={`/${locale}/tours`} className="text-sm font-medium text-wine-700 underline underline-offset-4">
-              See all tours
+              {t("home.seeAllTours")}
             </Link>
           </div>
           <div className="rule-fade mt-5" />
@@ -161,7 +157,7 @@ export default async function Home({ params }: { params: Promise<{ locale: strin
                     />
                     <span className="absolute left-4 top-4">
                       <Badge tone="neutral">
-                        {tour.durationDays === 1 ? "Day trip" : `${tour.durationDays} days`}
+                        {tour.durationDays === 1 ? t("tours.dayTrip") : t("tours.days", { count: tour.durationDays })}
                       </Badge>
                     </span>
                   </div>
@@ -180,11 +176,11 @@ export default async function Home({ params }: { params: Promise<{ locale: strin
         <section>
           <div className="flex flex-wrap items-end justify-between gap-3">
             <div>
-              <p className="eyebrow text-wine-600">Transfers</p>
-              <h2 className="font-display mt-2 text-3xl text-ink-900 sm:text-4xl">Popular routes</h2>
+              <p className="eyebrow text-wine-600">{t("home.transfersEyebrow")}</p>
+              <h2 className="font-display mt-2 text-3xl text-ink-900 sm:text-4xl">{t("home.transfersTitle")}</h2>
             </div>
             <Link href={`/${locale}/transfers`} className="text-sm font-medium text-wine-700 underline underline-offset-4">
-              See all routes
+              {t("home.seeAllRoutes")}
             </Link>
           </div>
           <div className="rule-fade mt-5" />
@@ -206,7 +202,7 @@ export default async function Home({ params }: { params: Promise<{ locale: strin
                   <span className="mx-2 text-ink-400" aria-hidden>→</span>
                   <span className="font-medium text-ink-800">{r.destinationName}</span>
                   <span className="mt-0.5 block text-xs text-ink-500">
-                    {formatDistance(r.distanceKm)} · {formatApproxDuration(r.driveMinutes)} driving
+                    {formatDistance(r.distanceKm)} · {formatApproxDuration(r.driveMinutes)} {t("tours.driving")}
                   </span>
                   </span>
                 </Link>
@@ -217,15 +213,15 @@ export default async function Home({ params }: { params: Promise<{ locale: strin
       )}
 
       <section>
-        <p className="eyebrow text-wine-600">How it works</p>
-        <h2 className="font-display mt-2 text-3xl text-ink-900 sm:text-4xl">Four steps, no haggling</h2>
+        <p className="eyebrow text-wine-600">{t("home.howEyebrow")}</p>
+        <h2 className="font-display mt-2 text-3xl text-ink-900 sm:text-4xl">{t("home.howTitle")}</h2>
         <div className="rule-fade mt-5" />
         <ol className="mt-8 grid gap-8 sm:grid-cols-2 lg:grid-cols-4">
-          {STEPS.map(([title, body], i) => (
+          {STEP_KEYS.map(([title, body], i) => (
             <li key={title} className="border-t-2 border-wine-600 pt-4">
               <span className="font-display text-4xl text-ink-300">{String(i + 1).padStart(2, "0")}</span>
-              <p className="mt-2 font-semibold text-ink-900">{title}</p>
-              <p className="mt-1.5 text-sm leading-relaxed text-ink-600">{body}</p>
+              <p className="mt-2 font-semibold text-ink-900">{t(title)}</p>
+              <p className="mt-1.5 text-sm leading-relaxed text-ink-600">{t(body)}</p>
             </li>
           ))}
         </ol>
@@ -234,12 +230,10 @@ export default async function Home({ params }: { params: Promise<{ locale: strin
       <section className="relative overflow-hidden rounded-2xl bg-ink-900 px-6 py-12 text-ink-50 sm:px-12">
         <ContourField className="text-ink-300" opacity={0.2} seed={3} />
         <div className="relative max-w-2xl">
-          <p className="eyebrow text-gold-400">For drivers</p>
-          <h2 className="font-display mt-3 text-3xl sm:text-4xl">Drive with us</h2>
+          <p className="eyebrow text-gold-400">{t("home.driveEyebrow")}</p>
+          <h2 className="font-display mt-3 text-3xl sm:text-4xl">{t("home.driveTitle")}</h2>
           <p className="mt-4 leading-relaxed text-ink-200">
-            Set your own rates within published limits, control your own calendar, and keep 85% of
-            every completed trip. We find the passenger, handle the paperwork, and answer the phone
-            when plans change.
+            {t("home.driveBody")}
           </p>
           <Link
             href="/driver"

@@ -5,15 +5,22 @@ import { getSessionUser } from "@/lib/auth/session";
 export const dynamic = "force-dynamic";
 export const metadata = { robots: { index: false } };
 
-const NAV = [
-  { href: "/driver", label: "Overview" },
-  { href: "/driver/orders", label: "Orders" },
-  { href: "/driver/earnings", label: "Earnings" },
-  { href: "/driver/application", label: "Profile" },
-  { href: "/driver/vehicle", label: "Vehicle" },
-  { href: "/driver/documents", label: "Documents" },
-  { href: "/driver/pricing", label: "Pricing" },
-  { href: "/driver/availability", label: "Availability" },
+import { getTranslator, isLocale, type Locale, type MessageKey } from "@/lib/i18n";
+
+/**
+ * Every driver on this platform is Georgian. The console renders in the
+ * locale on their account (set when they were onboarded), not in English
+ * with a translated marketing site around it.
+ */
+const NAV: { href: string; label: MessageKey }[] = [
+  { href: "/driver", label: "console.navOverview" },
+  { href: "/driver/orders", label: "console.navOrders" },
+  { href: "/driver/earnings", label: "console.navEarnings" },
+  { href: "/driver/application", label: "console.navProfile" },
+  { href: "/driver/vehicle", label: "console.navVehicle" },
+  { href: "/driver/documents", label: "console.navDocuments" },
+  { href: "/driver/pricing", label: "console.navPricing" },
+  { href: "/driver/availability", label: "console.navAvailability" },
 ];
 
 /**
@@ -23,6 +30,7 @@ const NAV = [
 export default async function DriverLayout({ children }: { children: React.ReactNode }) {
   const user = await getSessionUser();
   if (!user) redirect("/login?next=/driver");
+  const t = getTranslator(isLocale(user.locale) ? (user.locale as Locale) : "ka");
 
   return (
     <div className="flex min-h-dvh flex-col bg-ink-50">
@@ -35,10 +43,10 @@ export default async function DriverLayout({ children }: { children: React.React
                 <path d="M4 18 C9 10, 15 16, 20 7" strokeWidth="2.2" strokeLinecap="round" />
               </svg>
             </span>
-            <span className="font-display text-lg text-ink-900">Driver</span>
+            <span className="font-display text-lg text-ink-900">{t("console.title")}</span>
           </Link>
           <form action="/logout" method="post">
-            <button className="rounded px-3 py-1.5 text-sm text-ink-600 hover:bg-ink-100">Sign out</button>
+            <button className="rounded px-3 py-1.5 text-sm text-ink-600 hover:bg-ink-100">{t("nav.signOut")}</button>
           </form>
         </div>
         <nav aria-label="Driver" className="mx-auto max-w-4xl overflow-x-auto px-2 pb-2">
@@ -46,7 +54,7 @@ export default async function DriverLayout({ children }: { children: React.React
             {NAV.map((item) => (
               <li key={item.href}>
                 <Link href={item.href} className="block whitespace-nowrap rounded-lg px-3 py-1.5 text-ink-600 hover:bg-ink-100">
-                  {item.label}
+                  {t(item.label)}
                 </Link>
               </li>
             ))}

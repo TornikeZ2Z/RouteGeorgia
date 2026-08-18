@@ -2,7 +2,7 @@ import Link from "next/link";
 import { notFound } from "next/navigation";
 import type { Metadata } from "next";
 import { sql } from "@db/client";
-import { isLocale, LOCALES, type Locale } from "@/lib/i18n";
+import { isLocale, LOCALES, getTranslator, type Locale } from "@/lib/i18n";
 import { getTour, listTours, tourPriceFrom } from "@/lib/tours";
 import { formatMoney } from "@/lib/money";
 import { formatDuration, formatDistance } from "@/lib/format";
@@ -44,6 +44,7 @@ export default async function TourPage({ params }: Props) {
 
   const tour = await getTour(slug, locale as Locale);
   if (!tour) notFound();
+  const t = getTranslator(locale as Locale);
 
   const [price, locations, others, currency] = await Promise.all([
     tourPriceFrom(slug),
@@ -81,9 +82,9 @@ export default async function TourPage({ params }: Props) {
       <script type="application/ld+json" dangerouslySetInnerHTML={{ __html: JSON.stringify(jsonLd) }} />
 
       <nav aria-label="Breadcrumb" className="text-sm text-ink-500">
-        <Link href={`/${locale}`} className="hover:text-ink-800">Home</Link>
+        <Link href={`/${locale}`} className="hover:text-ink-800">{t("common.home")}</Link>
         <span className="mx-2" aria-hidden>/</span>
-        <Link href={`/${locale}/tours`} className="hover:text-ink-800">Tours</Link>
+        <Link href={`/${locale}/tours`} className="hover:text-ink-800">{t("tours.eyebrow")}</Link>
         <span className="mx-2" aria-hidden>/</span>
         <span className="text-ink-700">{tour.title}</span>
       </nav>
@@ -98,20 +99,20 @@ export default async function TourPage({ params }: Props) {
 
       <header className="max-w-3xl">
         <div className="flex flex-wrap gap-2">
-          <Badge tone="neutral">{tour.durationDays === 1 ? "Day trip" : `${tour.durationDays} days`}</Badge>
-          {tour.requires4x4 && <Badge tone="warning">4x4 required</Badge>}
-          <Badge tone="success">Private vehicle</Badge>
+          <Badge tone="neutral">{tour.durationDays === 1 ? t("tours.dayTrip") : t("tours.days", { count: tour.durationDays })}</Badge>
+          {tour.requires4x4 && <Badge tone="warning">{t("tours.fourByFour")}</Badge>}
+          <Badge tone="success">{t("tours.private")}</Badge>
         </div>
         <h1 className="font-display mt-4 text-4xl text-ink-900 sm:text-5xl">{tour.title}</h1>
         <p className="mt-3 text-lg leading-relaxed text-ink-600">{tour.summary}</p>
 
         <dl className="mt-5 flex flex-wrap gap-x-8 gap-y-3 border-t border-ink-200 pt-4 text-sm">
-          <div><dt className="text-ink-500">Starts from</dt><dd className="font-medium text-ink-900">{tour.originName}</dd></div>
-          <div><dt className="text-ink-500">Distance</dt><dd className="font-medium text-ink-900">{formatDistance(tour.distanceKm)} round trip</dd></div>
-          <div><dt className="text-ink-500">Driving</dt><dd className="font-medium text-ink-900">{formatDuration(tour.driveMinutes)}</dd></div>
+          <div><dt className="text-ink-500">{t("tours.startsFrom")}</dt><dd className="font-medium text-ink-900">{tour.originName}</dd></div>
+          <div><dt className="text-ink-500">{t("tours.distance")}</dt><dd className="font-medium text-ink-900">{t("tours.roundTrip", { km: formatDistance(tour.distanceKm) })}</dd></div>
+          <div><dt className="text-ink-500">{t("tours.drivingTime")}</dt><dd className="font-medium text-ink-900">{formatDuration(tour.driveMinutes)}</dd></div>
           {price && (
             <div>
-              <dt className="text-ink-500">Price from</dt>
+              <dt className="text-ink-500">{t("tours.priceFrom")}</dt>
               <dd className="font-medium text-ink-900">
                 {formatMoney(price.fromMinor, CANONICAL, locale)}
                 {rate.currency !== CANONICAL && (
@@ -126,14 +127,14 @@ export default async function TourPage({ params }: Props) {
       <div className="grid gap-10 lg:grid-cols-[1fr_380px]">
         <div className="space-y-8">
           <section className="max-w-2xl">
-            <h2 className="font-display text-2xl text-ink-900">About this trip</h2>
+            <h2 className="font-display text-2xl text-ink-900">{t("tours.about")}</h2>
             <div className="mt-3 space-y-4 leading-relaxed text-ink-700">
               {tour.body.split("\n\n").map((paragraph, i) => <p key={i}>{paragraph}</p>)}
             </div>
           </section>
 
           <section>
-            <h2 className="font-display text-2xl text-ink-900">The route</h2>
+            <h2 className="font-display text-2xl text-ink-900">{t("tours.route")}</h2>
             <ol className="mt-4 space-y-0">
               {tour.stops.map((stop, i) => {
                 const last = i === tour.stops.length - 1;
@@ -154,7 +155,7 @@ export default async function TourPage({ params }: Props) {
                           <span className="ml-2 text-sm font-normal text-ink-500">{stop.legKm} km</span>
                         )}
                         {tour.durationDays > 1 && (
-                          <span className="ml-2 text-xs font-normal text-ink-400">Day {stop.dayIndex + 1}</span>
+                          <span className="ml-2 text-xs font-normal text-ink-400">{t("tours.day", { n: stop.dayIndex + 1 })}</span>
                         )}
                       </p>
                       {stop.notes && <p className="mt-1 text-sm leading-relaxed text-ink-600">{stop.notes}</p>}
@@ -165,20 +166,17 @@ export default async function TourPage({ params }: Props) {
             </ol>
           </section>
 
-          <Alert tone="info" title="What the price covers">
-            The vehicle and driver for the whole itinerary, including the drive back to{" "}
-            {tour.originName}. Entry tickets, food and wine tastings are paid directly by you — we do
-            not mark them up.
-            {tour.durationDays > 1 && " On multi-day trips the driver's own accommodation and meals are included in the quote and shown as a separate line."}
+          <Alert tone="info" title={t("tours.coversTitle")}>
+            {t("tours.coversBody", { place: tour.originName })}
+            {tour.durationDays > 1 && ` ${t("tours.coversOvernight")}`}
           </Alert>
         </div>
 
         <aside className="lg:sticky lg:top-4 lg:self-start">
           <Card className="p-5">
-            <h2 className="font-semibold text-ink-900">Check price and availability</h2>
+            <h2 className="font-semibold text-ink-900">{t("tours.checkTitle")}</h2>
             <p className="mt-1 text-sm text-ink-600">
-              Pick your date to see the drivers available for this tour. The route is fixed — the
-              price covers the whole itinerary and the drive home.
+              {t("tours.checkBody")}
             </p>
             <div className="mt-4">
               <SearchForm
@@ -196,15 +194,15 @@ export default async function TourPage({ params }: Props) {
 
       {others.length > 1 && (
         <section>
-          <h2 className="font-display mb-4 text-2xl text-ink-900">Other tours</h2>
+          <h2 className="font-display mb-4 text-2xl text-ink-900">{t("tours.others")}</h2>
           <ul className="grid gap-3 sm:grid-cols-2 lg:grid-cols-4">
-            {others.filter((t) => t.slug !== slug).slice(0, 4).map((t) => (
-              <li key={t.slug}>
-                <Link href={`/${locale}/tours/${t.slug}`}
+            {others.filter((t2) => t2.slug !== slug).slice(0, 4).map((t2) => (
+              <li key={t2.slug}>
+                <Link href={`/${locale}/tours/${t2.slug}`}
                       className="block h-full rounded-xl border border-ink-200 bg-white p-4 hover:border-wine-300">
-                  <p className="font-medium text-ink-900">{t.title}</p>
+                  <p className="font-medium text-ink-900">{t2.title}</p>
                   <p className="mt-1 text-xs text-ink-500">
-                    {t.durationDays === 1 ? "Day trip" : `${t.durationDays} days`} · {formatDistance(t.distanceKm)}
+                    {t2.durationDays === 1 ? t("tours.dayTrip") : t("tours.days", { count: t2.durationDays })} · {formatDistance(t2.distanceKm)}
                   </p>
                 </Link>
               </li>

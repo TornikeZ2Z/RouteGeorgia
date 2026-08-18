@@ -1,7 +1,7 @@
 import Link from "next/link";
 import { notFound } from "next/navigation";
 import type { Metadata } from "next";
-import { isLocale, LOCALES, type Locale } from "@/lib/i18n";
+import { isLocale, LOCALES, getTranslator, type Locale } from "@/lib/i18n";
 import { getRoute, relatedRoutes, listRoutes } from "@/lib/routes-content";
 import { routePriceFrom } from "@/lib/offers";
 import { formatMoney } from "@/lib/money";
@@ -55,6 +55,7 @@ export default async function RoutePage({ params }: Props) {
 
   const data = await getRoute(route, locale);
   if (!data) notFound();
+  const t = getTranslator(locale);
 
   const [pricing, related, locations, currency] = await Promise.all([
     routePriceFrom(route),
@@ -98,9 +99,9 @@ export default async function RoutePage({ params }: Props) {
       />
 
       <nav aria-label="Breadcrumb" className="text-sm text-ink-500">
-        <Link href={`/${locale}`} className="hover:text-ink-800">Home</Link>
+        <Link href={`/${locale}`} className="hover:text-ink-800">{t("common.home")}</Link>
         <span className="mx-2" aria-hidden>/</span>
-        <Link href={`/${locale}/transfers`} className="hover:text-ink-800">Transfers</Link>
+        <Link href={`/${locale}/transfers`} className="hover:text-ink-800">{t("transfers.eyebrow")}</Link>
         <span className="mx-2" aria-hidden>/</span>
         <span className="text-ink-700">{data.originName} → {data.destinationName}</span>
       </nav>
@@ -115,33 +116,31 @@ export default async function RoutePage({ params }: Props) {
 
       <header>
         <h1 className="font-display text-4xl text-ink-900 sm:text-5xl">
-          {data.originName} to {data.destinationName} by private driver
+          {t("transfers.routeTitle", { from: data.originName, to: data.destinationName })}
         </h1>
         <div className="mt-3 flex flex-wrap items-center gap-x-6 gap-y-2 text-sm text-ink-600">
           <span>{formatDistance(data.distanceKm)}</span>
-          <span>{formatDuration(data.driveMinutes)} driving</span>
+          <span>{formatDuration(data.driveMinutes)} {t("tours.driving")}</span>
           {fromPrice && (
             <span className="font-medium text-ink-900">
-              from {fromPrice}
+              {t("transfers.fromPrice", { price: fromPrice })}
               {fromPriceAlt && <span className="font-normal text-ink-500"> (≈ {fromPriceAlt})</span>}
             </span>
           )}
-          {pricing && <span>{pricing.driverCount} available vehicles</span>}
-          {data.requires4x4 && <Badge tone="warning">4x4 required</Badge>}
+          {pricing && <span>{t("transfers.vehicles", { count: pricing.driverCount })}</span>}
+          {data.requires4x4 && <Badge tone="warning">{t("tours.fourByFour")}</Badge>}
         </div>
         <p className="mt-3 max-w-2xl text-ink-600">
-          A fixed price for the whole vehicle, with a named driver and car confirmed before you
-          travel. The driving time below excludes stops, traffic and weather — add your own stops
-          below and the price updates with them.
+          {t("transfers.routeIntro")}
         </p>
       </header>
 
       {data.seasonalNote && (
-        <Alert tone="warning" title="Seasonal conditions">{data.seasonalNote}</Alert>
+        <Alert tone="warning" title={t("transfers.seasonal")}>{data.seasonalNote}</Alert>
       )}
 
       <Card className="p-4 sm:p-6">
-        <h2 className="mb-4 text-lg font-semibold text-ink-900">Check availability and price</h2>
+        <h2 className="mb-4 text-lg font-semibold text-ink-900">{t("transfers.checkTitle")}</h2>
         <SearchForm
           locale={locale}
           locations={locations}
@@ -150,19 +149,12 @@ export default async function RoutePage({ params }: Props) {
       </Card>
 
       <section>
-        <h2 className="font-display mb-4 text-2xl text-ink-900">What is included</h2>
+        <h2 className="font-display mb-4 text-2xl text-ink-900">{t("transfers.included")}</h2>
         <ul className="grid gap-3 sm:grid-cols-2">
-          {[
-            ["Fixed price", "Agreed before you travel. It does not change afterwards unless you change the trip."],
-            ["The whole vehicle", "The price is per car, not per person."],
-            ["Stops included", "Add stops when you book. Waiting at them is not charged extra."],
-            ["A named driver", "You see the driver, the car and the languages they speak before you choose."],
-            ["Verified documents", "Licence, insurance and vehicle papers are checked and must be valid on your travel date."],
-            ["Free cancellation", "Cancel free of charge; we ask for 24 hours' notice where possible."],
-          ].map(([title, body]) => (
-            <li key={title} className="rounded-lg border border-ink-200 bg-white p-4">
-              <p className="font-medium text-ink-900">{title}</p>
-              <p className="mt-1 text-sm text-ink-600">{body}</p>
+          {([1, 2, 3, 4, 5, 6] as const).map((n) => (
+            <li key={n} className="rounded-lg border border-ink-200 bg-white p-4">
+              <p className="font-medium text-ink-900">{t(`transfers.inc${n}t` as const)}</p>
+              <p className="mt-1 text-sm text-ink-600">{t(`transfers.inc${n}b` as const)}</p>
             </li>
           ))}
         </ul>
@@ -170,7 +162,7 @@ export default async function RoutePage({ params }: Props) {
 
       {related.length > 0 && (
         <section>
-          <h2 className="font-display mb-4 text-2xl text-ink-900">Related routes</h2>
+          <h2 className="font-display mb-4 text-2xl text-ink-900">{t("transfers.related")}</h2>
           <ul className="grid gap-2 sm:grid-cols-2 lg:grid-cols-3">
             {related.map((r) => (
               <li key={r.slug}>
