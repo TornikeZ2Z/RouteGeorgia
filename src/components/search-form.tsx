@@ -143,8 +143,8 @@ export function SearchForm({
               onClick={() => setStops([...stops, ""])}
               disabled={stops.length >= 6}
             >
-              + Add stop
-            </Button>
+            {t("search.addStop")}
+          </Button>
           </div>
         )}
 

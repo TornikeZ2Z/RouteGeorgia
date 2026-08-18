@@ -61,8 +61,11 @@ export default async function RoutePage({ params }: Props) {
     routePriceFrom(route),
     relatedRoutes(route, locale),
     sql<{ slug: string; name_en: string; type: string }[]>`
-      SELECT slug, name_en, type::text AS type FROM locations
-      WHERE in_service_area ORDER BY type, name_en`,
+      SELECT slug,
+             coalesce(CASE WHEN ${locale} = 'ka' THEN name_ka
+                           WHEN ${locale} = 'ru' THEN name_ru END, name_en) AS name_en,
+             type::text AS type
+      FROM locations WHERE in_service_area ORDER BY type, 2`,
     getDisplayCurrency(),
   ]);
   const rate = await getRate(currency);

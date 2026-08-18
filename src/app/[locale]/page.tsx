@@ -19,11 +19,11 @@ export async function generateMetadata({
 }: { params: Promise<{ locale: string }> }): Promise<Metadata> {
   const { locale } = await params;
   const url = `${config.appUrl}/${locale}`;
+  if (!isLocale(locale)) return {};
+  const t = getTranslator(locale);
   return {
-    title: "Private drivers across Georgia, booked in advance",
-    description:
-      "Book a verified private driver and vehicle in Georgia. Fixed price for the whole car, " +
-      "agreed before you travel. Add stops at no extra charge.",
+    title: t("brand.tagline"),
+    description: t("home.heroSubtitle"),
     alternates: {
       canonical: url,
       languages: Object.fromEntries(LOCALES.map((l) => [l, `${config.appUrl}/${l}`])),
@@ -49,8 +49,11 @@ export default async function Home({ params }: { params: Promise<{ locale: strin
 
   const [locations, routes, stats, tours] = await Promise.all([
     sql<{ slug: string; name_en: string; type: string }[]>`
-      SELECT slug, name_en, type::text AS type FROM locations
-      WHERE in_service_area ORDER BY type, name_en`,
+      SELECT slug,
+             coalesce(CASE WHEN ${locale} = 'ka' THEN name_ka
+                           WHEN ${locale} = 'ru' THEN name_ru END, name_en) AS name_en,
+             type::text AS type
+      FROM locations WHERE in_service_area ORDER BY type, 2`,
     listRoutes(locale),
     sql<{ drivers: number; routes: number }[]>`
       SELECT (SELECT count(*) FROM driver_profiles WHERE published)::int AS drivers,
