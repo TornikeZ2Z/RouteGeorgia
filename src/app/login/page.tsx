@@ -13,10 +13,22 @@ export default async function LoginPage({
   const { error, next } = await searchParams;
 
   return (
-    <div className="mx-auto flex min-h-dvh max-w-md flex-col justify-center px-4">
-      <Card className="p-6">
-        <h1 className="text-xl font-semibold text-ink-900">Sign in</h1>
-        <p className="mt-1 text-sm text-ink-500">Drivers and staff sign in here.</p>
+    <div className="contours flex min-h-dvh flex-col justify-center bg-forest-800 px-4 py-12 text-forest-100">
+      <div className="mx-auto w-full max-w-md">
+        <div className="mb-8 flex items-center gap-3">
+          <span aria-hidden className="grid size-10 place-items-center rounded-full bg-wine-600 text-white">
+            <svg viewBox="0 0 24 24" className="size-5" fill="none" stroke="currentColor" aria-hidden>
+              <ellipse cx="12" cy="14" rx="9" ry="5.5" strokeWidth="1.3" opacity=".45" />
+              <ellipse cx="12" cy="14" rx="5.5" ry="3.2" strokeWidth="1.3" opacity=".7" />
+              <path d="M4 18 C9 10, 15 16, 20 7" strokeWidth="2" strokeLinecap="round" />
+            </svg>
+          </span>
+          <span className="font-display text-xl text-white">Route Georgia</span>
+        </div>
+
+      <Card className="p-7">
+        <h1 className="font-display text-2xl text-ink-900">Sign in</h1>
+        <p className="mt-1 text-sm text-ink-600">Drivers and staff sign in here.</p>
 
         <form action="/api/auth/login" method="post" className="mt-6 space-y-4">
           <input type="hidden" name="next" value={next ?? ""} />
@@ -39,9 +51,11 @@ export default async function LoginPage({
         </form>
 
         <p className="mt-6 text-xs text-ink-500">
-          Seeded accounts are listed in README.md. Change every password before deploying.
+          Drivers: if operations set up your account, use the one-time password they gave you.
+          Lost it? Ask them to reset it — we never email passwords.
         </p>
       </Card>
+      </div>
     </div>
   );
 }

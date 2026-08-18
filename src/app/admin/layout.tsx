@@ -33,7 +33,15 @@ export default async function AdminLayout({ children }: { children: React.ReactN
     <div className="flex min-h-dvh flex-col bg-ink-50">
       <header className="border-b border-ink-200 bg-white">
         <div className="mx-auto flex max-w-6xl flex-wrap items-center justify-between gap-3 px-4 py-3">
-          <Link href="/admin" className="font-semibold">Operations</Link>
+          <Link href="/admin" className="flex items-center gap-2.5">
+            <span aria-hidden className="grid size-8 place-items-center rounded-full bg-wine-600 text-white">
+              <svg viewBox="0 0 24 24" className="size-4" fill="none" stroke="currentColor" aria-hidden>
+                <ellipse cx="12" cy="14" rx="9" ry="5.5" strokeWidth="1.4" opacity=".45" />
+                <path d="M4 18 C9 10, 15 16, 20 7" strokeWidth="2.2" strokeLinecap="round" />
+              </svg>
+            </span>
+            <span className="font-display text-lg text-ink-900">Operations</span>
+          </Link>
           <div className="flex items-center gap-3 text-sm text-ink-500">
             <span>{user.email}</span>
             <span className="rounded bg-ink-100 px-2 py-0.5 text-xs">{user.roles.join(", ")}</span>
