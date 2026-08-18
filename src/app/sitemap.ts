@@ -32,6 +32,10 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
       { url: `${config.appUrl}/${locale}/transfers`, changeFrequency: "weekly", priority: 0.9, alternates: alternates("/transfers") },
       { url: `${config.appUrl}/${locale}/tours`, changeFrequency: "weekly", priority: 0.9, alternates: alternates("/tours") },
       { url: `${config.appUrl}/${locale}/faq`, changeFrequency: "monthly", priority: 0.4, alternates: alternates("/faq") },
+      { url: `${config.appUrl}/${locale}/contact`, changeFrequency: "monthly", priority: 0.5, alternates: alternates("/contact") },
+      { url: `${config.appUrl}/${locale}/legal/terms`, changeFrequency: "yearly", priority: 0.3, alternates: alternates("/legal/terms") },
+      { url: `${config.appUrl}/${locale}/legal/privacy`, changeFrequency: "yearly", priority: 0.3, alternates: alternates("/legal/privacy") },
+      { url: `${config.appUrl}/${locale}/legal/cancellation`, changeFrequency: "yearly", priority: 0.3, alternates: alternates("/legal/cancellation") },
     );
 
     for (const tour of tours) {

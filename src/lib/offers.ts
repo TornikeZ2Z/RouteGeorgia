@@ -39,6 +39,8 @@ export type SortKey = "recommended" | "price_asc" | "price_desc" | "rating" | "r
 export interface SearchRequest {
   originSlug: string;
   destinationSlug: string;
+  /** When set, the trip is priced as this curated tour rather than A to B. */
+  tourSlug?: string;
   /** Ordered intermediate stops, by location slug. */
   stopSlugs?: string[];
   travelAt: Date;
@@ -100,6 +102,16 @@ export function serviceWindow(travelAt: Date, driveMinutes: number): { startsAt:
 }
 
 export async function searchOffers(req: SearchRequest): Promise<SearchResult> {
+  // Resolved first: a tour is a loop, so it legitimately starts and finishes
+  // in the same place, and the "two different points" rule must not apply.
+  const tourRows = req.tourSlug
+    ? await sql<TourPricingRow[]>`
+        SELECT id, slug, distance_km, drive_minutes, return_km, deadhead_recovery_bps,
+               risk_factor_bps, min_fare_minor, requires_4x4, duration_days
+        FROM tours WHERE slug = ${req.tourSlug} AND active`
+    : [];
+  const tour = tourRows[0];
+
   const stopSlugs = (req.stopSlugs ?? []).filter(Boolean);
   const wanted = [req.originSlug, ...stopSlugs, req.destinationSlug];
 
@@ -110,7 +122,7 @@ export async function searchOffers(req: SearchRequest): Promise<SearchResult> {
 
   const origin = bySlug.get(req.originSlug);
   const destination = bySlug.get(req.destinationSlug);
-  if (!origin || !destination || origin.id === destination.id) {
+  if (!origin || !destination || (!tour && origin.id === destination.id)) {
     return emptyResult("no_route");
   }
   // An unknown stop is a hard error, not something to quietly drop: the
@@ -119,11 +131,9 @@ export async function searchOffers(req: SearchRequest): Promise<SearchResult> {
   if (stops.some((s) => !s)) return emptyResult("no_route");
   const waypoints = [origin, ...(stops as LocationRow[]), destination];
 
-  // Prefer a curated route family: its distance, return leg and risk factor
-  // are operator-reviewed values, not a live provider guess.
   // A curated family prices a direct corridor. Once the traveller adds stops
   // the geometry is no longer that corridor, so fall back to live routing.
-  const familyRows = stops.length === 0
+  const familyRows = !tour && stops.length === 0
     ? await sql<RouteFamilyRow[]>`
         SELECT id, slug, distance_km, drive_minutes, return_km, deadhead_recovery_bps,
                risk_factor_bps, min_fare_minor, requires_4x4
@@ -134,7 +144,16 @@ export async function searchOffers(req: SearchRequest): Promise<SearchResult> {
   const family = familyRows[0];
 
   let estimate: RouteEstimate;
-  if (family) {
+  if (tour) {
+    estimate = {
+      distanceKm100: Math.round(Number(tour.distance_km) * 100),
+      driveMinutes: tour.drive_minutes,
+      returnKm100: Math.round(Number(tour.return_km) * 100),
+      provider: "tour",
+      computedAt: new Date().toISOString(),
+      routeHash: createHash("sha256").update(tour.slug).digest("hex").slice(0, 32),
+    };
+  } else if (family) {
     estimate = {
       distanceKm100: Math.round(Number(family.distance_km) * 100),
       driveMinutes: family.drive_minutes,
@@ -149,9 +168,13 @@ export async function searchOffers(req: SearchRequest): Promise<SearchResult> {
     );
   }
 
-  const deadheadRecoveryBps = family?.deadhead_recovery_bps ?? defaultDeadheadRecovery(estimate.distanceKm100);
-  const riskFactorBps = family?.risk_factor_bps ?? 10_000;
-  const routeMinFareMinor = (family?.min_fare_minor ?? 0n).toString();
+  const deadheadRecoveryBps =
+    tour?.deadhead_recovery_bps ?? family?.deadhead_recovery_bps ?? defaultDeadheadRecovery(estimate.distanceKm100);
+  const riskFactorBps = tour?.risk_factor_bps ?? family?.risk_factor_bps ?? 10_000;
+  const routeMinFareMinor = (tour?.min_fare_minor ?? family?.min_fare_minor ?? 0n).toString();
+  // A tour of N days keeps the driver for N-1 nights.
+  const nights = tour ? Math.max(0, tour.duration_days - 1) : (req.nights ?? 0);
+  const requires4x4 = tour?.requires_4x4 ?? family?.requires_4x4 ?? false;
 
   const f = req.filters ?? {};
   const window = serviceWindow(req.travelAt, estimate.driveMinutes);
@@ -159,6 +182,7 @@ export async function searchOffers(req: SearchRequest): Promise<SearchResult> {
     origin: origin.slug,
     stops: stopSlugs,
     destination: destination.slug,
+    ...(tour ? { tour: tour.slug, days: tour.duration_days } : {}),
   };
   const itineraryHash = createHash("sha256")
     .update(JSON.stringify({ ...itinerary, travelAt: req.travelAt.toISOString() }))
@@ -199,7 +223,7 @@ export async function searchOffers(req: SearchRequest): Promise<SearchResult> {
     WHERE d.published AND d.status = 'APPROVED'
       AND v.seats   >= ${req.passengers}
       AND v.luggage >= ${req.luggage}
-      AND (${family?.requires_4x4 ?? false} = false OR (v.capabilities->>'four_wheel_drive')::boolean IS TRUE)
+      AND (${requires4x4} = false OR (v.capabilities->>'four_wheel_drive')::boolean IS TRUE)
       AND (${f.classes && f.classes.length > 0 ? f.classes : null}::text[] IS NULL
            OR v.class::text = ANY(${f.classes && f.classes.length > 0 ? f.classes : null}::text[]))
       AND (${f.fourWheelDrive ?? false} = false OR (v.capabilities->>'four_wheel_drive')::boolean IS TRUE)
@@ -254,7 +278,7 @@ export async function searchOffers(req: SearchRequest): Promise<SearchResult> {
       riskFactorBps,
       routeMinFareMinor,
       extraStops: stops.length,
-      nights: req.nights ?? 0,
+      nights,
       plan: {
         ratePerKmMinor: c.rate_per_km_minor.toString(),
         ratePerMinuteMinor: c.rate_per_minute_minor.toString(),
@@ -447,6 +471,11 @@ const emptyResult = (reason: SearchResult["emptyReason"]): SearchResult => ({
 });
 
 interface LocationRow { id: string; slug: string; name_en: string; lat: number; lon: number; timezone: string }
+interface TourPricingRow {
+  id: string; slug: string; distance_km: string; drive_minutes: number; return_km: string;
+  deadhead_recovery_bps: number; risk_factor_bps: number; min_fare_minor: bigint;
+  requires_4x4: boolean; duration_days: number;
+}
 interface RouteFamilyRow {
   id: string; slug: string; distance_km: string; drive_minutes: number; return_km: string;
   deadhead_recovery_bps: number; risk_factor_bps: number; min_fare_minor: bigint; requires_4x4: boolean;

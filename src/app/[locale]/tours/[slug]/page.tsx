@@ -177,14 +177,17 @@ export default async function TourPage({ params }: Props) {
           <Card className="p-5">
             <h2 className="font-semibold text-ink-900">Check price and availability</h2>
             <p className="mt-1 text-sm text-ink-600">
-              Pick your date to see the drivers available for this route.
+              Pick your date to see the drivers available for this tour. The route is fixed — the
+              price covers the whole itinerary and the drive home.
             </p>
             <div className="mt-4">
               <SearchForm
                 locale={locale}
                 locations={locations}
                 layout="compact"
-                initial={{ from: tour.originSlug }}
+                lockRoute
+                tourSlug={tour.slug}
+                initial={{ from: tour.originSlug, to: tour.originSlug }}
               />
             </div>
           </Card>

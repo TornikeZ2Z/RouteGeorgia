@@ -70,6 +70,7 @@ export default async function SearchPage({ params, searchParams }: Props) {
       originSlug: from,
       destinationSlug: to,
       stopSlugs: stops,
+      tourSlug: str(sp.tour),
       travelAt,
       passengers,
       luggage,
@@ -103,6 +104,7 @@ export default async function SearchPage({ params, searchParams }: Props) {
   // Preserved across filter submissions so the trip itself never changes.
   const hidden: [string, string][] = [
     ["from", from], ["to", to], ["when", when],
+    ...(str(sp.tour) ? [["tour", str(sp.tour)!] as [string, string]] : []),
     ["passengers", String(passengers)], ["luggage", String(luggage)],
     ...stops.map((s) => ["stop", s] as [string, string]),
   ];

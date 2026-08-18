@@ -968,3 +968,83 @@ export async function removePlaceImageAction(_prev: ActionState, formData: FormD
   revalidatePath("/admin/images");
   return { ok: true, message: "Removed — the illustration is shown again." };
 }
+
+// ==========================================================================
+// Support tickets
+// ==========================================================================
+
+const TicketSchema = z.object({
+  bookingId: z.string().uuid().optional().or(z.literal("")),
+  subject: z.string().min(5).max(200),
+  category: z.string().min(2).max(60),
+  severity: z.enum(["SEV1", "SEV2", "SEV3", "SEV4"]).default("SEV3"),
+  note: z.string().max(4000).optional(),
+});
+
+export async function openTicketAction(_prev: ActionState, formData: FormData): Promise<ActionState> {
+  const actor = await requirePermission("admin.bookings.read");
+  const parsed = TicketSchema.safeParse(Object.fromEntries(formData));
+  if (!parsed.success) return { ok: false, errors: parsed.error.issues.map((i) => i.message) };
+  const v = parsed.data;
+
+  let ticketId = "";
+  await sql.begin(async (tx) => {
+    const [ticket] = await tx<{ id: string }[]>`
+      INSERT INTO support_tickets (booking_id, subject, category, severity, opened_by, owner_id)
+      VALUES (${v.bookingId || null}::uuid, ${v.subject}, ${v.category},
+              ${v.severity}::ticket_severity, ${actor.id}::uuid, ${actor.id}::uuid)
+      RETURNING id`;
+    ticketId = ticket!.id;
+    if (v.note) {
+      await tx`INSERT INTO support_notes (ticket_id, author_id, body)
+               VALUES (${ticketId}::uuid, ${actor.id}::uuid, ${v.note})`;
+    }
+  });
+
+  await writeAudit({
+    actorUserId: actor.id, action: "ticket.opened", objectType: "support_ticket",
+    objectId: ticketId, after: { subject: v.subject, severity: v.severity }, reason: v.category,
+  });
+  revalidatePath("/admin/support");
+  return { ok: true, message: "Ticket opened." };
+}
+
+const TicketUpdateSchema = z.object({
+  ticketId: z.string().uuid(),
+  state: z.enum(["OPEN", "WAITING", "RESOLVED", "CLOSED"]),
+  note: z.string().max(4000).optional(),
+  resolution: z.string().max(2000).optional(),
+});
+
+export async function updateTicketAction(_prev: ActionState, formData: FormData): Promise<ActionState> {
+  const actor = await requirePermission("admin.bookings.read");
+  const parsed = TicketUpdateSchema.safeParse(Object.fromEntries(formData));
+  if (!parsed.success) return { ok: false, errors: parsed.error.issues.map((i) => i.message) };
+  const v = parsed.data;
+
+  const closing = v.state === "RESOLVED" || v.state === "CLOSED";
+  if (closing && !v.resolution) {
+    return { ok: false, message: "Say how it was resolved — that is the part worth reading later." };
+  }
+
+  await sql.begin(async (tx) => {
+    await tx`
+      UPDATE support_tickets
+      SET state = ${v.state}::ticket_state,
+          resolution = coalesce(${v.resolution ?? null}, resolution),
+          resolved_at = ${closing ? "now()" : null}::timestamptz,
+          updated_at = now()
+      WHERE id = ${v.ticketId}::uuid`;
+    if (v.note) {
+      await tx`INSERT INTO support_notes (ticket_id, author_id, body)
+               VALUES (${v.ticketId}::uuid, ${actor.id}::uuid, ${v.note})`;
+    }
+  });
+
+  await writeAudit({
+    actorUserId: actor.id, action: `ticket.${v.state.toLowerCase()}`,
+    objectType: "support_ticket", objectId: v.ticketId, reason: v.resolution ?? v.note ?? null,
+  });
+  revalidatePath("/admin/support");
+  return { ok: true, message: "Ticket updated." };
+}

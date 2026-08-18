@@ -7,6 +7,7 @@ import { createSession, findUserByEmail, getUserRoles } from "@/lib/auth/session
 import { verifyPassword } from "@/lib/auth/password";
 import { writeAudit } from "@/lib/audit";
 import { config } from "@/lib/config";
+import { assertSameOrigin, rateLimit, clientKey, CrossOriginError } from "@/lib/security";
 
 /**
  * Plain form POST rather than a server action, so sign-in works without
@@ -24,6 +25,24 @@ const STAFF = ["SUPPORT_AGENT", "OPERATIONS_MANAGER", "FINANCE_ADMIN", "CONTENT_
 const DUMMY_HASH = "$2b$12$C6UzMDM.H6dfI/f/IKcEe.9pJEHb5rB3EzP0GcPfMSSNkYy4kQ0Xy";
 
 export async function POST(request: NextRequest) {
+  try {
+    await assertSameOrigin();
+  } catch (err) {
+    if (err instanceof CrossOriginError) return NextResponse.json({ error: "invalid" }, { status: 403 });
+    throw err;
+  }
+
+  // Ten attempts per address per fifteen minutes. Enough for someone who has
+  // genuinely forgotten which password they used; not enough to work through
+  // a word list.
+  const limit = rateLimit(await clientKey("login"), 10, 900);
+  if (!limit.allowed) {
+    return NextResponse.redirect(new URL("/login?error=throttled", config.appUrl), {
+      status: 303,
+      headers: { "Retry-After": String(limit.retryAfterSeconds) },
+    });
+  }
+
   const form = await request.formData();
   const parsed = Schema.safeParse({
     email: form.get("email"),

@@ -8,6 +8,7 @@ import { getPaymentProvider } from "@/lib/payments";
 import { dispatchPending } from "@/lib/notifications";
 import { config } from "@/lib/config";
 import type { Locale } from "@/lib/i18n";
+import { assertSameOrigin, rateLimit, clientKey, CrossOriginError } from "@/lib/security";
 
 /**
  * Checkout submission.
@@ -35,6 +36,22 @@ const Schema = z.object({
 });
 
 export async function POST(request: NextRequest) {
+  try {
+    await assertSameOrigin();
+  } catch (err) {
+    if (err instanceof CrossOriginError) return NextResponse.json({ error: "invalid" }, { status: 403 });
+    throw err;
+  }
+
+  // Bookings hold a real driver's calendar, so a script hammering this would
+  // take live supply off the market.
+  const limit = rateLimit(await clientKey("booking"), 12, 600);
+  if (!limit.allowed) {
+    return NextResponse.json({ error: "Too many booking attempts. Please wait a few minutes." }, {
+      status: 429, headers: { "Retry-After": String(limit.retryAfterSeconds) },
+    });
+  }
+
   const form = await request.formData();
   const raw = Object.fromEntries(form) as Record<string, string>;
   const locale = (["en", "ka", "ru"].includes(raw.locale ?? "") ? raw.locale : "en") as Locale;

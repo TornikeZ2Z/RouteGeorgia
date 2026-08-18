@@ -6,6 +6,7 @@ import { getSessionUser } from "@/lib/auth/session";
 import { getDisplayCurrency } from "@/lib/currency";
 import { config } from "@/lib/config";
 import { PreferenceSwitcher } from "@/components/preference-switcher";
+import { CookieNotice } from "@/components/cookie-notice";
 
 export function generateStaticParams() {
   return LOCALES.map((locale) => ({ locale }));
@@ -119,6 +120,8 @@ export default async function LocaleLayout({
 
       <main id="main" className="mx-auto w-full max-w-6xl flex-1 px-4 py-10 sm:py-12">{children}</main>
 
+      <CookieNotice locale={locale as Locale} returnTo={`/${locale}`} />
+
       <footer className="mt-8 border-t border-ink-200 bg-white">
         <div className="mx-auto grid max-w-6xl gap-10 px-4 py-12 sm:grid-cols-2 lg:grid-cols-4">
           <div>
@@ -138,14 +141,21 @@ export default async function LocaleLayout({
               <li><Link className="hover:text-ink-900" href={`/${locale}/transfers`}>All transfer routes</Link></li>
               <li><Link className="hover:text-ink-900" href={`/${locale}/tours`}>Day trips and tours</Link></li>
               <li><Link className="hover:text-ink-900" href={`/${locale}/faq`}>Frequently asked questions</Link></li>
+              <li><Link className="hover:text-ink-900" href={`/${locale}/contact`}>{t("footer.support")}</Link></li>
             </ul>
           </nav>
 
-          <nav aria-label="Drivers">
+          <nav aria-label="Drivers and legal">
             <p className="text-sm font-semibold text-ink-900">Drivers</p>
             <ul className="mt-3 space-y-2 text-sm text-ink-600">
               <li><Link className="hover:text-ink-900" href="/driver">{t("nav.becomeDriver")}</Link></li>
               <li><Link className="hover:text-ink-900" href="/login">{t("nav.signIn")}</Link></li>
+            </ul>
+            <p className="mt-5 text-sm font-semibold text-ink-900">Legal</p>
+            <ul className="mt-3 space-y-2 text-sm text-ink-600">
+              <li><Link className="hover:text-ink-900" href={`/${locale}/legal/terms`}>Terms of service</Link></li>
+              <li><Link className="hover:text-ink-900" href={`/${locale}/legal/privacy`}>Privacy notice</Link></li>
+              <li><Link className="hover:text-ink-900" href={`/${locale}/legal/cancellation`}>Cancellation</Link></li>
             </ul>
           </nav>
 

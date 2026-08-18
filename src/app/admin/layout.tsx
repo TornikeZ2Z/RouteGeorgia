@@ -10,6 +10,7 @@ const NAV = [
   { href: "/admin", label: "Command centre", permission: "admin.access" },
   { href: "/admin/drivers", label: "Drivers", permission: "admin.drivers.read" },
   { href: "/admin/bookings", label: "Bookings", permission: "admin.bookings.read" },
+  { href: "/admin/support", label: "Support", permission: "admin.bookings.read" },
   { href: "/admin/media", label: "Photos", permission: "admin.drivers.decide" },
   { href: "/admin/reviews", label: "Reviews", permission: "admin.drivers.decide" },
   { href: "/admin/finance", label: "Finance", permission: "admin.finance.read" },

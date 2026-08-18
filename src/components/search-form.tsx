@@ -17,13 +17,17 @@ interface LocationOption { slug: string; name_en: string; type: string }
  * revalidates everything.
  */
 export function SearchForm({
-  locale, locations, initial, layout = "wide",
+  locale, locations, initial, layout = "wide", tourSlug, lockRoute = false,
 }: {
   locale: string;
   locations: LocationOption[];
   initial?: { from?: string; to?: string };
   /** "compact" stacks every field for narrow sidebars. */
   layout?: "wide" | "compact";
+  /** Books this curated tour rather than a point-to-point transfer. */
+  tourSlug?: string;
+  /** Fixed endpoints, for a tour whose route is not the traveller's to change. */
+  lockRoute?: boolean;
 }) {
   const compact = layout === "compact";
   const router = useRouter();
@@ -54,6 +58,7 @@ export function SearchForm({
     const q = new URLSearchParams({
       from, to, when, passengers: String(passengers), luggage: String(luggage),
     });
+    if (tourSlug) q.set("tour", tourSlug);
     for (const s of stops) q.append("stop", s);
     router.push(`/${locale}/search?${q}`);
   }
@@ -65,13 +70,19 @@ export function SearchForm({
   return (
     <form onSubmit={submit} className="space-y-4">
       <div className={compact ? "space-y-4" : "grid gap-4 sm:grid-cols-2 lg:grid-cols-6"}>
-        <div className={compact ? "" : "lg:col-span-2"}>
+        {lockRoute && (
+          <>
+            <input type="hidden" value={from} readOnly />
+            <input type="hidden" value={to} readOnly />
+          </>
+        )}
+        <div className={`${compact ? "" : "lg:col-span-2"}${lockRoute ? " hidden" : ""}`}>
           <Field label="From" htmlFor="from" required>
             <Select id="from" value={from} onChange={(e) => setFrom(e.target.value)}>{options}</Select>
           </Field>
         </div>
 
-        <div className={compact ? "" : "lg:col-span-2"}>
+        <div className={`${compact ? "" : "lg:col-span-2"}${lockRoute ? " hidden" : ""}`}>
           <Field label="To" htmlFor="to" required>
             <Select id="to" value={to} onChange={(e) => setTo(e.target.value)}>{options}</Select>
           </Field>
@@ -84,7 +95,7 @@ export function SearchForm({
         </div>
       </div>
 
-      {stops.length > 0 && (
+      {!lockRoute && stops.length > 0 && (
         <ul className="space-y-2">
           {stops.map((stop, i) => (
             <li key={i} className="flex items-end gap-2">
@@ -123,15 +134,17 @@ export function SearchForm({
                  onChange={(e) => setLuggage(Number(e.target.value))} />
         </Field>
 
-        <div className={compact ? "col-span-2" : "flex items-end lg:col-span-2"}>
-          <Button
-            type="button" variant="secondary" className="w-full"
-            onClick={() => setStops([...stops, ""])}
-            disabled={stops.length >= 6}
-          >
-            + Add stop
-          </Button>
-        </div>
+        {!lockRoute && (
+          <div className={compact ? "col-span-2" : "flex items-end lg:col-span-2"}>
+            <Button
+              type="button" variant="secondary" className="w-full"
+              onClick={() => setStops([...stops, ""])}
+              disabled={stops.length >= 6}
+            >
+              + Add stop
+            </Button>
+          </div>
+        )}
 
         <div className={compact ? "col-span-2" : "flex items-end lg:col-span-2"}>
           <Button type="submit" size={compact ? "md" : "md"} className="w-full">

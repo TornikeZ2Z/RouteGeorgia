@@ -133,6 +133,16 @@ Deny-by-default RBAC, opaque hashed session tokens, immutable quote snapshots
 with replay, money as integer minor units throughout, and a database that
 refuses to let a driver be double-booked.
 
+## Security
+
+Write endpoints reject cross-origin requests, sign-in and booking are rate
+limited per address, and the site sends a strict Content-Security-Policy plus
+HSTS. Nothing loads from a third party — no font CDN, no analytics script — so
+the policy is genuinely restrictive rather than a list of exceptions.
+
+Passwords are bcrypt, sessions are opaque tokens stored only as hashes, and a
+password reset ends every existing session.
+
 ## What is deliberately not built
 
 The partner/affiliate programme, driver payout execution, and live trip
@@ -187,7 +197,7 @@ Two rules worth keeping:
 npm test
 ```
 
-52 tests. The database ones skip cleanly if Postgres is not running.
+58 tests. The database ones skip cleanly if Postgres is not running.
 
 They cover the things that are expensive to get wrong: rounding at scale,
 quote determinism and replay, price bands, RBAC denials, and — against a real
