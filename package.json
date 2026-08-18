@@ -20,7 +20,8 @@
     "db:studio": "drizzle-kit studio",
     "test": "vitest run",
     "test:watch": "vitest",
-    "setup": "node scripts/pg.mjs start && npm run db:migrate && npm run db:seed"
+    "setup": "node scripts/pg.mjs start && npm run db:migrate && npm run db:seed",
+    "ship": "node scripts/ship.mjs"
   },
   "dependencies": {
     "bcryptjs": "^3.0.3",

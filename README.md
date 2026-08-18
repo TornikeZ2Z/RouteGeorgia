@@ -95,6 +95,7 @@ error. That is server-side RBAC, not a hidden button.
 | Command | What it does |
 |---|---|
 | `npm run dev` | Development server |
+| `npm run ship` | Type check, test, commit and push in one step |
 | `npm test` | Run the test suite |
 | `npm run typecheck` | Type check without building |
 | `npm run build` | Production build |
