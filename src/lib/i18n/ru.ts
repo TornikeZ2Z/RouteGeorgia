@@ -2,6 +2,7 @@ import type { Dictionary } from "./index";
 
 /** Russian. Partial by design — see ka.ts. */
 export const ru: Partial<Dictionary> = {
+  "brand.name": "Route Georgia",
   "brand.tagline": "Частные водители по Грузии с предварительным бронированием.",
   "nav.transfers": "Трансферы",
   "nav.drivers": "Водители",

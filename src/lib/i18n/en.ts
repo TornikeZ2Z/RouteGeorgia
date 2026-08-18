@@ -1,5 +1,5 @@
 export const en = {
-  "brand.name": "Gamgzavri",
+  "brand.name": "Route Georgia",
   "brand.tagline": "Private drivers across Georgia, booked in advance.",
   "nav.transfers": "Transfers",
   "nav.drivers": "Drivers",

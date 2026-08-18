@@ -14,6 +14,7 @@ const Schema = z.object({
   // preview deployments without anyone having to set it per branch.
   VERCEL_PROJECT_PRODUCTION_URL: z.string().optional(),
   VERCEL_URL: z.string().optional(),
+  RENDER_EXTERNAL_URL: z.string().optional(),
   SESSION_SECRET: z.string().min(16, "SESSION_SECRET must be at least 16 characters"),
 
   COMMISSION_RATE_BPS: intFromEnv(1500),
@@ -39,11 +40,19 @@ if (!parsed.success) {
 const env = parsed.data;
 
 /**
- * Absolute base URL. Used for links in emails, canonical tags, hreflang and
- * payment return URLs, so it must be the address the user actually sees.
+ * Absolute base URL.
+ *
+ * Used for canonical tags, hreflang alternates, links in transactional email
+ * and payment return URLs, so it must be the address the traveller actually
+ * sees. Getting this wrong means Google indexes the hosting subdomain instead
+ * of the real domain, and confirmation emails link somewhere unfamiliar.
+ *
+ * Order: an explicit APP_URL always wins; otherwise fall back to whatever the
+ * host tells us, so preview deploys still produce working links.
  */
 function resolveAppUrl(): string {
   if (env.APP_URL) return env.APP_URL.replace(/\/$/, "");
+  if (env.RENDER_EXTERNAL_URL) return env.RENDER_EXTERNAL_URL.replace(/\/$/, "");
   if (env.VERCEL_PROJECT_PRODUCTION_URL) return `https://${env.VERCEL_PROJECT_PRODUCTION_URL}`;
   if (env.VERCEL_URL) return `https://${env.VERCEL_URL}`;
   return "http://localhost:3000";

@@ -5,6 +5,7 @@ import type { Dictionary } from "./index";
  * are logged, so the content team can see exactly what is outstanding.
  */
 export const ka: Partial<Dictionary> = {
+  "brand.name": "რუთ ჯორჯია",
   "brand.tagline": "კერძო მძღოლები საქართველოში, წინასწარი დაჯავშნით.",
   "nav.transfers": "ტრანსფერები",
   "nav.drivers": "მძღოლები",

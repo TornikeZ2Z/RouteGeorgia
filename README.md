@@ -1,9 +1,9 @@
-# Gamgzavri — Georgia private-driver marketplace
+# Route Georgia — private-driver marketplace
 
 Phase 0 (foundation) and Phase 1 (supply and pricing) of the Georgia Travel
 Marketplace specification, as a running application.
 
-Working name only. Pick a real brand before anything goes public.
+Live at <https://routegeorgia.ge>.
 
 ---
 

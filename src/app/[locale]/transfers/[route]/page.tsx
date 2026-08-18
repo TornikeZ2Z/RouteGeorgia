@@ -76,7 +76,7 @@ export default async function RoutePage({ params }: Props) {
     "@context": "https://schema.org",
     "@type": "Service",
     serviceType: "Private transfer",
-    provider: { "@type": "Organization", name: "Gamgzavri", url: config.appUrl },
+    provider: { "@type": "Organization", name: "Route Georgia", url: config.appUrl },
     areaServed: { "@type": "Country", name: "Georgia" },
     name: `${data.originName} to ${data.destinationName} private transfer`,
     ...(pricing && {
