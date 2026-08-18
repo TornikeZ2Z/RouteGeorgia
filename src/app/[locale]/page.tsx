@@ -68,7 +68,7 @@ export default async function Home({ params }: { params: Promise<{ locale: strin
     <div className="space-y-20">
       {/* Full-bleed: the hero should meet the edges of the window, not sit inside
           the page gutter like another card. */}
-      <section className="relative left-1/2 -mt-10 w-screen -translate-x-1/2 overflow-hidden bg-forest-800 px-6 pb-28 pt-14 text-forest-50 sm:-mt-12 sm:px-10 sm:pb-32 sm:pt-20">
+      <section className="relative left-1/2 -mt-10 w-screen -translate-x-1/2 overflow-hidden bg-forest-800 px-4 pb-28 pt-14 text-forest-50 sm:-mt-12 sm:pb-32 sm:pt-20">
         <ContourField className="text-forest-200" opacity={0.18} />
         <div className="relative mx-auto max-w-6xl">
           <p className="eyebrow text-gold-400">Georgia · private drivers</p>
