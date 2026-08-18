@@ -68,12 +68,17 @@ export default async function DriverProfile({ params }: Props) {
 
   return (
     <div className="space-y-6">
-      <div>
+      <div className="rounded-2xl border border-ink-200 bg-white p-6">
         <div className="flex flex-wrap items-center gap-3">
-          <h1 className="text-2xl font-semibold tracking-tight text-ink-900">{driver.public_name}</h1>
-          <Badge tone="success">{t("driver.verified")}</Badge>
+          <span aria-hidden className="grid size-12 shrink-0 place-items-center rounded-full bg-forest-600 text-lg font-semibold text-white">
+            {driver.public_name.charAt(0)}
+          </span>
+          <div>
+            <h1 className="text-2xl font-semibold tracking-tight text-ink-900">{driver.public_name}</h1>
+            <span className="mt-1 inline-block"><Badge tone="success">{t("driver.verified")}</Badge></span>
+          </div>
         </div>
-        <p className="mt-1 text-sm text-ink-500">
+        <p className="mt-3 text-sm text-ink-600">
           {driver.base_location ? `Based in ${driver.base_location}` : "Georgia"}
           {" · "}
           {driver.rating_count > 0
@@ -87,7 +92,7 @@ export default async function DriverProfile({ params }: Props) {
       {driver.bio && <Card className="p-4 text-sm leading-relaxed text-ink-700">{driver.bio}</Card>}
 
       <section>
-        <h2 className="mb-2 text-lg font-semibold text-ink-900">{t("driver.languages")}</h2>
+        <h2 className="mb-3 text-lg font-semibold text-ink-900">{t("driver.languages")}</h2>
         {languages.length === 0 ? (
           <p className="text-sm text-ink-500">Not stated.</p>
         ) : (
@@ -107,7 +112,7 @@ export default async function DriverProfile({ params }: Props) {
       </section>
 
       <section>
-        <h2 className="mb-2 text-lg font-semibold text-ink-900">{t("driver.vehicle")}</h2>
+        <h2 className="mb-3 text-lg font-semibold text-ink-900">{t("driver.vehicle")}</h2>
         <ul className="grid gap-3 sm:grid-cols-2">
           {vehicles.map((v) => {
             const shots = media.filter((m) => m.vehicle_id === v.id);

@@ -6,22 +6,33 @@ const cx = (...parts: (string | false | undefined | null)[]) => parts.filter(Boo
 
 export function Button({
   variant = "primary", size = "md", className, ...props
-}: ComponentProps<"button"> & { variant?: "primary" | "secondary" | "ghost" | "danger"; size?: "sm" | "md" }) {
+}: ComponentProps<"button"> & {
+  variant?: "primary" | "secondary" | "ghost" | "danger";
+  size?: "sm" | "md" | "lg";
+}) {
+  // Minimum 44px tall at md and above: the driver app is used one-handed on a
+  // phone, often in a moving vehicle.
   const base =
-    "inline-flex items-center justify-center gap-2 rounded-lg font-medium transition-colors disabled:opacity-50 disabled:cursor-not-allowed";
-  const sizes = { sm: "px-3 py-1.5 text-sm", md: "px-4 py-2.5 text-sm" };
+    "inline-flex items-center justify-center gap-2 rounded-lg font-medium " +
+    "transition-[background-color,box-shadow,transform] duration-150 " +
+    "active:translate-y-px disabled:opacity-50 disabled:cursor-not-allowed disabled:active:translate-y-0";
+  const sizes = {
+    sm: "px-3 py-1.5 text-sm",
+    md: "px-4 py-2.5 text-sm min-h-11",
+    lg: "px-6 py-3 text-base min-h-12",
+  };
   const variants = {
-    primary: "bg-wine-600 text-white hover:bg-wine-700",
-    secondary: "bg-white text-ink-800 border border-ink-300 hover:bg-ink-50",
+    primary: "bg-wine-600 text-white shadow-sm hover:bg-wine-700 hover:shadow",
+    secondary: "bg-white text-ink-800 border border-ink-300 hover:border-ink-400 hover:bg-ink-50",
     ghost: "text-ink-600 hover:bg-ink-100",
-    danger: "bg-[--color-danger] text-white hover:opacity-90",
+    danger: "bg-[--color-danger] text-white shadow-sm hover:opacity-90",
   };
   return <button className={cx(base, sizes[size], variants[variant], className)} {...props} />;
 }
 
 export function Card({ className, children }: { className?: string; children: ReactNode }) {
   return (
-    <div className={cx("rounded-xl border border-ink-200 bg-white shadow-sm", className)}>
+    <div className={cx("rounded-xl border border-ink-200 bg-white shadow-[0_1px_2px_rgba(32,38,37,.04)]", className)}>
       {children}
     </div>
   );
@@ -47,37 +58,21 @@ export function Field({
   );
 }
 
+const FIELD_BASE =
+  "w-full rounded-lg border border-ink-300 bg-white px-3 py-2.5 text-sm text-ink-900 " +
+  "transition-colors placeholder:text-ink-400 hover:border-ink-400 " +
+  "focus:border-wine-600 focus:ring-0 disabled:bg-ink-50 disabled:text-ink-500";
+
 export function Input({ className, ...props }: ComponentProps<"input">) {
-  return (
-    <input
-      className={cx(
-        "w-full rounded-lg border border-ink-300 bg-white px-3 py-2 text-sm",
-        "placeholder:text-ink-400 focus:border-wine-500 focus:ring-0",
-        className,
-      )}
-      {...props}
-    />
-  );
+  return <input className={cx(FIELD_BASE, className)} {...props} />;
 }
 
 export function Select({ className, children, ...props }: ComponentProps<"select">) {
-  return (
-    <select
-      className={cx("w-full rounded-lg border border-ink-300 bg-white px-3 py-2 text-sm", className)}
-      {...props}
-    >
-      {children}
-    </select>
-  );
+  return <select className={cx(FIELD_BASE, "pr-8", className)} {...props}>{children}</select>;
 }
 
 export function Textarea({ className, ...props }: ComponentProps<"textarea">) {
-  return (
-    <textarea
-      className={cx("w-full rounded-lg border border-ink-300 bg-white px-3 py-2 text-sm", className)}
-      {...props}
-    />
-  );
+  return <textarea className={cx(FIELD_BASE, "resize-y leading-relaxed", className)} {...props} />;
 }
 
 /**
@@ -102,30 +97,32 @@ export function Badge({ tone = "neutral", children }: { tone?: keyof typeof TONE
 
 export function Alert({ tone = "info", title, children }: { tone?: keyof typeof TONES; title?: string; children: ReactNode }) {
   return (
-    <div className={cx("rounded-lg px-4 py-3 text-sm", TONES[tone])} role="status">
+    <div className={cx("rounded-lg px-4 py-3.5 text-sm leading-relaxed", TONES[tone])} role="status">
       {title && <p className="font-semibold">{title}</p>}
-      <div>{children}</div>
+      <div className={title ? "mt-1" : undefined}>{children}</div>
     </div>
   );
 }
 
 export function EmptyState({ title, children }: { title: string; children?: ReactNode }) {
   return (
-    <div className="rounded-xl border border-dashed border-ink-300 bg-white px-6 py-12 text-center">
-      <p className="font-medium text-ink-800">{title}</p>
-      {children && <div className="mt-1 text-sm text-ink-500">{children}</div>}
+    <div className="rounded-xl border border-dashed border-ink-300 bg-white/60 px-6 py-14 text-center">
+      <p className="text-base font-medium text-ink-800">{title}</p>
+      {children && (
+        <div className="mx-auto mt-2 max-w-md text-sm leading-relaxed text-ink-500">{children}</div>
+      )}
     </div>
   );
 }
 
 export function PageHeader({ title, description, actions }: { title: string; description?: string; actions?: ReactNode }) {
   return (
-    <div className="mb-6 flex flex-wrap items-start justify-between gap-4">
-      <div>
+    <div className="mb-6 flex flex-wrap items-start justify-between gap-4 border-b border-ink-200 pb-5">
+      <div className="min-w-0">
         <h1 className="text-2xl font-semibold tracking-tight text-ink-900">{title}</h1>
-        {description && <p className="mt-1 text-sm text-ink-500">{description}</p>}
+        {description && <p className="mt-1.5 max-w-2xl text-sm leading-relaxed text-ink-600">{description}</p>}
       </div>
-      {actions && <div className="flex gap-2">{actions}</div>}
+      {actions && <div className="flex shrink-0 flex-wrap items-center gap-2">{actions}</div>}
     </div>
   );
 }
@@ -134,14 +131,17 @@ export function Table({ head, children }: { head: ReactNode[]; children: ReactNo
   return (
     <div className="overflow-x-auto rounded-xl border border-ink-200 bg-white">
       <table className="w-full text-sm">
-        <thead className="border-b border-ink-200 bg-ink-50 text-left">
+        <thead className="border-b border-ink-200 bg-ink-50/70 text-left">
           <tr>
             {head.map((h, i) => (
-              <th key={i} scope="col" className="px-4 py-2.5 font-medium text-ink-600">{h}</th>
+              <th key={i} scope="col"
+                  className="whitespace-nowrap px-4 py-3 text-xs font-semibold uppercase tracking-wide text-ink-500">
+                {h}
+              </th>
             ))}
           </tr>
         </thead>
-        <tbody className="divide-y divide-ink-100">{children}</tbody>
+        <tbody className="divide-y divide-ink-100 [&_tr:hover]:bg-ink-50/50">{children}</tbody>
       </table>
     </div>
   );

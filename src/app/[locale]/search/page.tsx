@@ -114,15 +114,15 @@ export default async function SearchPage({ params, searchParams }: Props) {
 
   return (
     <div className="space-y-6">
-      <div className="rounded-xl border border-ink-200 bg-white p-4">
-        <p className="text-sm text-ink-500">
+      <div className="rounded-xl border border-ink-200 bg-white p-5">
+        <h1 className="text-xl font-semibold tracking-tight text-ink-900">
           {result.route.originName || from}
-          {stops.length > 0 && <span className="text-ink-400"> · via {stops.length} stop{stops.length > 1 ? "s" : ""}</span>}
-          {" → "}
+          <span className="mx-2 text-ink-400" aria-hidden>→</span>
           {result.route.destinationName || to}
-        </p>
-        <p className="mt-1 font-medium text-ink-900">
-          {travelAt.toLocaleString(locale, { dateStyle: "medium", timeStyle: "short" })}
+        </h1>
+        <p className="mt-1 text-sm text-ink-600">
+          {travelAt.toLocaleString(locale, { dateStyle: "full", timeStyle: "short" })}
+          {stops.length > 0 && <span className="text-ink-500"> · via {stops.length} stop{stops.length > 1 ? "s" : ""}</span>}
         </p>
         {result.offers.length > 0 && (
           <>
@@ -178,18 +178,18 @@ export default async function SearchPage({ params, searchParams }: Props) {
 
                   return (
                     <li key={offer.quoteId}>
-                      <Card className="p-4">
-                        <div className="flex flex-wrap gap-4">
+                      <Card className="overflow-hidden p-5 transition-colors hover:border-ink-300">
+                        <div className="flex flex-wrap gap-5">
                           <VehiclePhoto
                             photoKey={offer.vehicle.photoKey}
                             colour={offer.vehicle.colour}
                             alt={`${offer.vehicle.make} ${offer.vehicle.model}`}
-                            className="h-24 w-36 shrink-0"
+                            className="h-28 w-40 shrink-0"
                           />
 
                           <div className="min-w-0 flex-1">
                             <div className="flex flex-wrap items-center gap-2">
-                              <h2 className="font-semibold text-ink-900">{offer.driverName}</h2>
+                              <h2 className="text-lg font-semibold text-ink-900">{offer.driverName}</h2>
                               <Badge tone="success">{t("driver.verified")}</Badge>
                               {index === 0 && filterState.sort === "recommended" && (
                                 <Badge tone="info">Recommended</Badge>
@@ -224,28 +224,28 @@ export default async function SearchPage({ params, searchParams }: Props) {
                             </p>
                           </div>
 
-                          <div className="text-right">
-                            <p className="text-xl font-semibold text-ink-900">{shown.primary}</p>
+                          <div className="ml-auto shrink-0 text-right">
+                            <p className="text-2xl font-semibold tracking-tight text-ink-900">{shown.primary}</p>
                             {shown.secondary && (
                               <p className="text-sm text-ink-500">≈ {shown.secondary}</p>
                             )}
-                            <p className="text-xs text-ink-500">{t("search.priceForVehicle")}</p>
+                            <p className="mt-0.5 text-xs text-ink-500">{t("search.priceForVehicle")}</p>
                             <Link
                               href={`/${locale}/checkout?quote=${offer.quoteId}`}
-                              className="mt-3 inline-block rounded-lg bg-wine-600 px-4 py-2 text-sm font-medium text-white hover:bg-wine-700"
+                              className="mt-4 inline-flex min-h-11 w-full items-center justify-center rounded-lg bg-wine-600 px-5 py-2.5 text-sm font-semibold text-white shadow-sm transition-colors hover:bg-wine-700"
                             >
                               Book this driver
                             </Link>
                             <Link
                               href={`/${locale}/drivers/${offer.handle}`}
-                              className="mt-2 block text-xs text-ink-500 underline hover:text-ink-800"
+                              className="mt-2 block text-xs text-ink-500 underline underline-offset-2 hover:text-ink-800"
                             >
                               {t("driver.viewProfile")}
                             </Link>
                           </div>
                         </div>
 
-                        <div className="mt-3 flex flex-wrap gap-4 border-t border-ink-100 pt-3">
+                        <div className="mt-4 flex flex-wrap gap-5 border-t border-ink-100 pt-3">
                           <details className="text-xs">
                             <summary className="cursor-pointer text-ink-500">Price breakdown</summary>
                             <ul className="mt-2 space-y-1 text-ink-600">

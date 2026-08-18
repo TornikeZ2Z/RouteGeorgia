@@ -2,6 +2,7 @@ import type { MetadataRoute } from "next";
 import { config } from "@/lib/config";
 import { LOCALES } from "@/lib/i18n";
 import { listRoutes } from "@/lib/routes-content";
+import { listTours } from "@/lib/tours";
 import { sql } from "@db/client";
 
 export const revalidate = 3600;
@@ -11,8 +12,9 @@ export const revalidate = 3600;
  * surfaces are excluded here and additionally noindexed at the header level.
  */
 export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
-  const [routes, drivers] = await Promise.all([
+  const [routes, tours, drivers] = await Promise.all([
     listRoutes("en"),
+    listTours("en"),
     sql<{ handle: string; updated_at: Date }[]>`
       SELECT handle, updated_at FROM driver_profiles
       WHERE published AND status = 'APPROVED'`,
@@ -28,8 +30,18 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
     entries.push(
       { url: `${config.appUrl}/${locale}`, changeFrequency: "weekly", priority: 1, alternates: alternates("") },
       { url: `${config.appUrl}/${locale}/transfers`, changeFrequency: "weekly", priority: 0.9, alternates: alternates("/transfers") },
+      { url: `${config.appUrl}/${locale}/tours`, changeFrequency: "weekly", priority: 0.9, alternates: alternates("/tours") },
       { url: `${config.appUrl}/${locale}/faq`, changeFrequency: "monthly", priority: 0.4, alternates: alternates("/faq") },
     );
+
+    for (const tour of tours) {
+      entries.push({
+        url: `${config.appUrl}/${locale}/tours/${tour.slug}`,
+        changeFrequency: "monthly",
+        priority: 0.8,
+        alternates: alternates(`/tours/${tour.slug}`),
+      });
+    }
 
     for (const r of routes) {
       entries.push({

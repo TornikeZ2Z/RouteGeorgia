@@ -63,8 +63,19 @@ npm run dev          # http://localhost:3000
 
 ### Sign-in accounts
 
-All seeded accounts use the password `GamgzavriDev2026!`.
-Every one of them is fake. Delete them before you deploy anything.
+`db:seed` prints a **freshly generated password** for all seeded accounts —
+copy it from the terminal output. Set `SEED_PASSWORD` first if you want a
+stable one locally:
+
+```bash
+SEED_PASSWORD=letmein-locally npm run db:seed
+```
+
+The password is generated rather than published because this seed gets run
+against databases that public deployments read from. A fixed password in a
+README is a way into a live operations console.
+
+Every seeded account is fake. Delete them before real customers arrive.
 
 | Email | Role | What they can do |
 |---|---|---|
@@ -98,7 +109,8 @@ error. That is server-side RBAC, not a hidden button.
 **Public site** (`/en`, `/ka`, `/ru`)
 Route builder with intermediate stops, filtered and sorted search over real
 per-vehicle quotes, driver profiles with photo galleries and published reviews,
-indexable route landing pages, FAQ, sitemap, GEL/USD/EUR display currency.
+indexable route landing pages, a curated **tours catalogue** with written
+itineraries, FAQ, sitemap, GEL/USD/EUR display currency.
 **Checkout, booking, cash and card payment, a confirmation page, guest
 manage-booking with cancellation, and booking-scoped messaging.** Every price
 shows its full breakdown, and "Recommended" explains itself.
@@ -122,8 +134,8 @@ refuses to let a driver be double-booked.
 
 ## What is deliberately not built
 
-Tours and multi-day itineraries, the partner/affiliate programme, driver
-payouts execution, and live trip tracking. Notifications print to the server
+The partner/affiliate programme, driver payout execution, and live trip
+tracking. Notifications print to the server
 console rather than sending email — the outbox, templates and delivery
 tracking are real, only the transport is a stub.
 
@@ -210,8 +222,8 @@ Every `git push` to `main` redeploys. Pull requests get their own preview URL.
 
 ### Before you share the link with anyone real
 
-- **Delete the seeded accounts.** They all use a password published in this
-  README. Run `db:seed` only against a development database.
+- **Delete the seeded accounts.** They are demonstration data with a
+  generated password. Run `db:seed` only against a development database.
 - **Move file storage off local disk.** `STORAGE_DRIVER=local` writes to the
   server's filesystem, which is wiped on every Vercel deploy. Driver documents
   and vehicle photos need S3 or Cloudflare R2 first.

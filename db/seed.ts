@@ -8,6 +8,7 @@
 import "dotenv/config";
 import postgres from "postgres";
 import bcrypt from "bcryptjs";
+import { randomBytes } from "node:crypto";
 
 const sql = postgres(process.env.DATABASE_URL!, { max: 1, onnotice: () => {} });
 
@@ -23,8 +24,19 @@ const sql = postgres(process.env.DATABASE_URL!, { max: 1, onnotice: () => {} });
  * tests/db.test.ts asserts jsonb_typeof(...) = 'object' to catch regressions.
  */
 
-/** One password for every seeded account. Development only. */
-const PASSWORD = "GamgzavriDev2026!";
+/**
+ * Password for the seeded accounts.
+ *
+ * Generated per run rather than hard-coded, because this seed has been run
+ * against a database that a public website reads from. A fixed password
+ * printed in the README means anyone who finds the repository can sign in to
+ * the operations console of a live deployment.
+ *
+ * Set SEED_PASSWORD to pin it if you want a stable local login.
+ */
+const PASSWORD =
+  process.env.SEED_PASSWORD ??
+  `dev-${randomBytes(9).toString("base64url")}`;
 
 const LOCATIONS = [
   { slug: "tbilisi-airport", type: "AIRPORT",    en: "Tbilisi International Airport", ka: "თბილისის აეროპორტი", ru: "Аэропорт Тбилиси", lat: 41.6692, lon: 44.9547, seo: true },
@@ -80,6 +92,110 @@ const BANDS = [
   { class: "SUV_4X4", minKm: 120, maxKm: 340, floor: 6000, ceiling: 200000, overnight: 20000, season: 14000 },
   { class: "MINIBUS", minKm: 150, maxKm: 420, floor: 8000, ceiling: 260000, overnight: 22000, season: 13000 },
   { class: "PREMIUM", minKm: 200, maxKm: 600, floor: 12000, ceiling: 400000, overnight: 30000, season: 15000 },
+];
+
+
+/**
+ * Curated tours. Geography and travel times are public facts; all descriptive
+ * copy here is original and written for this project.
+ *
+ * A tour returns to where it started, so `return_km` is 0 and the loop
+ * distance carries the whole journey. That is the difference between a tour
+ * and a one-way transfer, and it is why the same pricing engine gives sensible
+ * numbers for both.
+ */
+const TOURS = [
+  {
+    slug: "mtskheta-jvari-day-trip",
+    origin: "tbilisi",
+    days: 1,
+    km: 62,
+    minutes: 100,
+    minFare: 12000,
+    risk: 10000,
+    title: "Mtskheta and Jvari in a day",
+    summary: "The old capital, a sixth-century monastery above the meeting of two rivers, and lunch by the water — an easy half day from Tbilisi.",
+    body: "Start at Jvari Monastery on the ridge, where the Aragvi and Mtkvari rivers meet below and visibly refuse to mix. Take a jacket: it is windy up there whatever the forecast says.\n\nDown in Mtskheta you have Svetitskhoveli Cathedral, an eleventh-century building that was the coronation and burial church of Georgian kings. The town itself is small enough to walk in an hour and has good churchkhela.\n\nMost drivers will suggest a riverside restaurant on the way back if you want lunch. Say so when you book and they will plan the timing around it.",
+    stops: [
+      ["tbilisi", 0, "Pickup from your accommodation."],
+      ["mtskheta", 22, "Jvari Monastery first, then the town below."],
+      ["tbilisi", 25, "Back to Tbilisi. Return is included in the price."],
+    ],
+  },
+  {
+    slug: "kakheti-wine-day-trip",
+    origin: "tbilisi",
+    days: 1,
+    km: 290,
+    minutes: 330,
+    minFare: 28000,
+    risk: 10000,
+    title: "Kakheti wine country",
+    summary: "Sighnaghi on its hilltop, the Bodbe convent, and a working winery in the valley that invented amber wine.",
+    body: "Kakheti is where Georgian wine actually comes from, and where qvevri — clay vessels buried in the ground — have been used for eight thousand years.\n\nBodbe Monastery comes first, with the Alazani Valley laid out below and the Caucasus behind it. Then Sighnaghi, a walled town on a ridge that takes about two hours to walk properly.\n\nThe winery stop is where the day earns its keep. Tastings are paid separately and directly — we do not mark them up, and your driver will not push you toward a particular cellar.",
+    stops: [
+      ["tbilisi", 0, "Early start is worth it; this is a full day."],
+      ["sighnaghi", 113, "Bodbe Monastery, then the town walls."],
+      ["telavi", 60, "Lunch and a winery in the valley."],
+      ["tbilisi", 96, "Back by early evening."],
+    ],
+  },
+  {
+    slug: "kazbegi-gergeti-day-trip",
+    origin: "tbilisi",
+    days: 1,
+    km: 312,
+    minutes: 420,
+    minFare: 42000,
+    risk: 12500,
+    fourByFour: true,
+    title: "Kazbegi and the Gergeti church",
+    summary: "The Georgian Military Highway to the Russian border, and a fourteenth-century church at 2,170 metres with Mount Kazbek behind it.",
+    body: "This is the drive people come to Georgia for. The Military Highway climbs through Ananuri fortress and the Jvari Pass to Stepantsminda, and the road itself is the attraction for most of the way.\n\nGergeti Trinity Church sits above the town with Mount Kazbek at 5,054 metres behind it when the cloud lifts. The final ascent is a rough track — this tour requires a 4x4 and the driver will take you up it.\n\nBe realistic about the day: seven hours of driving plus stops means leaving early and returning late. From November to April the pass can close at short notice, and we will move or refund rather than risk it.",
+    stops: [
+      ["tbilisi", 0, "Leave by 08:00 to have daylight at the top."],
+      ["gudauri", 120, "Jvari Pass and the viewpoint over the valley."],
+      ["kazbegi", 36, "Gergeti Trinity Church by 4x4 track."],
+      ["tbilisi", 156, "Long drive back; expect to arrive after dark."],
+    ],
+  },
+  {
+    slug: "borjomi-vardzia-day-trip",
+    origin: "tbilisi",
+    days: 1,
+    km: 520,
+    minutes: 480,
+    minFare: 48000,
+    risk: 11000,
+    title: "Borjomi and the Vardzia cave city",
+    summary: "Mineral springs in a forested gorge, then a twelfth-century monastery carved into a cliff face over thirteen levels.",
+    body: "Borjomi is a spa town in a wooded gorge, and the park is worth the walk even if you do not drink the water — which is famously not to everyone's taste.\n\nVardzia is the reason to make the longer drive. Queen Tamar's monastery was cut into the rock in the twelfth century and once held hundreds of rooms across thirteen levels; an earthquake in 1283 sheared the outer wall away and exposed the whole thing in cross-section.\n\nIt is a long day — around eight hours of driving. Worth doing, but not to be combined with anything else.",
+    stops: [
+      ["tbilisi", 0, "Early departure needed for this one."],
+      ["borjomi", 160, "Mineral park and the gorge."],
+      ["vardzia", 100, "The cave monastery. Allow two hours."],
+      ["tbilisi", 260, "Direct return."],
+    ],
+  },
+  {
+    slug: "svaneti-three-days",
+    origin: "kutaisi",
+    days: 3,
+    km: 640,
+    minutes: 900,
+    minFare: 120000,
+    risk: 13000,
+    fourByFour: true,
+    title: "Upper Svaneti in three days",
+    summary: "Medieval tower houses under 4,000-metre peaks, in a valley that was effectively unreachable for most of the year until recently.",
+    body: "Svaneti is the most remote place in Georgia that you can reasonably drive to, and the defensive tower houses of Mestia and Ushguli have stood since the ninth century.\n\nDay one is the drive up from Kutaisi through the Enguri gorge — five hours, and genuinely spectacular. Day two goes to Ushguli, one of the highest continuously inhabited settlements in Europe, on a track that needs a 4x4 and a driver who has done it before. Day three returns.\n\nYour accommodation is booked and paid by you; the price here covers the vehicle, the driver, and their own lodging and meals for the two nights. That overnight cost is shown as a separate line in the quote rather than hidden in a per-kilometre rate.",
+    stops: [
+      ["kutaisi", 0, "Depart mid-morning; the drive is long."],
+      ["mestia", 210, "Day 1. Tower houses and the Svaneti museum."],
+      ["mestia", 0, "Day 2. Ushguli and back by 4x4 track."],
+      ["kutaisi", 210, "Day 3. Return through the gorge."],
+    ],
+  },
 ];
 
 const FIRST = ["Giorgi","Levan","Nikoloz","Davit","Zurab","Irakli","Tornike","Vakhtang","Beka","Saba",
@@ -345,6 +461,29 @@ async function main() {
     }
   }
 
+
+  console.log("Seeding tours …");
+  for (const t of TOURS) {
+    const [tour] = await sql<{ id: string }[]>`
+      INSERT INTO tours (slug, origin_id, duration_days, distance_km, drive_minutes,
+                         return_km, deadhead_recovery_bps, risk_factor_bps,
+                         min_fare_minor, requires_4x4)
+      VALUES (${t.slug}, ${locIds.get(t.origin)!}::uuid, ${t.days}, ${t.km}, ${t.minutes},
+              0, 0, ${t.risk}, ${t.minFare}, ${t.fourByFour ?? false})
+      RETURNING id`;
+
+    await sql`
+      INSERT INTO tour_translations (tour_id, locale, title, summary, body)
+      VALUES (${tour!.id}::uuid, 'en', ${t.title}, ${t.summary}, ${t.body})`;
+
+    for (const [index, [slug, legKm, notes]] of t.stops.entries()) {
+      await sql`
+        INSERT INTO tour_stops (tour_id, location_id, day_index, position, leg_km, notes)
+        VALUES (${tour!.id}::uuid, ${locIds.get(slug as string)!}::uuid,
+                ${Math.min(index, t.days - 1)}, ${index}, ${legKm as number}, ${notes as string})`;
+    }
+  }
+
   await sql`
     INSERT INTO content_pages (slug, locale, kind, title, body, published) VALUES
       ('faq','en','FAQ','Frequently asked questions',
@@ -357,10 +496,14 @@ async function main() {
 
   console.log(`
 Seed complete.
-  ${LOCATIONS.length} locations, ${ROUTES.length} route families, ${BANDS.length} price bands
+  ${LOCATIONS.length} locations, ${ROUTES.length} route families, ${TOURS.length} tours, ${BANDS.length} price bands
   ${DRIVER_COUNT} drivers (${count} published, ${DRIVER_COUNT - published} awaiting review)
 
-Sign in at http://localhost:3000/login with password: ${PASSWORD}
+Sign in at http://localhost:3000/login
+Password for ALL seeded accounts (generated for this run — copy it now):
+
+    ${PASSWORD}
+
   admin@example.com    super admin
   ops@example.com      operations manager (approves drivers)
   support@example.com  support agent (read only — try it, it should be blocked)
