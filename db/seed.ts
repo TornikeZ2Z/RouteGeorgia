@@ -124,12 +124,27 @@ const int = (min: number, max: number) => min + Math.floor(rand() * (max - min +
 
 async function main() {
   console.log("Clearing existing data …");
+  // Note: truncating driver_profiles CASCADEs to ledger_accounts, so the
+  // platform-wide accounts created by migration 0002 are recreated below.
   await sql`TRUNCATE users, locations, route_families, price_bands,
             driver_profiles, driver_languages, driver_documents, driver_decisions,
             vehicles, vehicle_media, price_plans, availability_blocks,
             route_searches, quotes, bookings, booking_status_history,
+            booking_legs, booking_revisions, booking_access_tokens,
+            payments, webhook_events, ledger_accounts, ledger_entries,
+            driver_wallets, payouts, notifications, messages,
+            reviews, review_tokens,
             content_pages, exchange_rates RESTART IDENTITY CASCADE`;
   // audit_logs is append-only and deliberately not truncated.
+
+  await sql`
+    INSERT INTO ledger_accounts (kind, driver_id, currency) VALUES
+      ('CARD_CLEARING',    NULL, 'GEL'),
+      ('CASH_WITH_DRIVER', NULL, 'GEL'),
+      ('PLATFORM_REVENUE', NULL, 'GEL'),
+      ('REFUNDS',          NULL, 'GEL'),
+      ('PAYOUTS',          NULL, 'GEL')
+    ON CONFLICT DO NOTHING`;
 
   const hash = await bcrypt.hash(PASSWORD, 10);
 
@@ -297,6 +312,13 @@ async function main() {
       VALUES (${driverId}::uuid, ${vehicleId}::uuid, 1, ${rate}, ${int(0, 40)}, ${int(0, 1500)},
               ${int(8000, band.overnight)}, ${band.floor}, ${pick([10000, 10000, 10500, 11000])},
               ${isPublished ? "ACTIVE" : "DRAFT"}::plan_status, now())`;
+
+    // Every driver gets a wallet. The credit limit is what stops unpaid
+    // cash commission from growing without anyone noticing.
+    await sql`
+      INSERT INTO driver_wallets (driver_id, credit_limit_minor)
+      VALUES (${driverId}::uuid, 20000)
+      ON CONFLICT (driver_id) DO NOTHING`;
 
     // A few busy blocks so availability filtering is visibly doing something.
     if (isPublished) {

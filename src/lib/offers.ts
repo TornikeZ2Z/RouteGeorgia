@@ -240,9 +240,10 @@ export async function searchOffers(req: SearchRequest): Promise<SearchResult> {
     SELECT driver_id, language, declared_level, verified_level FROM driver_languages
     WHERE driver_id = ANY(${candidates.map((c) => c.driver_id)}::uuid[])`;
 
-  const offers: Offer[] = [];
-
-  for (const c of candidates) {
+  // Price every candidate first. computeQuote is pure and fast, so this loop
+  // costs nothing; what used to cost was writing each quote in its own
+  // round trip. On a remote database that was one network hop per driver.
+  const priced_ = candidates.map((c) => {
     const inputs: QuoteInputs = {
       engineVersion: ENGINE_VERSION,
       currency: c.currency,
@@ -269,52 +270,67 @@ export async function searchOffers(req: SearchRequest): Promise<SearchResult> {
       commissionRateBps: config.policy.commissionRateBps,
       roundingStepMinor: config.policy.roundingStepMinor,
     };
+    return { candidate: c, inputs, breakdown: computeQuote(inputs) };
+  });
 
-    const breakdown = computeQuote(inputs);
+  // One INSERT for every quote. Arrays are passed as text and cast per row,
+  // which also sidesteps the jsonb double-encoding trap described above.
+  //
+  // vehicle_id is unique across candidates (the schema allows only one ACTIVE
+  // price plan per vehicle), so it is a safe key to map ids back by.
+  const quoteRows = await sql<{ id: string; vehicle_id: string }[]>`
+    INSERT INTO quotes (search_id, driver_id, vehicle_id, price_plan_id, route_family_id,
+                        engine_version, inputs, breakdown, currency, gross_minor,
+                        commission_rate_bps, commission_minor, driver_net_minor, expires_at)
+    SELECT ${searchId}::uuid, x.driver_id::uuid, x.vehicle_id::uuid, x.plan_id::uuid,
+           ${family?.id ?? null}::uuid, ${ENGINE_VERSION},
+           x.inputs::jsonb, x.breakdown::jsonb, x.currency,
+           x.gross::bigint, ${config.policy.commissionRateBps},
+           x.commission::bigint, x.net::bigint, ${expiresAt.toISOString()}::timestamptz
+    FROM unnest(
+      ${priced_.map((p) => p.candidate.driver_id)}::text[],
+      ${priced_.map((p) => p.candidate.vehicle_id)}::text[],
+      ${priced_.map((p) => p.candidate.plan_id)}::text[],
+      ${priced_.map((p) => JSON.stringify(p.inputs))}::text[],
+      ${priced_.map((p) => JSON.stringify(p.breakdown))}::text[],
+      ${priced_.map((p) => p.candidate.currency)}::text[],
+      ${priced_.map((p) => p.breakdown.grossMinor)}::text[],
+      ${priced_.map((p) => p.breakdown.commissionMinor)}::text[],
+      ${priced_.map((p) => p.breakdown.driverNetMinor)}::text[]
+    ) AS x(driver_id, vehicle_id, plan_id, inputs, breakdown, currency, gross, commission, net)
+    RETURNING id, vehicle_id`;
 
-    const [quote] = await sql<{ id: string }[]>`
-      INSERT INTO quotes
-        (search_id, driver_id, vehicle_id, price_plan_id, route_family_id, engine_version,
-         inputs, breakdown, currency, gross_minor, commission_rate_bps, commission_minor,
-         driver_net_minor, expires_at)
-      VALUES (${searchId}::uuid, ${c.driver_id}::uuid, ${c.vehicle_id}::uuid, ${c.plan_id}::uuid,
-              ${family?.id ?? null}::uuid, ${ENGINE_VERSION},
-              ${JSON.stringify(inputs)}::text::jsonb, ${JSON.stringify(breakdown)}::text::jsonb, ${c.currency},
-              ${breakdown.grossMinor}::bigint, ${config.policy.commissionRateBps},
-              ${breakdown.commissionMinor}::bigint, ${breakdown.driverNetMinor}::bigint,
-              ${expiresAt.toISOString()}::timestamptz)
-      RETURNING id`;
+  const quoteIdByVehicle = new Map(quoteRows.map((r) => [r.vehicle_id, r.id]));
 
-    offers.push({
-      quoteId: quote!.id,
-      driverId: c.driver_id,
-      handle: c.handle,
-      driverName: c.public_name,
-      ratingAverage: c.rating_count > 0 ? c.rating_sum / c.rating_count : null,
-      ratingCount: c.rating_count,
-      completedTrips: c.completed_trips,
-      languages: langRows
-        .filter((l) => l.driver_id === c.driver_id)
-        .map((l) => ({
-          language: l.language,
-          level: l.verified_level ?? l.declared_level,
-          verified: l.verified_level !== null,
-        })),
-      vehicle: {
-        id: c.vehicle_id, make: c.make, model: c.model, year: c.year, class: c.class,
-        colour: c.color, seats: c.seats, luggage: c.luggage,
-        amenities: c.amenities as Record<string, unknown>,
-        capabilities: c.capabilities as Record<string, unknown>,
-        photoKey: c.photo_key,
-      },
-      grossMinor: BigInt(breakdown.grossMinor),
-      currency: c.currency,
-      breakdown,
-      score: 0,
-      scoreReasons: [],
-      expiresAt,
-    });
-  }
+  const offers: Offer[] = priced_.map(({ candidate: c, breakdown }) => ({
+    quoteId: quoteIdByVehicle.get(c.vehicle_id)!,
+    driverId: c.driver_id,
+    handle: c.handle,
+    driverName: c.public_name,
+    ratingAverage: c.rating_count > 0 ? c.rating_sum / c.rating_count : null,
+    ratingCount: c.rating_count,
+    completedTrips: c.completed_trips,
+    languages: langRows
+      .filter((l) => l.driver_id === c.driver_id)
+      .map((l) => ({
+        language: l.language,
+        level: l.verified_level ?? l.declared_level,
+        verified: l.verified_level !== null,
+      })),
+    vehicle: {
+      id: c.vehicle_id, make: c.make, model: c.model, year: c.year, class: c.class,
+      colour: c.color, seats: c.seats, luggage: c.luggage,
+      amenities: c.amenities as Record<string, unknown>,
+      capabilities: c.capabilities as Record<string, unknown>,
+      photoKey: c.photo_key,
+    },
+    grossMinor: BigInt(breakdown.grossMinor),
+    currency: c.currency,
+    breakdown,
+    score: 0,
+    scoreReasons: [],
+    expiresAt,
+  }));
 
   const priced = f.maxPriceMinor
     ? offers.filter((o) => o.grossMinor <= f.maxPriceMinor!)
