@@ -10,26 +10,35 @@ const config: NextConfig = {
   /**
    * One canonical hostname.
    *
-   * The site answers on the apex domain, on www, and on the hosting
-   * subdomain. Left alone, search engines treat those as three sites competing
-   * with each other and split the ranking between them. Everything redirects
-   * permanently to the apex.
+   * The site answers on the apex domain, on www, and on the hosting subdomain.
+   * Left alone, search engines treat those as three competing sites and split
+   * the ranking between them.
+   *
+   * The www redirect is always safe. Redirecting the hosting subdomain is NOT:
+   * until DNS for the custom domain resolves, it sends every visitor to an
+   * address that does not exist yet and takes the site offline. So it is
+   * opt-in, and only switched on once the domain is verified and serving.
    */
   async redirects() {
-    return [
+    const rules = [
       {
         source: "/:path*",
-        has: [{ type: "host", value: `www.${CANONICAL_HOST}` }],
+        has: [{ type: "host" as const, value: `www.${CANONICAL_HOST}` }],
         destination: `https://${CANONICAL_HOST}/:path*`,
         permanent: true,
       },
-      {
+    ];
+
+    if (process.env.ENFORCE_CANONICAL_HOST === "true") {
+      rules.push({
         source: "/:path*",
-        has: [{ type: "host", value: "(?<sub>.*)\\.onrender\\.com" }],
+        has: [{ type: "host" as const, value: "(?<sub>.*)\\.onrender\\.com" }],
         destination: `https://${CANONICAL_HOST}/:path*`,
         permanent: false,
-      },
-    ];
+      });
+    }
+
+    return rules;
   },
   async headers() {
     return [
