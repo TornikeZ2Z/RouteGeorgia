@@ -18,7 +18,7 @@ interface LocationOption { slug: string; name_en: string; type: string }
  * revalidates everything.
  */
 export function SearchForm({
-  locale, locations, initial, layout = "wide", tourSlug, lockRoute = false,
+  locale, locations, initial, layout = "wide", tourSlug, lockRoute = false, roundTrip = false,
 }: {
   locale: string;
   locations: LocationOption[];
@@ -29,6 +29,8 @@ export function SearchForm({
   tourSlug?: string;
   /** Fixed endpoints, for a tour whose route is not the traveller's to change. */
   lockRoute?: boolean;
+  /** Wait-and-return: adds a return date and prices both directions. */
+  roundTrip?: boolean;
 }) {
   const compact = layout === "compact";
   const t = getTranslator(isLocale(locale) ? (locale as Locale) : "en");
@@ -37,6 +39,7 @@ export function SearchForm({
   const [to, setTo] = useState(initial?.to ?? locations[1]?.slug ?? "");
   const [stops, setStops] = useState<string[]>([]);
   const [when, setWhen] = useState(defaultWhen());
+  const [returnWhen, setReturnWhen] = useState(defaultReturnWhen());
   const [passengers, setPassengers] = useState(2);
   const [luggage, setLuggage] = useState(2);
   const [error, setError] = useState<string | null>(null);
@@ -55,11 +58,15 @@ export function SearchForm({
       }
     }
     if (new Date(when).getTime() < Date.now()) return setError(t("search.errPast"));
+    if (roundTrip && new Date(returnWhen).getTime() <= new Date(when).getTime()) {
+      return setError(t("search.errReturn"));
+    }
 
     setError(null);
     const q = new URLSearchParams({
       from, to, when, passengers: String(passengers), luggage: String(luggage),
     });
+    if (roundTrip) q.set("return", returnWhen);
     if (tourSlug) q.set("tour", tourSlug);
     for (const s of stops) q.append("stop", s);
     router.push(`/${locale}/search?${q}`);
@@ -95,7 +102,18 @@ export function SearchForm({
             <Input id="when" type="datetime-local" value={when} onChange={(e) => setWhen(e.target.value)} />
           </Field>
         </div>
+
+        {roundTrip && (
+          <div className={compact ? "" : "lg:col-span-2"}>
+            <Field label={t("search.return")} htmlFor="return-when" required>
+              <Input id="return-when" type="datetime-local" value={returnWhen}
+                     onChange={(e) => setReturnWhen(e.target.value)} />
+            </Field>
+          </div>
+        )}
       </div>
+
+      {roundTrip && <p className="text-xs text-ink-500">{t("search.roundTripNote")}</p>}
 
       {!lockRoute && stops.length > 0 && (
         <ul className="space-y-2">
@@ -166,6 +184,13 @@ export function SearchForm({
 
 function defaultWhen() {
   const d = new Date(Date.now() + 26 * 3600_000);
+  d.setMinutes(0, 0, 0);
+  return d.toISOString().slice(0, 16);
+}
+
+/** Default return: the evening two days out — a plausible wait-and-return. */
+function defaultReturnWhen() {
+  const d = new Date(Date.now() + 34 * 3600_000);
   d.setMinutes(0, 0, 0);
   return d.toISOString().slice(0, 16);
 }

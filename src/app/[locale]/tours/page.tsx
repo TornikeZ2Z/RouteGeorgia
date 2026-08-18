@@ -44,7 +44,7 @@ export default async function ToursIndex({ params }: Props) {
   return (
     <div className="space-y-10">
       <header className="max-w-3xl">
-        <p className="eyebrow text-wine-600">{t("tours.eyebrow")}</p>
+        <p className="eyebrow text-brand-600">{t("tours.eyebrow")}</p>
         <h1 className="font-display mt-3 text-4xl text-ink-900 sm:text-5xl">
           {t("tours.title")}
         </h1>
@@ -63,7 +63,7 @@ export default async function ToursIndex({ params }: Props) {
               <li key={tour.slug}>
                 <Link
                   href={`/${locale}/tours/${tour.slug}`}
-                  className="group flex h-full flex-col overflow-hidden rounded-2xl border border-ink-200 bg-white transition-colors hover:border-wine-300"
+                  className="group flex h-full flex-col overflow-hidden rounded-2xl border border-ink-200 bg-white transition-colors hover:border-brand-300"
                 >
                   {/* An abstract route illustration rather than stock photography
                       of a place the traveller has not yet chosen. */}
@@ -83,7 +83,7 @@ export default async function ToursIndex({ params }: Props) {
                   </div>
 
                   <div className="flex flex-1 flex-col p-5">
-                    <h2 className="font-display text-xl text-ink-900 group-hover:text-wine-700">{tour.title}</h2>
+                    <h2 className="font-display text-xl text-ink-900 group-hover:text-brand-700">{tour.title}</h2>
                     <p className="mt-2 flex-1 text-sm leading-relaxed text-ink-600">{tour.summary}</p>
 
                     <div className="mt-4 flex items-end justify-between border-t border-ink-100 pt-3">

@@ -67,7 +67,7 @@ export default async function BookingPage({ params, searchParams }: Props) {
 
   const [legs, messages, policy] = await Promise.all([
     sql<{ label: string; position: number }[]>`
-      SELECT label, position FROM booking_legs WHERE booking_id = ${bookingId}::uuid ORDER BY position`,
+      SELECT label, position, day_index FROM booking_legs WHERE booking_id = ${bookingId}::uuid ORDER BY position`,
     sql<{ id: string; sender: string; body: string; created_at: Date }[]>`
       SELECT id, sender::text, body, created_at FROM messages
       WHERE booking_id = ${bookingId}::uuid ORDER BY created_at`,
@@ -116,14 +116,18 @@ export default async function BookingPage({ params, searchParams }: Props) {
           <Card className="p-4 sm:p-6">
             <h2 className="font-semibold text-ink-900">{t("booking.tripT")}</h2>
             <ol className="mt-3 space-y-2 text-sm">
-              {legs.map((leg) => (
-                <li key={leg.position} className="flex gap-2 text-ink-700">
-                  <span aria-hidden className="text-ink-400">
-                    {leg.position === 0 ? "●" : leg.position === legs.length - 1 ? "◆" : "○"}
-                  </span>
-                  {leg.label}
-                </li>
-              ))}
+              {legs.map((leg) => {
+                const isReturn = leg.position > 0 && leg.label === legs[0]?.label;
+                return (
+                  <li key={leg.position} className="flex gap-2 text-ink-700">
+                    <span aria-hidden className="text-ink-400">
+                      {leg.position === 0 ? "●" : leg.position === legs.length - 1 ? "◆" : "○"}
+                    </span>
+                    {leg.label}
+                    {isReturn && <span className="text-xs text-ink-500">({t("search.returnLeg")})</span>}
+                  </li>
+                );
+              })}
             </ol>
             <dl className="mt-4 grid gap-2 border-t border-ink-100 pt-3 text-sm sm:grid-cols-2">
               <div><dt className="text-ink-500">{t("booking.departure")}</dt>
@@ -166,7 +170,7 @@ export default async function BookingPage({ params, searchParams }: Props) {
                 {t("booking.plateLater")}
               </p>
             )}
-            <Link href={`/${locale}/drivers/${booking.handle}`} className="mt-3 inline-block text-sm text-wine-700 underline">
+            <Link href={`/${locale}/drivers/${booking.handle}`} className="mt-3 inline-block text-sm text-brand-700 underline">
               {t("card.viewProfile")}
             </Link>
           </Card>

@@ -78,3 +78,25 @@ Tracking it properly was.
 
 The last three are the ones that need a Georgian lawyer and accountant, not a
 developer.
+
+## Round trips are priced as one journey, not two
+
+A wait-and-return books one driver for the whole span: both directions are
+billed at the driver's per-km rate, the deadhead recovery disappears (the
+driver comes home loaded), overnights are charged when the return crosses a
+calendar day, and the calendar is blocked from pickup to return. This makes a
+round trip reliably cheaper than two one-way bookings — which is the honest
+economics and the selling point. Historic quote snapshots carry no roundTrip
+field and replay byte-identically.
+
+## Hourly hire is an inquiry, not a price
+
+There are no per-hour rates in driver price plans yet, so the Hourly tab
+routes to a form that lands in the support queue. Showing a made-up hourly
+price would violate the "the price you see is the price" promise.
+
+## No partner logos until there are partners
+
+The approved mockup shows hotel and airport logos. Displaying trademarks of
+companies we have no agreement with is both a legal exposure and a false
+claim, so the partners strip stays out until real agreements exist.

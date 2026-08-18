@@ -45,7 +45,7 @@ export default async function CheckoutPage({ params, searchParams }: Props) {
     return (
       <EmptyState title={t("checkout.expiredT")}>
         <p>{t("checkout.expiredB")}</p>
-        <Link href={`/${locale}`} className="mt-3 inline-block text-wine-700 underline">{t("checkout.newSearch")}</Link>
+        <Link href={`/${locale}`} className="mt-3 inline-block text-brand-700 underline">{t("checkout.newSearch")}</Link>
       </EmptyState>
     );
   }
@@ -56,7 +56,8 @@ export default async function CheckoutPage({ params, searchParams }: Props) {
   ]);
   const rate = await getRate(currency);
 
-  const itinerary = quote.itinerary as { origin: string; stops?: string[]; destination: string };
+  const itinerary = quote.itinerary as { origin: string; stops?: string[]; destination: string; roundTrip?: boolean; returnAt?: string };
+  const returnAt = itinerary.roundTrip && itinerary.returnAt ? new Date(itinerary.returnAt) : null;
   const points = [itinerary.origin, ...(itinerary.stops ?? []), itinerary.destination];
   const travelAt = new Date(quote.travel_at);
   const gross = BigInt(quote.gross_minor);
@@ -106,6 +107,11 @@ export default async function CheckoutPage({ params, searchParams }: Props) {
           <dl className="mt-4 space-y-1 border-t border-ink-100 pt-3 text-sm">
             <div className="flex justify-between"><dt className="text-ink-500">{t("checkout.departure")}</dt>
               <dd className="text-right">{travelAt.toLocaleString(locale, { dateStyle: "medium", timeStyle: "short" })}</dd></div>
+            {returnAt && (
+              <div className="flex justify-between gap-4 py-2.5">
+                <dt className="text-ink-500">{t("search.returnLeg")}</dt>
+                <dd className="text-right">{returnAt.toLocaleString(locale, { dateStyle: "medium", timeStyle: "short" })}</dd></div>
+            )}
             <div className="flex justify-between"><dt className="text-ink-500">{t("checkout.drivingTime")}</dt>
               <dd>{Math.floor((quote.drive_minutes ?? 0) / 60)} h {(quote.drive_minutes ?? 0) % 60} min</dd></div>
             <div className="flex justify-between"><dt className="text-ink-500">{t("checkout.distance")}</dt>

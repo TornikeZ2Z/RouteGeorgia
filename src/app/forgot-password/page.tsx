@@ -11,8 +11,8 @@ export default async function ForgotPassword({
   const { sent } = await searchParams;
 
   return (
-    <div className="relative flex min-h-dvh flex-col justify-center overflow-hidden bg-forest-800 px-4 py-12">
-      <ContourField className="text-forest-300" opacity={0.13} seed={7} />
+    <div className="relative flex min-h-dvh flex-col justify-center overflow-hidden bg-pine-800 px-4 py-12">
+      <ContourField className="text-pine-300" opacity={0.13} seed={7} />
       <div className="relative mx-auto w-full max-w-md">
         <Card className="p-7">
           <h1 className="font-display text-2xl text-ink-900">Reset your password</h1>
@@ -26,7 +26,7 @@ export default async function ForgotPassword({
               <p className="text-sm text-ink-600">
                 Nothing arrived? Check spam, then try again — or ask operations to reset it for you.
               </p>
-              <Link href="/login" className="inline-block text-sm text-wine-700 underline">
+              <Link href="/login" className="inline-block text-sm text-brand-700 underline">
                 Back to sign in
               </Link>
             </div>
@@ -42,7 +42,7 @@ export default async function ForgotPassword({
                 </Field>
                 <Button type="submit" className="w-full">Send reset link</Button>
               </form>
-              <Link href="/login" className="mt-6 inline-block text-sm text-wine-700 underline">
+              <Link href="/login" className="mt-6 inline-block text-sm text-brand-700 underline">
                 Back to sign in
               </Link>
             </>

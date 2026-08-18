@@ -49,7 +49,7 @@ export default async function MediaQueue() {
               <p className="text-xs text-ink-500">
                 {m.plate} · {m.view_type ?? "unspecified view"}
               </p>
-              <Link href={`/admin/drivers/${m.driver_id}`} className="text-xs text-wine-700 underline">
+              <Link href={`/admin/drivers/${m.driver_id}`} className="text-xs text-brand-700 underline">
                 {m.public_name}
               </Link>
               {m.alt_text && <p className="mt-1 text-xs text-ink-500">“{m.alt_text}”</p>}

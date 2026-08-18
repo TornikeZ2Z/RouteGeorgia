@@ -171,7 +171,7 @@ export default async function RoutePage({ params }: Props) {
               <li key={r.slug}>
                 <Link
                   href={`/${locale}/transfers/${r.slug}`}
-                  className="block rounded-lg border border-ink-200 bg-white px-4 py-3 text-sm hover:border-wine-300"
+                  className="block rounded-lg border border-ink-200 bg-white px-4 py-3 text-sm hover:border-brand-300"
                 >
                   <span className="font-medium text-ink-800">{r.originName}</span>
                   <span className="mx-2 text-ink-400" aria-hidden>→</span>

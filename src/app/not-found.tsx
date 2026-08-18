@@ -7,7 +7,7 @@ export default function NotFound() {
       <p className="mt-2 text-sm text-ink-600">
         That page does not exist, or the driver profile is not published.
       </p>
-      <Link href="/" className="mt-6 inline-block rounded-lg bg-wine-600 px-4 py-2 text-sm text-white hover:bg-wine-700">
+      <Link href="/" className="mt-6 inline-block rounded-lg bg-brand-600 px-4 py-2 text-sm text-white hover:bg-brand-700">
         Go home
       </Link>
     </div>

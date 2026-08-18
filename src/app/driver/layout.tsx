@@ -37,7 +37,7 @@ export default async function DriverLayout({ children }: { children: React.React
       <header className="sticky top-0 z-10 border-b border-ink-200 bg-white">
         <div className="mx-auto flex max-w-4xl items-center justify-between px-4 py-3">
           <Link href="/driver" className="flex items-center gap-2.5">
-            <span aria-hidden className="grid size-8 place-items-center rounded-full bg-wine-600 text-white">
+            <span aria-hidden className="grid size-8 place-items-center rounded-full bg-brand-600 text-white">
               <svg viewBox="0 0 24 24" className="size-4" fill="none" stroke="currentColor" aria-hidden>
                 <ellipse cx="12" cy="14" rx="9" ry="5.5" strokeWidth="1.4" opacity=".45" />
                 <path d="M4 18 C9 10, 15 16, 20 7" strokeWidth="2.2" strokeLinecap="round" />

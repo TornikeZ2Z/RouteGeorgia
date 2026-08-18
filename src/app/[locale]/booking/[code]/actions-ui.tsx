@@ -64,7 +64,7 @@ export function MessageThread({
           {messages.map((m) => (
             <li
               key={m.id}
-              className={`rounded-lg px-3 py-2 text-sm ${m.sender === "CUSTOMER" ? "ml-8 bg-wine-50" : "mr-8 bg-ink-100"}`}
+              className={`rounded-lg px-3 py-2 text-sm ${m.sender === "CUSTOMER" ? "ml-8 bg-brand-50" : "mr-8 bg-ink-100"}`}
             >
               <p className="text-xs text-ink-500">
                 {m.sender === "CUSTOMER" ? t("booking.you") : m.sender === "DRIVER" ? t("booking.driver") : t("booking.support")}

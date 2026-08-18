@@ -2,7 +2,7 @@ import "server-only";
 import { createHash, randomBytes, randomUUID } from "node:crypto";
 import { sql } from "@db/client";
 import { config } from "@/lib/config";
-import { serviceWindow } from "@/lib/offers";
+import { serviceWindow, roundTripWindow } from "@/lib/offers";
 import { post, driverBalance } from "@/lib/ledger";
 import * as notify from "@/lib/notifications";
 import { writeAudit } from "@/lib/audit";
@@ -128,15 +128,20 @@ export async function createBooking(quoteId: string, details: CheckoutDetails): 
   }
 
   const travelAt = new Date(quote.travel_at);
-  const window = serviceWindow(travelAt, quote.drive_minutes ?? 0);
+  const itineraryEarly = quote.itinerary as { origin: string; stops?: string[]; destination: string; roundTrip?: boolean; returnAt?: string };
+  const returnAt = itineraryEarly.roundTrip && itineraryEarly.returnAt ? new Date(itineraryEarly.returnAt) : null;
+  const window = returnAt
+    ? roundTripWindow(travelAt, returnAt, quote.drive_minutes ?? 0)
+    : serviceWindow(travelAt, quote.drive_minutes ?? 0);
   const code = bookingCode();
   const manageToken = randomBytes(32).toString("base64url");
   const gross = BigInt(quote.gross_minor);
   const commission = BigInt(quote.commission_minor);
   const net = BigInt(quote.driver_net_minor);
-  const itinerary = quote.itinerary as { origin: string; stops?: string[]; destination: string };
-  const routeLabel = [itinerary.origin, ...(itinerary.stops ?? []), itinerary.destination]
-    .map(humanise).join(" → ");
+  const itinerary = itineraryEarly;
+  const routeLabel =
+    [itinerary.origin, ...(itinerary.stops ?? []), itinerary.destination].map(humanise).join(" → ") +
+    (returnAt ? ` → ${humanise(itinerary.origin)}` : "");
 
   let bookingId = "";
 
@@ -179,12 +184,20 @@ export async function createBooking(quoteId: string, details: CheckoutDetails): 
       bookingId = booking!.id;
 
       // Itinerary as first-class rows, so the driver sees ordered stops.
+      // A round trip ends where it began: the return is a real leg with its
+      // own day index, not a footnote.
       const points = [itinerary.origin, ...(itinerary.stops ?? []), itinerary.destination];
+      if (returnAt) points.push(itinerary.origin);
+      const returnDay = returnAt
+        ? Math.floor((returnAt.getTime() - travelAt.getTime()) / 86_400_000)
+        : 0;
       for (const [index, slug] of points.entries()) {
+        const isReturn = returnAt !== null && index === points.length - 1;
         await tx`
-          INSERT INTO booking_legs (booking_id, position, location_id, label)
+          INSERT INTO booking_legs (booking_id, position, location_id, label, day_index)
           VALUES (${bookingId}::uuid, ${index},
-                  (SELECT id FROM locations WHERE slug = ${slug}), ${humanise(slug)})`;
+                  (SELECT id FROM locations WHERE slug = ${slug}), ${humanise(slug)},
+                  ${isReturn ? returnDay : 0})`;
       }
 
       // Block the calendar. The EXCLUDE constraint is what actually prevents

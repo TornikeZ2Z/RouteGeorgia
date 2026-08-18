@@ -29,7 +29,7 @@ export function CreateDriverForm({ locations }: { locations: { id: string; name_
   if (!open) {
     return (
       <button onClick={() => setOpen(true)}
-              className="rounded-lg bg-wine-600 px-4 py-2.5 text-sm font-medium text-white hover:bg-wine-700">
+              className="rounded-lg bg-brand-600 px-4 py-2.5 text-sm font-medium text-white hover:bg-brand-700">
         Add a driver
       </button>
     );

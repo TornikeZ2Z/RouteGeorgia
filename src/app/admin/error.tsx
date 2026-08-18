@@ -15,7 +15,7 @@ export default function AdminError({ error, reset }: { error: Error & { digest?:
         <button onClick={reset} className="rounded-lg border border-ink-200 px-4 py-2 text-sm hover:bg-ink-50">
           Try again
         </button>
-        <Link href="/admin" className="rounded-lg bg-wine-600 px-4 py-2 text-sm text-white">Command centre</Link>
+        <Link href="/admin" className="rounded-lg bg-brand-600 px-4 py-2 text-sm text-white">Command centre</Link>
       </div>
     </div>
   );

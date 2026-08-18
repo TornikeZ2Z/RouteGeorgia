@@ -52,6 +52,13 @@ export interface QuoteInputs {
   routeMinFareMinor: string;
   extraStops: number;
   nights: number;
+  /**
+   * Wait-and-return trip: both directions are billed at the driver's rate and
+   * the deadhead line disappears (the driver comes home loaded). Optional and
+   * absent from every pre-existing snapshot, so historic quotes replay
+   * byte-identically under the same engine version.
+   */
+  roundTrip?: boolean;
   plan: {
     ratePerKmMinor: string;
     ratePerMinuteMinor: string;
@@ -101,18 +108,22 @@ export function computeQuote(inputs: QuoteInputs): QuoteBreakdown {
 
   const ratePerKm = B(inputs.plan.ratePerKmMinor);
   const lines: QuoteLine[] = [];
+  const directions = inputs.roundTrip ? 2n : 1n;
 
   // 1. Loaded distance. km100 is hundredths of a km, so divide it back out.
-  const distance = divRound(BigInt(inputs.distanceKm100) * ratePerKm, 100n);
+  //    A round trip drives the route twice with the customer aboard.
+  const distance = divRound(directions * BigInt(inputs.distanceKm100) * ratePerKm, 100n);
   lines.push({
     code: "distance",
     label: "Distance",
     amountMinor: distance.toString(),
-    detail: `${(inputs.distanceKm100 / 100).toFixed(2)} km at driver rate`,
+    detail: `${(inputs.distanceKm100 / 100).toFixed(2)} km at driver rate${inputs.roundTrip ? ", both directions" : ""}`,
   });
 
   // 2. Empty return leg, at the recovery share configured for this corridor.
-  const deadheadFull = divRound(BigInt(inputs.returnKm100) * ratePerKm, 100n);
+  //    On a round trip there is no empty return — the driver comes home paid —
+  //    which is exactly why wait-and-return beats two one-way bookings.
+  const deadheadFull = inputs.roundTrip ? 0n : divRound(BigInt(inputs.returnKm100) * ratePerKm, 100n);
   const deadhead = applyBps(deadheadFull, inputs.deadheadRecoveryBps);
   if (deadhead > 0n) {
     lines.push({
@@ -124,9 +135,12 @@ export function computeQuote(inputs: QuoteInputs): QuoteBreakdown {
   }
 
   // 3. Driving time (covers slow mountain roads that distance alone misses).
-  const time = BigInt(inputs.driveMinutes) * B(inputs.plan.ratePerMinuteMinor);
+  const time = directions * BigInt(inputs.driveMinutes) * B(inputs.plan.ratePerMinuteMinor);
   if (time > 0n) {
-    lines.push({ code: "time", label: "Driving time", amountMinor: time.toString(), detail: `${inputs.driveMinutes} min` });
+    lines.push({
+      code: "time", label: "Driving time", amountMinor: time.toString(),
+      detail: `${inputs.roundTrip ? inputs.driveMinutes * 2 : inputs.driveMinutes} min`,
+    });
   }
 
   // 4. Extra stops and overnight stays.

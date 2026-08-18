@@ -12,10 +12,10 @@ import { ContourField } from "@/components/contour-field";
  * problem and a promise about a specific view we cannot keep.
  */
 const PALETTES = [
-  { sky: "#26483e", ridge: "#1d3a31", far: "#356152", accent: "#c99a45" },
-  { sky: "#1d3a31", ridge: "#152b24", far: "#2b5548", accent: "#d5ac60" },
-  { sky: "#2a4a52", ridge: "#1e363c", far: "#356169", accent: "#c99a45" },
-  { sky: "#3a352d", ridge: "#2a2b26", far: "#524b3f", accent: "#e3c384" },
+  { sky: "#234a3c", ridge: "#1a3a2f", far: "#32604e", accent: "#d5ac60" },
+  { sky: "#1a3a2f", ridge: "#122b22", far: "#28503f", accent: "#e3c384" },
+  { sky: "#20444f", ridge: "#173239", far: "#2e5a66", accent: "#d5ac60" },
+  { sky: "#2c4a33", ridge: "#1f3625", far: "#3f6a49", accent: "#f0dcb2" },
 ];
 
 /** Stable hash so a place always draws the same way. */

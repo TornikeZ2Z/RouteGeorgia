@@ -27,6 +27,9 @@ const Schema = z.object({
   ROUTING_PROVIDER: z.enum(["haversine", "google", "mapbox"]).default("haversine"),
   ROUTING_API_KEY: z.string().default(""),
   STORAGE_DRIVER: z.enum(["local", "s3"]).default("local"),
+  /** Shown in the header and footer once the business SIM exists. Hidden when empty. */
+  SUPPORT_PHONE: z.string().default(""),
+  SUPPORT_EMAIL: z.string().default("support@routegeorgia.ge"),
   NODE_ENV: z.enum(["development", "test", "production"]).default("development"),
 });
 
@@ -76,6 +79,7 @@ export const config = {
     version: "policy-2026-08-v1",
   },
 
+  contact: { phone: env.SUPPORT_PHONE, email: env.SUPPORT_EMAIL },
   routing: { provider: env.ROUTING_PROVIDER, apiKey: env.ROUTING_API_KEY },
   storage: { driver: env.STORAGE_DRIVER },
 } as const;

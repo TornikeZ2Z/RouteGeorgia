@@ -1,54 +1,53 @@
 @import "tailwindcss";
 
 /* ---------------------------------------------------------------------------
-   Route Georgia — design tokens.
+   RouteGeorgia — design tokens.
 
-   The visual idea: a travel company from the Caucasus, not a rideshare app.
-   Editorial rather than tech — a display serif for voice, generous measure,
-   hairline rules, and a topographic contour motif as the ownable signature.
-   Contour lines because the whole product is about crossing terrain, and
-   because they are ours in a way stock photography of Kazbegi never is.
+   Direction chosen from the approved mockup: a bright, modern booking product.
+   White surfaces, generous radii, a confident green as the single brand hue,
+   deep pine for dark bands, and a cool neutral scale. The display face is the
+   sans at heavy weight — no webfonts are bundled, so the stack leans on
+   Segoe UI / system-ui, which every target device renders well.
 
-   Founder palette, deepened for contrast:
-     Georgian wine red  #7B2936  wine-600   action, brand
-     Deep forest green  #26483E  forest-600 the canvas for dark sections
-     Warm limestone     #F4EFE6  ink-50     page ground
-     Charcoal           #202625  ink-900    text
-     Muted gold         #C99A45  gold-500   accent, seasonal, attention
+   Scales:
+     brand  — primary green: actions, links, highlights   (#0f7a4a at 600)
+     pine   — deep green canvas: hero, footer, dark bands  (#122b22 at 800)
+     ink    — cool neutrals: text and lines
+     gold   — amber accent: stars, warnings (kept from v1)
    --------------------------------------------------------------------------- */
 @theme {
-  --color-ink-50:  #f6f2ea;
-  --color-ink-100: #ebe4d6;
-  --color-ink-200: #dbd1bd;
-  --color-ink-300: #c0b49c;
-  --color-ink-400: #978c76;
-  --color-ink-500: #6f6656;
-  --color-ink-600: #524b3f;
-  --color-ink-700: #3a352d;
-  --color-ink-800: #2a2b26;
-  --color-ink-900: #202625;
+  --color-ink-50:  #f4f7f5;
+  --color-ink-100: #e9efec;
+  --color-ink-200: #d9e1dd;
+  --color-ink-300: #bcc7c2;
+  --color-ink-400: #919d97;
+  --color-ink-500: #68746e;
+  --color-ink-600: #4d5751;
+  --color-ink-700: #37403b;
+  --color-ink-800: #252c28;
+  --color-ink-900: #161c19;
 
-  --color-wine-50:  #fbf3f4;
-  --color-wine-100: #f4e2e5;
-  --color-wine-200: #e6c3c9;
-  --color-wine-300: #d0959f;
-  --color-wine-400: #b26370;
-  --color-wine-500: #94404e;
-  --color-wine-600: #7b2936;
-  --color-wine-700: #64212c;
-  --color-wine-800: #4e1a23;
-  --color-wine-900: #3a131a;
+  --color-brand-50:  #ecf7f1;
+  --color-brand-100: #d3eee0;
+  --color-brand-200: #a9ddc3;
+  --color-brand-300: #78c69f;
+  --color-brand-400: #46aa79;
+  --color-brand-500: #219158;
+  --color-brand-600: #0f7a4a;
+  --color-brand-700: #0d633d;
+  --color-brand-800: #0b4e31;
+  --color-brand-900: #093c27;
 
-  --color-forest-50:  #eff4f2;
-  --color-forest-100: #dbe7e2;
-  --color-forest-200: #b7cdc4;
-  --color-forest-300: #87ab9d;
-  --color-forest-400: #517d6d;
-  --color-forest-500: #356152;
-  --color-forest-600: #26483e;
-  --color-forest-700: #1d3a31;
-  --color-forest-800: #152b24;
-  --color-forest-900: #0f1f1a;
+  --color-pine-50:  #eef4f1;
+  --color-pine-100: #d8e6df;
+  --color-pine-200: #b2cdc1;
+  --color-pine-300: #82ab99;
+  --color-pine-400: #4e7d69;
+  --color-pine-500: #32604e;
+  --color-pine-600: #234a3c;
+  --color-pine-700: #1a3a2f;
+  --color-pine-800: #122b22;
+  --color-pine-900: #0c1f18;
 
   --color-gold-50:  #fdf8ee;
   --color-gold-100: #f9efd9;
@@ -63,66 +62,60 @@
   --color-steel-100: #e1e9ed;
   --color-steel-700: #2f4a58;
 
-  --color-danger: #a8291f;
+  --color-danger: #b3261e;
   --color-danger-bg: #fbeceb;
 
-  --font-sans: ui-sans-serif, system-ui, -apple-system, "Segoe UI", Roboto,
-               "Noto Sans Georgian", "Helvetica Neue", Arial, sans-serif;
+  --font-sans: "Segoe UI", ui-sans-serif, system-ui, -apple-system,
+               "Noto Sans Georgian", Roboto, "Helvetica Neue", Arial, sans-serif;
 
-  /* Book serifs that are actually installed on the devices travellers use. */
-  --font-display: "Iowan Old Style", "Palatino Linotype", Palatino, "Book Antiqua",
-                  "Noto Serif Georgian", Georgia, ui-serif, serif;
-
-  --radius-card: 0.875rem;
+  --radius-card: 1rem;
 }
 
 html { -webkit-text-size-adjust: 100%; }
 
 body {
-  background: var(--color-ink-50);
+  background: #ffffff;
   color: var(--color-ink-900);
   font-family: var(--font-sans);
-  font-feature-settings: "cv05" 1, "ss01" 1;
 }
 
-/* Display face carries the brand voice: headlines, prices, numbers that matter. */
+/* Display style: the same sans, set heavy and tight. Carries headlines,
+   prices, and the numbers that matter. */
 .font-display {
-  font-family: var(--font-display);
-  font-weight: 400;
+  font-weight: 750;
   letter-spacing: -0.02em;
-  line-height: 1.08;
+  line-height: 1.1;
 }
 
-/* Small-caps eyebrow above section headings — editorial, and it gives the
-   page a rhythm that card grids alone never do. */
+/* Small uppercase eyebrow above section headings. */
 .eyebrow {
   font-size: 0.6875rem;
-  font-weight: 600;
-  letter-spacing: 0.16em;
+  font-weight: 700;
+  letter-spacing: 0.14em;
   text-transform: uppercase;
 }
 
 /* The contour motif is drawn in SVG — see src/components/contour-field.tsx.
-   CSS repeating gradients were tried twice and shimmer at every size. */
+   Used sparingly on dark pine bands as texture. */
 
 /* A hairline that fades out — used under section headings. */
 .rule-fade {
   height: 1px;
   background: linear-gradient(
     to right,
-    color-mix(in oklab, var(--color-ink-900) 22%, transparent),
+    color-mix(in oklab, var(--color-ink-900) 18%, transparent),
     transparent
   );
 }
 
 :focus-visible {
-  outline: 2px solid var(--color-wine-600);
+  outline: 2px solid var(--color-brand-600);
   outline-offset: 2px;
   border-radius: 4px;
 }
 
 ::selection {
-  background: var(--color-gold-200);
+  background: var(--color-brand-100);
   color: var(--color-ink-900);
 }
 

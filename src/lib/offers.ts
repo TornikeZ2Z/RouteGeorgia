@@ -44,6 +44,8 @@ export interface SearchRequest {
   /** Ordered intermediate stops, by location slug. */
   stopSlugs?: string[];
   travelAt: Date;
+  /** Wait-and-return: the driver stays with the traveller and drives back. */
+  returnAt?: Date | null;
   passengers: number;
   luggage: number;
   nights?: number;
@@ -98,6 +100,17 @@ export function serviceWindow(travelAt: Date, driveMinutes: number): { startsAt:
   return {
     startsAt: new Date(travelAt.getTime() - PRE_TRIP_BUFFER_MIN * 60_000),
     endsAt: new Date(travelAt.getTime() + (driveMinutes + POST_TRIP_BUFFER_MIN) * 60_000),
+  };
+}
+
+/**
+ * A round trip blocks the driver for the entire journey — out, the stay,
+ * and the drive home. Anything less would sell the "waiting" driver twice.
+ */
+export function roundTripWindow(travelAt: Date, returnAt: Date, oneWayMinutes: number): { startsAt: Date; endsAt: Date } {
+  return {
+    startsAt: new Date(travelAt.getTime() - PRE_TRIP_BUFFER_MIN * 60_000),
+    endsAt: new Date(returnAt.getTime() + (oneWayMinutes + POST_TRIP_BUFFER_MIN) * 60_000),
   };
 }
 
@@ -172,16 +185,28 @@ export async function searchOffers(req: SearchRequest): Promise<SearchResult> {
     tour?.deadhead_recovery_bps ?? family?.deadhead_recovery_bps ?? defaultDeadheadRecovery(estimate.distanceKm100);
   const riskFactorBps = tour?.risk_factor_bps ?? family?.risk_factor_bps ?? 10_000;
   const routeMinFareMinor = (tour?.min_fare_minor ?? family?.min_fare_minor ?? 0n).toString();
-  // A tour of N days keeps the driver for N-1 nights.
-  const nights = tour ? Math.max(0, tour.duration_days - 1) : (req.nights ?? 0);
+
+  // Round trip: only for point-to-point journeys (a tour is already a loop),
+  // and only when the return really is after the departure.
+  const roundTrip = !tour && !!req.returnAt && req.returnAt.getTime() > req.travelAt.getTime();
+  // A tour of N days keeps the driver for N-1 nights. A round trip keeps them
+  // for every calendar day boundary the stay crosses.
+  const nights = tour
+    ? Math.max(0, tour.duration_days - 1)
+    : roundTrip
+      ? Math.floor((req.returnAt!.getTime() - req.travelAt.getTime()) / 86_400_000)
+      : (req.nights ?? 0);
   const requires4x4 = tour?.requires_4x4 ?? family?.requires_4x4 ?? false;
 
   const f = req.filters ?? {};
-  const window = serviceWindow(req.travelAt, estimate.driveMinutes);
+  const window = roundTrip
+    ? roundTripWindow(req.travelAt, req.returnAt!, estimate.driveMinutes)
+    : serviceWindow(req.travelAt, estimate.driveMinutes);
   const itinerary = {
     origin: origin.slug,
     stops: stopSlugs,
     destination: destination.slug,
+    ...(roundTrip ? { roundTrip: true, returnAt: req.returnAt!.toISOString() } : {}),
     ...(tour ? { tour: tour.slug, days: tour.duration_days } : {}),
   };
   const itineraryHash = createHash("sha256")
@@ -279,6 +304,7 @@ export async function searchOffers(req: SearchRequest): Promise<SearchResult> {
       routeMinFareMinor,
       extraStops: stops.length,
       nights,
+      ...(roundTrip ? { roundTrip: true } : {}),
       plan: {
         ratePerKmMinor: c.rate_per_km_minor.toString(),
         ratePerMinuteMinor: c.rate_per_minute_minor.toString(),

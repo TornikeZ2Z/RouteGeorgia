@@ -13,7 +13,7 @@ export function Button({
   // Minimum 44px tall at md and above: the driver app is used one-handed on a
   // phone, often in a moving vehicle.
   const base =
-    "inline-flex items-center justify-center gap-2 rounded-lg font-medium " +
+    "inline-flex items-center justify-center gap-2 rounded-xl font-semibold " +
     "transition-[background-color,box-shadow,transform] duration-150 " +
     "active:translate-y-px disabled:opacity-50 disabled:cursor-not-allowed disabled:active:translate-y-0";
   const sizes = {
@@ -22,7 +22,7 @@ export function Button({
     lg: "px-6 py-3 text-base min-h-12",
   };
   const variants = {
-    primary: "bg-wine-600 text-white shadow-sm hover:bg-wine-700 hover:shadow",
+    primary: "bg-brand-600 text-white shadow-sm hover:bg-brand-700 hover:shadow",
     secondary: "bg-white text-ink-800 border border-ink-300 hover:border-ink-400 hover:bg-ink-50",
     ghost: "text-ink-600 hover:bg-ink-100",
     danger: "bg-[--color-danger] text-white shadow-sm hover:opacity-90",
@@ -32,7 +32,7 @@ export function Button({
 
 export function Card({ className, children }: { className?: string; children: ReactNode }) {
   return (
-    <div className={cx("rounded-xl border border-ink-200 bg-white shadow-[0_1px_2px_rgba(32,38,37,.04)]", className)}>
+    <div className={cx("rounded-2xl border border-ink-200 bg-white shadow-[0_1px_2px_rgba(22,28,25,.05)]", className)}>
       {children}
     </div>
   );
@@ -59,9 +59,9 @@ export function Field({
 }
 
 const FIELD_BASE =
-  "w-full rounded-lg border border-ink-300 bg-white px-3 py-2.5 text-sm text-ink-900 " +
+  "w-full rounded-xl border border-ink-300 bg-white px-3 py-2.5 text-sm text-ink-900 " +
   "transition-colors placeholder:text-ink-400 hover:border-ink-400 " +
-  "focus:border-wine-600 focus:ring-0 disabled:bg-ink-50 disabled:text-ink-500";
+  "focus:border-brand-600 focus:ring-0 disabled:bg-ink-50 disabled:text-ink-500";
 
 export function Input({ className, ...props }: ComponentProps<"input">) {
   return <input className={cx(FIELD_BASE, className)} {...props} />;
@@ -81,7 +81,7 @@ export function Textarea({ className, ...props }: ComponentProps<"textarea">) {
  */
 const TONES = {
   neutral: "bg-ink-100 text-ink-700",
-  success: "bg-forest-100 text-forest-700",
+  success: "bg-pine-100 text-pine-700",
   warning: "bg-gold-100 text-gold-700",
   danger: "bg-[--color-danger-bg] text-[--color-danger]",
   info: "bg-steel-100 text-steel-700",

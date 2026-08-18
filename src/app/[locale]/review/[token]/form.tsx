@@ -40,7 +40,7 @@ export function ReviewForm({ token, driverName }: { token: string; driverName: s
                   type="radio" name={name} value={value} className="peer sr-only"
                   required={name === "overall"}
                 />
-                <span className="inline-flex size-10 items-center justify-center rounded-lg border border-ink-300 text-sm peer-checked:border-wine-600 peer-checked:bg-wine-600 peer-checked:text-white">
+                <span className="inline-flex size-10 items-center justify-center rounded-lg border border-ink-300 text-sm peer-checked:border-brand-600 peer-checked:bg-brand-600 peer-checked:text-white">
                   {value}
                 </span>
               </label>

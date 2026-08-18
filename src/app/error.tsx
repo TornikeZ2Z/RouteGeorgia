@@ -22,7 +22,7 @@ export default function GlobalError({ error, reset }: { error: Error & { digest?
         <button onClick={reset} className="rounded-lg border border-ink-200 bg-white px-4 py-2 text-sm hover:bg-ink-50">
           Try again
         </button>
-        <Link href="/" className="rounded-lg bg-wine-600 px-4 py-2 text-sm text-white hover:bg-wine-700">
+        <Link href="/" className="rounded-lg bg-brand-600 px-4 py-2 text-sm text-white hover:bg-brand-700">
           Go home
         </Link>
       </div>

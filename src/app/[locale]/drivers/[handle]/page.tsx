@@ -70,7 +70,7 @@ export default async function DriverProfile({ params }: Props) {
     <div className="space-y-6">
       <div className="rounded-2xl border border-ink-200 bg-white p-6">
         <div className="flex flex-wrap items-center gap-3">
-          <span aria-hidden className="grid size-12 shrink-0 place-items-center rounded-full bg-forest-600 text-lg font-semibold text-white">
+          <span aria-hidden className="grid size-12 shrink-0 place-items-center rounded-full bg-pine-600 text-lg font-semibold text-white">
             {driver.public_name.charAt(0)}
           </span>
           <div>

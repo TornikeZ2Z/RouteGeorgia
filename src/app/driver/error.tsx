@@ -15,7 +15,7 @@ export default function DriverError({ error, reset }: { error: Error & { digest?
         <button onClick={reset} className="rounded-lg border border-ink-200 px-4 py-2 text-sm hover:bg-ink-50">
           Try again
         </button>
-        <Link href="/driver" className="rounded-lg bg-wine-600 px-4 py-2 text-sm text-white">Overview</Link>
+        <Link href="/driver" className="rounded-lg bg-brand-600 px-4 py-2 text-sm text-white">Overview</Link>
       </div>
     </div>
   );

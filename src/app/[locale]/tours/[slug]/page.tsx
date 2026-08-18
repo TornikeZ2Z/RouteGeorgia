@@ -148,8 +148,8 @@ export default async function TourPage({ params }: Props) {
                     <span
                       aria-hidden
                       className={`relative z-10 mt-1 size-6 shrink-0 rounded-full border-2 ${
-                        i === 0 ? "border-wine-600 bg-wine-600"
-                        : last ? "border-forest-600 bg-forest-600"
+                        i === 0 ? "border-brand-600 bg-brand-600"
+                        : last ? "border-pine-600 bg-pine-600"
                         : "border-ink-300 bg-white"}`}
                     />
                     <div className="min-w-0">
@@ -203,7 +203,7 @@ export default async function TourPage({ params }: Props) {
             {others.filter((t2) => t2.slug !== slug).slice(0, 4).map((t2) => (
               <li key={t2.slug}>
                 <Link href={`/${locale}/tours/${t2.slug}`}
-                      className="block h-full rounded-xl border border-ink-200 bg-white p-4 hover:border-wine-300">
+                      className="block h-full rounded-xl border border-ink-200 bg-white p-4 hover:border-brand-300">
                   <p className="font-medium text-ink-900">{t2.title}</p>
                   <p className="mt-1 text-xs text-ink-500">
                     {t2.durationDays === 1 ? t("tours.dayTrip") : t("tours.days", { count: t2.durationDays })} · {formatDistance(t2.distanceKm)}

@@ -55,7 +55,7 @@ export function RevokeButton({ userId, email }: { userId: string; email: string 
   const [state, action] = useActionState(revokeStaffAction, INITIAL);
   const [confirming, setConfirming] = useState(false);
 
-  if (state.ok) return <span className="text-xs text-forest-700">revoked</span>;
+  if (state.ok) return <span className="text-xs text-pine-700">revoked</span>;
 
   return confirming ? (
     <form action={action} className="inline-flex items-center gap-2">
@@ -65,7 +65,7 @@ export function RevokeButton({ userId, email }: { userId: string; email: string 
               className="text-xs text-ink-500 underline">cancel</button>
     </form>
   ) : (
-    <button onClick={() => setConfirming(true)} className="text-xs text-wine-700 underline">
+    <button onClick={() => setConfirming(true)} className="text-xs text-brand-700 underline">
       revoke access
     </button>
   );

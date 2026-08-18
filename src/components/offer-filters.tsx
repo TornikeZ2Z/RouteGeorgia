@@ -156,7 +156,7 @@ export function OfferFiltersPanel({
         </div>
 
         <div className="flex gap-2">
-          <button className="flex-1 rounded-lg bg-wine-600 px-4 py-2 text-sm font-medium text-white hover:bg-wine-700">
+          <button className="flex-1 rounded-lg bg-brand-600 px-4 py-2 text-sm font-medium text-white hover:bg-brand-700">
             {t("filters.apply")}
           </button>
           <a

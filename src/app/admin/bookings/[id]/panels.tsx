@@ -249,7 +249,7 @@ export function SupportMessagePanel({
           {messages.map((m) => (
             <li key={m.id} className={`rounded-lg px-3 py-2 text-sm ${
               m.sender === "CUSTOMER" ? "bg-steel-50"
-              : m.sender === "DRIVER" ? "bg-forest-50" : "bg-wine-50"}`}>
+              : m.sender === "DRIVER" ? "bg-pine-50" : "bg-brand-50"}`}>
               <p className="flex flex-wrap items-center gap-2 text-xs text-ink-500">
                 <span className="font-medium">{m.sender.toLowerCase()}</span>
                 <span>{new Date(m.created_at).toLocaleString("en-GB", { dateStyle: "short", timeStyle: "short" })}</span>
@@ -279,7 +279,7 @@ export function ResendButton({ notificationId }: { notificationId: string }) {
   return (
     <form action={action} className="inline">
       <input type="hidden" name="notificationId" value={notificationId} />
-      <button className="text-xs text-wine-700 underline hover:text-wine-900">
+      <button className="text-xs text-brand-700 underline hover:text-brand-900">
         {state.message ? (state.ok ? "resent" : "failed") : "resend"}
       </button>
     </form>

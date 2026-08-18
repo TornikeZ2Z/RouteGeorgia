@@ -37,7 +37,7 @@ export default async function Contact({ params }: Props) {
   return (
     <div className="mx-auto max-w-3xl">
       <header>
-        <p className="eyebrow text-wine-600">{t("contact.eyebrow")}</p>
+        <p className="eyebrow text-brand-600">{t("contact.eyebrow")}</p>
         <h1 className="font-display mt-3 text-4xl text-ink-900 sm:text-5xl">{t("contact.title")}</h1>
         <p className="mt-5 text-lg leading-relaxed text-ink-700">
           {t("contact.intro")}
@@ -59,7 +59,7 @@ export default async function Contact({ params }: Props) {
           <h2 className="font-display text-xl text-ink-900">{t("contact.elseT")}</h2>
           <p className="mt-2 text-sm leading-relaxed text-ink-600">
             {t("contact.elseB", { email: "" })}{" "}
-            <a href={`mailto:${SUPPORT_EMAIL}`} className="text-wine-700 underline">{SUPPORT_EMAIL}</a>
+            <a href={`mailto:${SUPPORT_EMAIL}`} className="text-brand-700 underline">{SUPPORT_EMAIL}</a>
           </p>
           <p className="mt-3 text-sm text-ink-600">{t("contact.hours")}</p>
         </Card>
@@ -68,7 +68,7 @@ export default async function Contact({ params }: Props) {
           <h2 className="font-display text-xl text-ink-900">{t("contact.driversT")}</h2>
           <p className="mt-2 text-sm leading-relaxed text-ink-600">
             {t("contact.driversB1")}{" "}
-            <Link href="/driver" className="text-wine-700 underline">{t("nav.becomeDriver")}</Link>
+            <Link href="/driver" className="text-brand-700 underline">{t("nav.becomeDriver")}</Link>
           </p>
           <p className="mt-3 text-sm text-ink-600">
             {t("contact.driversB2")}
@@ -93,7 +93,7 @@ export default async function Contact({ params }: Props) {
             ["cancellation", t("contact.ruleCancel")],
           ] as const).map(([slug, label]) => (
             <li key={slug}>
-              <Link href={`/${locale}/legal/${slug}`} className="text-wine-700 underline underline-offset-4">
+              <Link href={`/${locale}/legal/${slug}`} className="text-brand-700 underline underline-offset-4">
                 {label}
               </Link>
             </li>

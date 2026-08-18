@@ -8,9 +8,10 @@ import { config } from "@/lib/config";
 import { Badge, Card } from "@/components/ui";
 import { ContourField } from "@/components/contour-field";
 import { PlaceImage } from "@/components/place-image";
+import { sitePhoto } from "@/lib/site-photos";
 import { listTours } from "@/lib/tours";
 import { formatApproxDuration, formatDistance } from "@/lib/format";
-import { SearchForm } from "@/components/search-form";
+import { SearchTabs } from "@/components/search-tabs";
 
 export const dynamic = "force-dynamic";
 
@@ -31,15 +32,37 @@ export async function generateMetadata({
   };
 }
 
-/** Claims here must be things the product actually does. Text lives in the dictionary. */
-const PROMISE_KEYS = [
-  ["home.why1t", "home.why1b"], ["home.why2t", "home.why2b"],
-  ["home.why3t", "home.why3b"], ["home.why4t", "home.why4b"],
-] as const;
-
 const STEP_KEYS = [
   ["home.how1t", "home.how1b"], ["home.how2t", "home.how2b"],
   ["home.how3t", "home.how3b"], ["home.how4t", "home.how4b"],
+] as const;
+
+/** Icon paths for the hero chips and the trust band. */
+const ICONS = {
+  driver: "M12 11a3.4 3.4 0 1 0 0-6.8A3.4 3.4 0 0 0 12 11Zm-7.5 9a7.5 7.5 0 0 1 15 0",
+  price: "M3 12.5V4.5A1.5 1.5 0 0 1 4.5 3h8l8.5 8.5a1.5 1.5 0 0 1 0 2.1l-6.4 6.4a1.5 1.5 0 0 1-2.1 0L3 12.5Zm4.5-5h.01",
+  shield: "M12 3l7.5 3v6c0 4.8-3.2 8.1-7.5 9-4.3-.9-7.5-4.2-7.5-9V6L12 3Zm-3 9 2.2 2.2L15.5 10",
+  support: "M12 21a9 9 0 1 1 0-18 9 9 0 0 1 0 18Zm0-14v5l3.5 2",
+  car: "M5 11l1.5-4.5A2 2 0 0 1 8.4 5h7.2a2 2 0 0 1 1.9 1.5L19 11m-14 0h14m-14 0a2 2 0 0 0-2 2v4h2m14-6a2 2 0 0 1 2 2v4h-2m-12 0v2m10-2v2m-9-5h.01M17 13h.01",
+} as const;
+
+const HERO_CHIPS = [
+  ["home.chip1", ICONS.driver], ["home.chip2", ICONS.price],
+  ["home.chip3", ICONS.shield], ["home.chip4", ICONS.support],
+] as const;
+
+const TRUST = [
+  ["home.trust1", ICONS.driver], ["home.trust2", ICONS.car], ["home.trust3", ICONS.price],
+  ["home.trust4", ICONS.support], ["home.trust5", ICONS.shield],
+] as const;
+
+/** Service cards: photo drop-in name, illustration seed, destination. */
+const SERVICES = [
+  { t: "home.svc1t", b: "home.svc1b", photo: "airport.jpg", seed: "tbilisi-airport", href: "/transfers", icon: "M10.5 20l1-5.5L6 12l-2.5 1L3 11.5 6.8 9 6 3.5 7.5 3l3 5 5.6-2.4a1.6 1.6 0 0 1 1.3 2.9L12.5 11l1.5 5.5-1.5 1-2-5-3.5 2 .5 4-1.5 1.5Z" },
+  { t: "home.svc2t", b: "home.svc2b", photo: "cityroad.jpg", seed: "tbilisi-kutaisi", href: "/transfers", icon: "M12 3v2m0 4v2m0 4v2m0 4v0M5 21V5a2 2 0 0 1 2-2h10a2 2 0 0 1 2 2v16" },
+  { t: "home.svc3t", b: "home.svc3b", photo: "tour.jpg", seed: "svaneti-tour", href: "/tours", icon: "M9 20l-5-2V5l5 2m0 13 6-2m-6 2V7m6 11 5 2V7l-5-2m0 13V5M9 7l6-2" },
+  { t: "home.svc4t", b: "home.svc4b", photo: "group.jpg", seed: "group-minibus", href: "/business", icon: "M8 8a3 3 0 1 0 0-6 3 3 0 0 0 0 6Zm8 1a2.5 2.5 0 1 0 0-5 2.5 2.5 0 0 0 0 5ZM2 20a6 6 0 0 1 12 0m1-6.5a5 5 0 0 1 7 4.6V20" },
+  { t: "home.svc5t", b: "home.svc5b", photo: "school.jpg", seed: "school-run", href: "/schools", icon: "M12 3 2 8l10 5 8-4v5m-14-2.5V16c0 1.7 2.7 3 6 3s6-1.3 6-3v-4.5" },
 ] as const;
 
 export default async function Home({ params }: { params: Promise<{ locale: string }> }) {
@@ -55,103 +78,208 @@ export default async function Home({ params }: { params: Promise<{ locale: strin
              type::text AS type
       FROM locations WHERE in_service_area ORDER BY type, 2`,
     listRoutes(locale),
-    sql<{ drivers: number; routes: number }[]>`
+    sql<{ drivers: number; routes: number; trips: number }[]>`
       SELECT (SELECT count(*) FROM driver_profiles WHERE published)::int AS drivers,
-             (SELECT count(*) FROM route_families WHERE active)::int AS routes`,
+             (SELECT count(*) FROM route_families WHERE active)::int AS routes,
+             (SELECT count(*) FROM bookings WHERE status = 'COMPLETED')::int AS trips`,
     listTours(locale),
   ]);
 
   const popular = routes.slice(0, 6);
+  const heroPhoto = sitePhoto("hero.jpg");
+  const aboutPhoto = sitePhoto("about.jpg");
+
+  /* A zero is not a statistic: pre-launch numbers hide rather than advertise
+     an empty marketplace. */
+  const numbers = [
+    [stats[0]?.drivers ?? 0, t("home.statDrivers")],
+    [locations.length, t("home.statLocations")],
+    [tours.length, t("home.statTours")],
+    [stats[0]?.trips ?? 0, t("home.statTrips")],
+  ].filter(([v]) => (v as number) > 0) as [number, string][];
 
   return (
-    <div className="space-y-20">
-      {/* Full-bleed: the hero should meet the edges of the window, not sit inside
-          the page gutter like another card. */}
-      <section className="relative left-1/2 -mt-10 w-screen -translate-x-1/2 overflow-hidden bg-forest-800 px-4 pb-28 pt-14 text-forest-50 sm:-mt-12 sm:pb-32 sm:pt-20">
-        <ContourField className="text-forest-200" opacity={0.18} />
-        <div className="relative mx-auto max-w-6xl">
-          <p className="eyebrow text-gold-400">{t("home.heroEyebrow")}</p>
+    <div className="space-y-20 sm:space-y-24">
+      {/* ------------------------------------------------ hero ------------ */}
+      <section className="relative left-1/2 -mt-10 w-screen -translate-x-1/2 overflow-hidden bg-pine-800 text-white sm:-mt-12">
+        <div className="absolute inset-0" aria-hidden>
+          {heroPhoto ? (
+            // eslint-disable-next-line @next/next/no-img-element
+            <img src={heroPhoto} alt="" className="size-full object-cover" />
+          ) : (
+            <PlaceImage imageKey={null} alt="" seedText="stepantsminda-gergeti" className="size-full" />
+          )}
+          <div className="absolute inset-0 bg-gradient-to-r from-pine-900/90 via-pine-900/60 to-pine-900/25" />
+          <div className="absolute inset-x-0 bottom-0 h-40 bg-gradient-to-t from-pine-900/80 to-transparent" />
+        </div>
 
-          <h1 className="font-display mt-5 max-w-4xl text-[2.75rem] leading-[1.05] sm:text-6xl lg:text-7xl">
-            {t("home.heroTitle")}
-          </h1>
+        <div className="relative mx-auto max-w-6xl px-4 pb-28 pt-16 sm:pb-36 sm:pt-24">
+          <div className="flex flex-wrap items-start justify-between gap-8">
+            <div className="max-w-2xl">
+              <h1 className="font-display text-[2.6rem] leading-[1.06] sm:text-6xl">
+                {t("home.heroTitle")}
+              </h1>
+              <p className="mt-5 max-w-xl text-lg leading-relaxed text-pine-100">
+                {t("home.heroSubtitle")}
+              </p>
 
-          <p className="mt-6 max-w-xl text-lg leading-relaxed text-forest-100">
-            {t("home.heroSubtitle")}
-          </p>
+              <ul className="mt-9 flex flex-wrap gap-x-7 gap-y-4">
+                {HERO_CHIPS.map(([key, icon]) => (
+                  <li key={key} className="flex items-center gap-2.5">
+                    <span className="grid size-10 place-items-center rounded-full bg-white/12 backdrop-blur-sm">
+                      <svg viewBox="0 0 24 24" className="size-5" fill="none" stroke="currentColor"
+                           strokeWidth="1.7" strokeLinecap="round" strokeLinejoin="round" aria-hidden>
+                        <path d={icon} />
+                      </svg>
+                    </span>
+                    <span className="text-sm font-semibold">{t(key)}</span>
+                  </li>
+                ))}
+              </ul>
+            </div>
 
-          <dl className="mt-10 flex flex-wrap gap-x-12 gap-y-5">
-            {/* A zero is not a statistic. Pre-launch, "0 verified drivers"
-                would advertise the empty supply; the row simply hides. */}
-            {[
-              [stats[0]?.drivers ?? 0, t("home.statDrivers")],
-              [stats[0]?.routes ?? 0, t("home.statRoutes")],
-              [tours.length, t("home.statTours")],
-            ].filter(([value]) => (value as number) > 0).map(([value, label]) => (
-              <div key={label as string}>
-                <dt className="font-display text-3xl text-gold-300">{value as number}</dt>
-                <dd className="mt-0.5 text-sm text-forest-200">{label as string}</dd>
-              </div>
-            ))}
-          </dl>
+            {tours.length > 0 && (
+              <Link
+                href={`/${locale}/tours`}
+                className="group hidden w-72 shrink-0 rounded-2xl bg-pine-900/70 p-5 backdrop-blur-md transition-colors hover:bg-pine-900/85 lg:block"
+              >
+                <p className="eyebrow text-brand-300">{t("home.promoEyebrow")}</p>
+                <p className="font-display mt-2 text-xl">{t("home.promoTitle")}</p>
+                <p className="mt-2 text-sm leading-relaxed text-pine-100">{t("home.promoBody")}</p>
+                <span className="mt-4 inline-flex items-center gap-1.5 rounded-xl bg-white px-4 py-2 text-sm font-semibold text-pine-800 transition-colors group-hover:bg-brand-50">
+                  {t("home.promoCta")}
+                  <span aria-hidden>→</span>
+                </span>
+              </Link>
+            )}
+          </div>
         </div>
       </section>
 
-      <div className="relative z-10 -mt-20 sm:-mt-24">
-        <Card className="p-6 shadow-[0_18px_50px_-24px_rgba(32,38,37,.45)] sm:p-8">
-          <p className="eyebrow text-wine-600">{t("home.planEyebrow")}</p>
-          <h2 className="font-display mt-2 mb-6 text-2xl text-ink-900">{t("home.planTitle")}</h2>
-          <SearchForm locale={locale} locations={locations} />
+      {/* -------------------------------------------- booking widget ------ */}
+      <div id="book" className="relative z-10 -mt-32 scroll-mt-24 sm:-mt-40">
+        <Card className="p-6 shadow-[0_24px_60px_-28px_rgba(12,31,24,.5)] sm:p-8">
+          <SearchTabs locale={locale} locations={locations} />
+          <ul className="mt-6 flex flex-wrap gap-x-6 gap-y-2 border-t border-ink-100 pt-4">
+            {(["home.check1", "home.check2", "home.check3", "home.check4"] as const).map((key) => (
+              <li key={key} className="flex items-center gap-1.5 text-xs font-medium text-ink-600">
+                <svg viewBox="0 0 24 24" className="size-4 text-brand-600" fill="none" stroke="currentColor"
+                     strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round" aria-hidden>
+                  <path d="M5 12.5 10 17.5 19 7" />
+                </svg>
+                {t(key)}
+              </li>
+            ))}
+          </ul>
         </Card>
       </div>
 
+      {/* ------------------------------------------------ services -------- */}
       <section>
-        <p className="eyebrow text-wine-600">{t("home.whyEyebrow")}</p>
-        <h2 className="font-display mt-2 text-3xl text-ink-900 sm:text-4xl">
-          {t("home.whyTitle")}
-        </h2>
-        <div className="rule-fade mt-5" />
-        <ul className="mt-8 grid gap-px overflow-hidden rounded-xl border border-ink-200 bg-ink-200 sm:grid-cols-2">
-          {PROMISE_KEYS.map(([title, body], i) => (
-            <li key={title} className="bg-white p-6">
-              <span aria-hidden className="grid size-10 place-items-center rounded-full bg-wine-50 text-wine-700">
-                <svg viewBox="0 0 24 24" className="size-5" fill="none" strokeWidth="1.7"
-                     stroke="currentColor" strokeLinecap="round" strokeLinejoin="round">
-                  {/* price tag */}
-                  {i === 0 && <><path d="M3 12.5V4.5A1.5 1.5 0 014.5 3h8l8.5 8.5a1.5 1.5 0 010 2.1l-6.4 6.4a1.5 1.5 0 01-2.1 0L3 12.5z" /><circle cx="7.5" cy="7.5" r="1.4" /></>}
-                  {/* driver */}
-                  {i === 1 && <><circle cx="12" cy="8" r="3.4" /><path d="M4.5 20a7.5 7.5 0 0115 0" /></>}
-                  {/* route with stops */}
-                  {i === 2 && <><circle cx="5" cy="6" r="2" /><circle cx="19" cy="18" r="2" /><path d="M7 6h6a3 3 0 010 6H11a3 3 0 000 6h6" /></>}
-                  {/* verified shield */}
-                  {i === 3 && <><path d="M12 3l7.5 3v6c0 4.8-3.2 8.1-7.5 9-4.3-.9-7.5-4.2-7.5-9V6L12 3z" /><path d="M9 12l2.2 2.2L15.5 10" /></>}
-                </svg>
-              </span>
-              <p className="font-display mt-4 text-xl text-ink-900">{t(title)}</p>
-              <p className="mt-2 text-sm leading-relaxed text-ink-600">{t(body)}</p>
+        <div className="text-center">
+          <p className="eyebrow text-brand-600">{t("home.servicesEyebrow")}</p>
+          <h2 className="font-display mt-2 text-3xl text-ink-900 sm:text-4xl">{t("home.servicesTitle")}</h2>
+        </div>
+        <ul className="mt-10 grid gap-4 sm:grid-cols-2 lg:grid-cols-5">
+          {SERVICES.map((svc) => {
+            const photo = sitePhoto(svc.photo);
+            return (
+              <li key={svc.t}>
+                <Link
+                  href={`/${locale}${svc.href}`}
+                  className="group flex h-full flex-col overflow-hidden rounded-2xl border border-ink-200 bg-white transition-shadow hover:border-brand-300 hover:shadow-lg hover:shadow-brand-900/5"
+                >
+                  <div className="p-5 pb-4">
+                    <span className="grid size-11 place-items-center rounded-xl bg-brand-50 text-brand-700">
+                      <svg viewBox="0 0 24 24" className="size-5.5" fill="none" stroke="currentColor"
+                           strokeWidth="1.6" strokeLinecap="round" strokeLinejoin="round" aria-hidden>
+                        <path d={svc.icon} />
+                      </svg>
+                    </span>
+                    <p className="mt-3.5 font-semibold text-ink-900 group-hover:text-brand-700">{t(svc.t)}</p>
+                    <p className="mt-1.5 text-sm leading-relaxed text-ink-600">{t(svc.b)}</p>
+                  </div>
+                  <div className="mt-auto px-5 pb-5">
+                    {photo ? (
+                      // eslint-disable-next-line @next/next/no-img-element
+                      <img src={photo} alt="" loading="lazy" className="h-24 w-full rounded-xl object-cover" />
+                    ) : (
+                      <PlaceImage imageKey={null} alt="" seedText={svc.seed} className="h-24 w-full" rounded="rounded-xl" />
+                    )}
+                  </div>
+                </Link>
+              </li>
+            );
+          })}
+        </ul>
+      </section>
+
+      {/* ------------------------------------------------ trust band ------ */}
+      <section className="relative left-1/2 w-screen -translate-x-1/2 bg-ink-50">
+        <ul className="mx-auto grid max-w-6xl gap-x-6 gap-y-8 px-4 py-12 grid-cols-2 sm:grid-cols-3 lg:grid-cols-5">
+          {TRUST.map(([key, icon]) => (
+            <li key={key} className="flex flex-col items-center gap-3 text-center">
+              <svg viewBox="0 0 24 24" className="size-8 text-brand-700" fill="none" stroke="currentColor"
+                   strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" aria-hidden>
+                <path d={icon} />
+              </svg>
+              <span className="text-sm font-semibold leading-snug text-ink-800">{t(key)}</span>
             </li>
           ))}
         </ul>
       </section>
 
+      {/* ------------------------------------------------ about ----------- */}
+      <section className="grid items-center gap-10 lg:grid-cols-2">
+        <div>
+          <p className="eyebrow text-brand-600">{t("home.aboutEyebrow")}</p>
+          <h2 className="font-display mt-2 text-3xl text-ink-900 sm:text-4xl">{t("home.aboutTitle")}</h2>
+          <p className="mt-4 max-w-xl leading-relaxed text-ink-600">{t("home.aboutBody")}</p>
+          {numbers.length > 0 && (
+            <dl className="mt-8 grid max-w-md grid-cols-2 gap-x-8 gap-y-6">
+              {numbers.map(([value, label]) => (
+                <div key={label}>
+                  <dt className="font-display text-3xl text-brand-700">{value}</dt>
+                  <dd className="mt-0.5 text-sm text-ink-500">{label}</dd>
+                </div>
+              ))}
+            </dl>
+          )}
+          <Link
+            href={`/${locale}/about`}
+            className="mt-8 inline-flex min-h-11 items-center rounded-xl bg-brand-600 px-5 py-2.5 text-sm font-semibold text-white shadow-sm transition-colors hover:bg-brand-700"
+          >
+            {t("home.aboutCta")}
+          </Link>
+        </div>
+        <div className="overflow-hidden rounded-2xl">
+          {aboutPhoto ? (
+            // eslint-disable-next-line @next/next/no-img-element
+            <img src={aboutPhoto} alt="" loading="lazy" className="aspect-[4/3] w-full object-cover" />
+          ) : (
+            <PlaceImage imageKey={null} alt="" seedText="caucasus-road" className="aspect-[4/3] w-full" />
+          )}
+        </div>
+      </section>
+
+      {/* ------------------------------------------------ tours ----------- */}
       {tours.length > 0 && (
         <section>
           <div className="flex flex-wrap items-end justify-between gap-3">
             <div>
-              <p className="eyebrow text-wine-600">{t("home.toursEyebrow")}</p>
+              <p className="eyebrow text-brand-600">{t("home.toursEyebrow")}</p>
               <h2 className="font-display mt-2 text-3xl text-ink-900 sm:text-4xl">{t("home.toursTitle")}</h2>
             </div>
-            <Link href={`/${locale}/tours`} className="text-sm font-medium text-wine-700 underline underline-offset-4">
+            <Link href={`/${locale}/tours`} className="text-sm font-semibold text-brand-700 underline underline-offset-4">
               {t("home.seeAllTours")}
             </Link>
           </div>
-          <div className="rule-fade mt-5" />
-          <ul className="mt-6 grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
+          <ul className="mt-7 grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
             {tours.slice(0, 3).map((tour) => (
               <li key={tour.slug}>
                 <Link
                   href={`/${locale}/tours/${tour.slug}`}
-                  className="group flex h-full flex-col overflow-hidden rounded-2xl border border-ink-200 bg-white hover:border-wine-300"
+                  className="group flex h-full flex-col overflow-hidden rounded-2xl border border-ink-200 bg-white transition-shadow hover:border-brand-300 hover:shadow-lg hover:shadow-brand-900/5"
                 >
                   <div className="relative">
                     <PlaceImage
@@ -167,7 +295,7 @@ export default async function Home({ params }: { params: Promise<{ locale: strin
                     </span>
                   </div>
                   <div className="flex flex-1 flex-col p-6">
-                    <p className="font-display text-xl text-ink-900 group-hover:text-wine-700">{tour.title}</p>
+                    <p className="font-display text-xl text-ink-900 group-hover:text-brand-700">{tour.title}</p>
                     <p className="mt-2 flex-1 text-sm leading-relaxed text-ink-600">{tour.summary}</p>
                   </div>
                 </Link>
@@ -177,24 +305,24 @@ export default async function Home({ params }: { params: Promise<{ locale: strin
         </section>
       )}
 
+      {/* --------------------------------------------- popular routes ----- */}
       {popular.length > 0 && (
         <section>
           <div className="flex flex-wrap items-end justify-between gap-3">
             <div>
-              <p className="eyebrow text-wine-600">{t("home.transfersEyebrow")}</p>
+              <p className="eyebrow text-brand-600">{t("home.transfersEyebrow")}</p>
               <h2 className="font-display mt-2 text-3xl text-ink-900 sm:text-4xl">{t("home.transfersTitle")}</h2>
             </div>
-            <Link href={`/${locale}/transfers`} className="text-sm font-medium text-wine-700 underline underline-offset-4">
+            <Link href={`/${locale}/transfers`} className="text-sm font-semibold text-brand-700 underline underline-offset-4">
               {t("home.seeAllRoutes")}
             </Link>
           </div>
-          <div className="rule-fade mt-5" />
-          <ul className="mt-6 grid gap-3 sm:grid-cols-2 lg:grid-cols-3">
+          <ul className="mt-7 grid gap-3 sm:grid-cols-2 lg:grid-cols-3">
             {popular.map((r) => (
               <li key={r.slug}>
                 <Link
                   href={`/${locale}/transfers/${r.slug}`}
-                  className="block h-full overflow-hidden rounded-xl border border-ink-200 bg-white hover:border-wine-300"
+                  className="block h-full overflow-hidden rounded-2xl border border-ink-200 bg-white transition-shadow hover:border-brand-300 hover:shadow-lg hover:shadow-brand-900/5"
                 >
                   <PlaceImage
                     imageKey={r.imageKey}
@@ -203,9 +331,9 @@ export default async function Home({ params }: { params: Promise<{ locale: strin
                     className="h-24 w-full"
                   />
                   <span className="block px-4 py-3">
-                  <span className="font-medium text-ink-800">{r.originName}</span>
+                  <span className="font-semibold text-ink-800">{r.originName}</span>
                   <span className="mx-2 text-ink-400" aria-hidden>→</span>
-                  <span className="font-medium text-ink-800">{r.destinationName}</span>
+                  <span className="font-semibold text-ink-800">{r.destinationName}</span>
                   <span className="mt-0.5 block text-xs text-ink-500">
                     {formatDistance(r.distanceKm)} · {formatApproxDuration(r.driveMinutes)} {t("tours.driving")}
                   </span>
@@ -217,32 +345,35 @@ export default async function Home({ params }: { params: Promise<{ locale: strin
         </section>
       )}
 
+      {/* --------------------------------------------- how it works ------- */}
       <section>
-        <p className="eyebrow text-wine-600">{t("home.howEyebrow")}</p>
+        <p className="eyebrow text-brand-600">{t("home.howEyebrow")}</p>
         <h2 className="font-display mt-2 text-3xl text-ink-900 sm:text-4xl">{t("home.howTitle")}</h2>
-        <div className="rule-fade mt-5" />
-        <ol className="mt-8 grid gap-8 sm:grid-cols-2 lg:grid-cols-4">
+        <ol className="mt-9 grid gap-8 sm:grid-cols-2 lg:grid-cols-4">
           {STEP_KEYS.map(([title, body], i) => (
-            <li key={title} className="border-t-2 border-wine-600 pt-4">
-              <span className="font-display text-4xl text-ink-300">{String(i + 1).padStart(2, "0")}</span>
-              <p className="mt-2 font-semibold text-ink-900">{t(title)}</p>
+            <li key={title} className="rounded-2xl border border-ink-200 bg-white p-6">
+              <span className="grid size-9 place-items-center rounded-full bg-brand-600 font-display text-sm text-white">
+                {i + 1}
+              </span>
+              <p className="mt-4 font-semibold text-ink-900">{t(title)}</p>
               <p className="mt-1.5 text-sm leading-relaxed text-ink-600">{t(body)}</p>
             </li>
           ))}
         </ol>
       </section>
 
-      <section className="relative overflow-hidden rounded-2xl bg-ink-900 px-6 py-12 text-ink-50 sm:px-12">
-        <ContourField className="text-ink-300" opacity={0.2} seed={3} />
+      {/* --------------------------------------------- drive with us ------ */}
+      <section className="relative overflow-hidden rounded-3xl bg-pine-800 px-6 py-14 text-white sm:px-12">
+        <ContourField className="text-pine-300" opacity={0.16} seed={3} />
         <div className="relative max-w-2xl">
-          <p className="eyebrow text-gold-400">{t("home.driveEyebrow")}</p>
+          <p className="eyebrow text-brand-300">{t("home.driveEyebrow")}</p>
           <h2 className="font-display mt-3 text-3xl sm:text-4xl">{t("home.driveTitle")}</h2>
-          <p className="mt-4 leading-relaxed text-ink-200">
+          <p className="mt-4 leading-relaxed text-pine-100">
             {t("home.driveBody")}
           </p>
           <Link
             href="/driver"
-            className="mt-7 inline-flex min-h-12 items-center rounded-lg bg-gold-400 px-6 py-3 text-sm font-semibold text-ink-900 transition-colors hover:bg-gold-300"
+            className="mt-7 inline-flex min-h-12 items-center rounded-xl bg-white px-6 py-3 text-sm font-semibold text-pine-800 transition-colors hover:bg-brand-50"
           >
             {t("nav.becomeDriver")}
           </Link>

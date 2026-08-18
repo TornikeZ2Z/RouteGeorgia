@@ -55,7 +55,7 @@ export default async function FaqPage({ params }: Props) {
       <script type="application/ld+json" dangerouslySetInnerHTML={{ __html: JSON.stringify(jsonLd) }} />
 
       <header>
-        <p className="eyebrow text-wine-600">{t("nav.faq")}</p>
+        <p className="eyebrow text-brand-600">{t("nav.faq")}</p>
         <h1 className="font-display mt-3 text-4xl text-ink-900 sm:text-5xl">{t("faq.title")}</h1>
       </header>
 

@@ -90,7 +90,7 @@ export function RouteFamilyForm({
           <input
             id="deadheadRecoveryPct" name="deadheadRecoveryPct" type="range" min={0} max={100} step={5}
             value={recovery} onChange={(e) => setRecovery(Number(e.target.value))}
-            className="mt-3 w-full accent-[--color-wine-600]"
+            className="mt-3 w-full accent-[--color-brand-600]"
           />
           <p className="mt-2 text-sm text-ink-700">{advice}</p>
           <p className="mt-1 text-xs text-ink-600">

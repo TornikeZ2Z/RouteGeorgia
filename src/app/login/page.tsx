@@ -15,11 +15,11 @@ export default async function LoginPage({
   const { error, next, reset } = await searchParams;
 
   return (
-    <div className="relative flex min-h-dvh flex-col justify-center overflow-hidden bg-forest-800 px-4 py-12 text-forest-100">
-      <ContourField className="text-forest-300" opacity={0.13} seed={5} />
+    <div className="relative flex min-h-dvh flex-col justify-center overflow-hidden bg-pine-800 px-4 py-12 text-pine-100">
+      <ContourField className="text-pine-300" opacity={0.13} seed={5} />
       <div className="relative mx-auto w-full max-w-md">
         <div className="mb-8 flex items-center gap-3">
-          <span aria-hidden className="grid size-10 place-items-center rounded-full bg-wine-600 text-white">
+          <span aria-hidden className="grid size-10 place-items-center rounded-full bg-brand-600 text-white">
             <svg viewBox="0 0 24 24" className="size-5" fill="none" stroke="currentColor" aria-hidden>
               <ellipse cx="12" cy="14" rx="9" ry="5.5" strokeWidth="1.3" opacity=".45" />
               <ellipse cx="12" cy="14" rx="5.5" ry="3.2" strokeWidth="1.3" opacity=".7" />
@@ -62,7 +62,7 @@ export default async function LoginPage({
         </form>
 
         <p className="mt-5 text-sm">
-          <Link href="/forgot-password" className="text-wine-700 underline underline-offset-2">
+          <Link href="/forgot-password" className="text-brand-700 underline underline-offset-2">
             Forgotten your password?
           </Link>
         </p>

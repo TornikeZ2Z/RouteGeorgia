@@ -76,7 +76,7 @@ export default async function BookingDetail({ params }: { params: Promise<{ id: 
             <Badge tone={booking.payment_mode === "CASH" ? "warning" : "neutral"}>
               {booking.payment_mode.toLowerCase()}
             </Badge>
-            <Link href="/admin/bookings" className="text-sm text-wine-700 underline">All bookings</Link>
+            <Link href="/admin/bookings" className="text-sm text-brand-700 underline">All bookings</Link>
           </>
         }
       />
@@ -148,8 +148,8 @@ export default async function BookingDetail({ params }: { params: Promise<{ id: 
                     {new Date(entry.at).toLocaleString("en-GB", { dateStyle: "short", timeStyle: "short" })}
                   </span>
                   <span className={`mt-1.5 size-2 shrink-0 rounded-full ${
-                    entry.kind === "payment" ? "bg-forest-600"
-                    : entry.kind === "status" ? "bg-wine-600"
+                    entry.kind === "payment" ? "bg-pine-600"
+                    : entry.kind === "status" ? "bg-brand-600"
                     : entry.kind === "audit" ? "bg-gold-500" : "bg-ink-300"}`} />
                   <span className="min-w-0">
                     <span className="font-medium text-ink-800">{entry.title}</span>
@@ -199,7 +199,7 @@ export default async function BookingDetail({ params }: { params: Promise<{ id: 
             </p>
             <p className="mt-2 text-sm text-ink-600">{booking.driver_email}<br />{booking.driver_phone}</p>
             <Link href={`/admin/drivers/${booking.driver_profile_id}`}
-                  className="mt-3 inline-block text-sm text-wine-700 underline">
+                  className="mt-3 inline-block text-sm text-brand-700 underline">
               Open driver record
             </Link>
           </Card>

@@ -6,13 +6,13 @@ import type { MetadataRoute } from "next";
  */
 export default function manifest(): MetadataRoute.Manifest {
   return {
-    name: "Route Georgia",
-    short_name: "Route Georgia",
+    name: "RouteGeorgia",
+    short_name: "RouteGeorgia",
     description: "Private drivers across Georgia, booked in advance.",
     start_url: "/",
     display: "standalone",
-    background_color: "#f6f2ea",
-    theme_color: "#26483e",
+    background_color: "#ffffff",
+    theme_color: "#0f7a4a",
     icons: [{ src: "/icon.svg", sizes: "any", type: "image/svg+xml" }],
   };
 }

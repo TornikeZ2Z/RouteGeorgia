@@ -135,3 +135,39 @@ describe("quote engine", () => {
     )).toEqual([]);
   });
 });
+
+describe("round trips (wait-and-return)", () => {
+  it("costs more than one way but less than two one-way trips", () => {
+    const oneWay = BigInt(computeQuote(kazbegi()).grossMinor);
+    const round  = BigInt(computeQuote(kazbegi({ roundTrip: true })).grossMinor);
+    expect(round).toBeGreaterThan(oneWay);
+    // Two one-way bookings each pay 75% of an empty return; the round trip
+    // pays neither. That saving is the whole point of the product.
+    expect(round).toBeLessThan(2n * oneWay);
+  });
+
+  it("drops the deadhead line entirely — the driver returns loaded", () => {
+    const q = computeQuote(kazbegi({ roundTrip: true }));
+    expect(q.lines.find((l) => l.code === "deadhead")).toBeUndefined();
+    const distance = q.lines.find((l) => l.code === "distance");
+    expect(distance!.detail).toContain("both directions");
+    // 2 × 156 km × 1.50 GEL/km = 468.00 GEL
+    expect(distance!.amountMinor).toBe("46800");
+  });
+
+  it("charges overnights when the return crosses calendar days", () => {
+    const withNights = computeQuote(kazbegi({ roundTrip: true, nights: 1, plan: {
+      ratePerKmMinor: "150", ratePerMinuteMinor: "0", perStopFeeMinor: "0",
+      overnightFeeMinor: "5000", minimumFareMinor: "0", seasonFactorBps: 10_000,
+    }}));
+    const overnight = withNights.lines.find((l) => l.code === "overnight");
+    expect(overnight?.amountMinor).toBe("5000");
+  });
+
+  it("keeps historic one-way snapshots byte-identical (no roundTrip field)", () => {
+    const a = computeQuote(kazbegi());
+    const b = computeQuote(JSON.parse(JSON.stringify(kazbegi())));
+    expect(JSON.stringify(a)).toBe(JSON.stringify(b));
+    expect(a.lines.find((l) => l.code === "deadhead")).toBeDefined();
+  });
+});

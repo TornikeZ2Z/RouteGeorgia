@@ -1,9 +1,6 @@
 <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 64 64">
-  <!-- Route Georgia mark: contour rings with a route cutting through. -->
-  <circle cx="32" cy="32" r="32" fill="#7b2936"/>
-  <g fill="none" stroke="#f6f2ea" stroke-linecap="round">
-    <ellipse cx="32" cy="38" rx="24" ry="14" stroke-width="2" opacity=".4"/>
-    <ellipse cx="32" cy="38" rx="14" ry="8" stroke-width="2" opacity=".65"/>
-    <path d="M10 48 C 24 26, 40 44, 54 16" stroke-width="5.5"/>
-  </g>
+  <!-- RouteGeorgia mark: location pin in a soft green square. -->
+  <rect width="64" height="64" rx="16" fill="#0f7a4a"/>
+  <path d="M32 12c-8.3 0-15 6.6-15 14.8C17 38 32 52 32 52s15-14 15-25.2C47 18.6 40.3 12 32 12z" fill="#ffffff"/>
+  <circle cx="32" cy="27" r="6" fill="#0f7a4a"/>
 </svg>

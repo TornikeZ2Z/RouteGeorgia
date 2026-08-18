@@ -46,6 +46,9 @@ export default async function SearchPage({ params, searchParams }: Props) {
   if (Number.isNaN(travelAt.getTime())) {
     return <EmptyState title={t("search.badDateTitle")}>{t("search.badDateBody")}</EmptyState>;
   }
+  const returnRaw = str(sp.return);
+  const returnAt = returnRaw ? new Date(returnRaw) : null;
+  const roundTrip = returnAt !== null && !Number.isNaN(returnAt.getTime()) && returnAt.getTime() > travelAt.getTime();
 
   const filterState: FilterState = {
     classes: list(sp.class),
@@ -72,6 +75,7 @@ export default async function SearchPage({ params, searchParams }: Props) {
       stopSlugs: stops,
       tourSlug: str(sp.tour),
       travelAt,
+      returnAt: roundTrip ? returnAt : null,
       passengers,
       luggage,
       sort: filterState.sort as SortKey,
@@ -104,6 +108,7 @@ export default async function SearchPage({ params, searchParams }: Props) {
   // Preserved across filter submissions so the trip itself never changes.
   const hidden: [string, string][] = [
     ["from", from], ["to", to], ["when", when],
+    ...(roundTrip ? [["return", returnRaw!] as [string, string]] : []),
     ...(str(sp.tour) ? [["tour", str(sp.tour)!] as [string, string]] : []),
     ["passengers", String(passengers)], ["luggage", String(luggage)],
     ...stops.map((s) => ["stop", s] as [string, string]),
@@ -120,13 +125,19 @@ export default async function SearchPage({ params, searchParams }: Props) {
       <div className="rounded-xl border border-ink-200 bg-white p-5">
         <h1 className="font-display text-2xl text-ink-900 sm:text-3xl">
           {result.route.originName || from}
-          <span className="mx-2 text-ink-400" aria-hidden>→</span>
+          <span className="mx-2 text-ink-400" aria-hidden>{roundTrip ? "⇄" : "→"}</span>
           {result.route.destinationName || to}
+          {roundTrip && <span className="ml-3 align-middle"><Badge tone="success">{t("search.roundTripBadge")}</Badge></span>}
         </h1>
         <p className="mt-1 text-sm text-ink-600">
-          {travelAt.toLocaleString(locale, { dateStyle: "full", timeStyle: "short" })}
+          {t("search.outbound")}: {travelAt.toLocaleString(locale, { dateStyle: "full", timeStyle: "short" })}
           {stops.length > 0 && <span className="text-ink-500"> · {t("search.viaStops", { count: stops.length })}</span>}
         </p>
+        {roundTrip && (
+          <p className="mt-0.5 text-sm text-ink-600">
+            {t("search.returnLeg")}: {returnAt!.toLocaleString(locale, { dateStyle: "full", timeStyle: "short" })}
+          </p>
+        )}
         {result.offers.length > 0 && (
           <>
             <p className="mt-1 text-sm text-ink-600">
@@ -135,7 +146,7 @@ export default async function SearchPage({ params, searchParams }: Props) {
             <p className="mt-1 text-xs text-ink-500">{t("search.estimateNote")}</p>
           </>
         )}
-        <Link href={`/${locale}`} className="mt-2 inline-block text-sm text-wine-700 underline">
+        <Link href={`/${locale}`} className="mt-2 inline-block text-sm text-brand-700 underline">
           {t("search.changeRoute")}
         </Link>
       </div>
@@ -235,7 +246,7 @@ export default async function SearchPage({ params, searchParams }: Props) {
                             <p className="mt-0.5 text-xs text-ink-500">{t("search.priceForVehicle")}</p>
                             <Link
                               href={`/${locale}/checkout?quote=${offer.quoteId}`}
-                              className="mt-4 inline-flex min-h-11 w-full items-center justify-center rounded-lg bg-wine-600 px-5 py-2.5 text-sm font-semibold text-white shadow-sm transition-colors hover:bg-wine-700"
+                              className="mt-4 inline-flex min-h-11 w-full items-center justify-center rounded-lg bg-brand-600 px-5 py-2.5 text-sm font-semibold text-white shadow-sm transition-colors hover:bg-brand-700"
                             >
                               {t("search.bookThis")}
                             </Link>

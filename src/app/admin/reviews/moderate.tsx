@@ -26,7 +26,7 @@ export function ModerateReview({ reviewId, originalBody }: { reviewId: string; o
       </Field>
       <div className="flex gap-2">
         <button name="decision" value="PUBLISHED"
-                className="rounded-lg bg-wine-600 px-4 py-2 text-sm font-medium text-white hover:bg-wine-700">
+                className="rounded-lg bg-brand-600 px-4 py-2 text-sm font-medium text-white hover:bg-brand-700">
           Publish
         </button>
         <button name="decision" value="REJECTED"

@@ -61,6 +61,18 @@ npm run db:seed      # load 34 test drivers, 15 locations, 14 routes
 npm run dev          # http://localhost:3000
 ```
 
+### Photos and public contact details
+
+The design is photo-ready but ships with illustrated placeholders. Drop
+licensed JPGs into `public/photos/` (see the README there for the expected
+filenames) and the hero, service cards and About sections switch to them
+automatically on the next deploy. Never commit photos you do not have the
+rights to.
+
+Set `SUPPORT_PHONE` in Render once the business SIM exists; the header and
+footer show it automatically. `SUPPORT_EMAIL` defaults to
+support@routegeorgia.ge — that mailbox must actually exist before launch.
+
 ### Demo data vs launch data
 
 `db:seed` builds a full synthetic marketplace — 34 fake drivers with fabricated
