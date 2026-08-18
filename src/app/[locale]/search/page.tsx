@@ -3,6 +3,7 @@ import { notFound } from "next/navigation";
 import { isLocale, getTranslator } from "@/lib/i18n";
 import { searchOffers, availableFacets, type SortKey } from "@/lib/offers";
 import { formatMoney } from "@/lib/money";
+import { formatDuration } from "@/lib/format";
 import { getDisplayCurrency, getRate, convert, CANONICAL } from "@/lib/currency";
 import { Badge, Card, EmptyState } from "@/components/ui";
 import { VehiclePhoto } from "@/components/vehicle-photo";
@@ -127,7 +128,7 @@ export default async function SearchPage({ params, searchParams }: Props) {
         {result.offers.length > 0 && (
           <>
             <p className="mt-1 text-sm text-ink-600">
-              {t("search.driveEstimate", { minutes: result.route.driveMinutes, km })}
+              About {formatDuration(result.route.driveMinutes)} driving, {km} km
             </p>
             <p className="mt-1 text-xs text-ink-500">{t("search.estimateNote")}</p>
           </>

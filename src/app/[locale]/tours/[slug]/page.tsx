@@ -5,6 +5,7 @@ import { sql } from "@db/client";
 import { isLocale, LOCALES, type Locale } from "@/lib/i18n";
 import { getTour, listTours, tourPriceFrom } from "@/lib/tours";
 import { formatMoney } from "@/lib/money";
+import { formatDuration, formatDistance } from "@/lib/format";
 import { getDisplayCurrency, getRate, convert, CANONICAL } from "@/lib/currency";
 import { config } from "@/lib/config";
 import { Alert, Badge, Card } from "@/components/ui";
@@ -99,8 +100,8 @@ export default async function TourPage({ params }: Props) {
 
         <dl className="mt-5 flex flex-wrap gap-x-8 gap-y-3 border-t border-ink-200 pt-4 text-sm">
           <div><dt className="text-ink-500">Starts from</dt><dd className="font-medium text-ink-900">{tour.originName}</dd></div>
-          <div><dt className="text-ink-500">Distance</dt><dd className="font-medium text-ink-900">{Math.round(tour.distanceKm)} km round trip</dd></div>
-          <div><dt className="text-ink-500">Driving</dt><dd className="font-medium text-ink-900">about {Math.round(tour.driveMinutes / 60)} hours</dd></div>
+          <div><dt className="text-ink-500">Distance</dt><dd className="font-medium text-ink-900">{formatDistance(tour.distanceKm)} round trip</dd></div>
+          <div><dt className="text-ink-500">Driving</dt><dd className="font-medium text-ink-900">{formatDuration(tour.driveMinutes)}</dd></div>
           {price && (
             <div>
               <dt className="text-ink-500">Price from</dt>
@@ -195,7 +196,7 @@ export default async function TourPage({ params }: Props) {
                       className="block h-full rounded-xl border border-ink-200 bg-white p-4 hover:border-wine-300">
                   <p className="font-medium text-ink-900">{t.title}</p>
                   <p className="mt-1 text-xs text-ink-500">
-                    {t.durationDays === 1 ? "Day trip" : `${t.durationDays} days`} · {Math.round(t.distanceKm)} km
+                    {t.durationDays === 1 ? "Day trip" : `${t.durationDays} days`} · {formatDistance(t.distanceKm)}
                   </p>
                 </Link>
               </li>

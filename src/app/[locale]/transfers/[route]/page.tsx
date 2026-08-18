@@ -8,6 +8,7 @@ import { formatMoney } from "@/lib/money";
 import { getDisplayCurrency, getRate, convert, CANONICAL } from "@/lib/currency";
 import { config } from "@/lib/config";
 import { Alert, Badge, Card } from "@/components/ui";
+import { formatDuration, formatDistance } from "@/lib/format";
 import { SearchForm } from "@/components/search-form";
 import { sql } from "@db/client";
 
@@ -108,7 +109,7 @@ export default async function RoutePage({ params }: Props) {
           {data.originName} to {data.destinationName} by private driver
         </h1>
         <div className="mt-3 flex flex-wrap items-center gap-x-6 gap-y-2 text-sm text-ink-600">
-          <span>{Math.round(data.distanceKm)} km</span>
+          <span>{formatDistance(data.distanceKm)}</span>
           <span>{formatDuration(data.driveMinutes)} driving</span>
           {fromPrice && (
             <span className="font-medium text-ink-900">
@@ -172,7 +173,7 @@ export default async function RoutePage({ params }: Props) {
                   <span className="mx-2 text-ink-400" aria-hidden>→</span>
                   <span className="font-medium text-ink-800">{r.destinationName}</span>
                   <span className="mt-0.5 block text-xs text-ink-500">
-                    {Math.round(r.distanceKm)} km · {formatDuration(r.driveMinutes)}
+                    {formatDistance(r.distanceKm)} · {formatDuration(r.driveMinutes)}
                   </span>
                 </Link>
               </li>
@@ -184,9 +185,3 @@ export default async function RoutePage({ params }: Props) {
   );
 }
 
-function formatDuration(minutes: number): string {
-  const h = Math.floor(minutes / 60);
-  const m = minutes % 60;
-  if (h === 0) return `${m} min`;
-  return m === 0 ? `${h} h` : `${h} h ${m} min`;
-}

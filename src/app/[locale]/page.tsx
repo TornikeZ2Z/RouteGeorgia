@@ -7,6 +7,7 @@ import { listRoutes } from "@/lib/routes-content";
 import { config } from "@/lib/config";
 import { Badge, Card } from "@/components/ui";
 import { listTours } from "@/lib/tours";
+import { formatApproxDuration, formatDistance } from "@/lib/format";
 import { SearchForm } from "@/components/search-form";
 
 export const dynamic = "force-dynamic";
@@ -174,7 +175,7 @@ export default async function Home({ params }: { params: Promise<{ locale: strin
                   <span className="mx-2 text-ink-400" aria-hidden>→</span>
                   <span className="font-medium text-ink-800">{r.destinationName}</span>
                   <span className="mt-0.5 block text-xs text-ink-500">
-                    {Math.round(r.distanceKm)} km · about {Math.round(r.driveMinutes / 60)} h driving
+                    {formatDistance(r.distanceKm)} · {formatApproxDuration(r.driveMinutes)} driving
                   </span>
                 </Link>
               </li>

@@ -5,6 +5,7 @@ import { isLocale, LOCALES } from "@/lib/i18n";
 import { listRoutes } from "@/lib/routes-content";
 import { config } from "@/lib/config";
 import { Badge } from "@/components/ui";
+import { formatDuration, formatDistance } from "@/lib/format";
 
 export const revalidate = 3600;
 
@@ -52,8 +53,7 @@ export default async function TransfersIndex({ params }: Props) {
                 {r.originName} <span className="text-ink-400" aria-hidden>→</span> {r.destinationName}
               </p>
               <p className="mt-1 text-sm text-ink-500">
-                {Math.round(r.distanceKm)} km · {Math.floor(r.driveMinutes / 60)} h{" "}
-                {r.driveMinutes % 60 ? `${r.driveMinutes % 60} min` : ""}
+                {formatDistance(r.distanceKm)} · {formatDuration(r.driveMinutes)}
               </p>
               {r.requires4x4 && <span className="mt-2 inline-block"><Badge tone="warning">4x4 required</Badge></span>}
             </Link>

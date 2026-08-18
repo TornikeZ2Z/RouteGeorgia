@@ -4,6 +4,7 @@ import type { Metadata } from "next";
 import { isLocale, LOCALES, type Locale } from "@/lib/i18n";
 import { listTours, tourPriceFrom } from "@/lib/tours";
 import { formatMoney } from "@/lib/money";
+import { formatDuration, formatDistance } from "@/lib/format";
 import { getDisplayCurrency, getRate, convert, CANONICAL } from "@/lib/currency";
 import { config } from "@/lib/config";
 import { Badge, EmptyState } from "@/components/ui";
@@ -86,7 +87,7 @@ export default async function ToursIndex({ params }: Props) {
                       <p className="text-xs text-ink-500">
                         From {tour.originName}
                         <span className="mt-0.5 block">
-                          {Math.round(tour.distanceKm)} km · {Math.round(tour.driveMinutes / 60)} h driving
+                          {formatDistance(tour.distanceKm)} · {formatDuration(tour.driveMinutes)} driving
                         </span>
                       </p>
                       {price && (
