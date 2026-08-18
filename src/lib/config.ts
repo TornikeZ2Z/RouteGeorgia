@@ -9,7 +9,11 @@ const intFromEnv = (fallback: number) =>
 
 const Schema = z.object({
   DATABASE_URL: z.string().min(1, "DATABASE_URL is required — run `npm run db:start`"),
-  APP_URL: z.string().default("http://localhost:3000"),
+  APP_URL: z.string().optional(),
+  // Vercel supplies these automatically; they let APP_URL default correctly on
+  // preview deployments without anyone having to set it per branch.
+  VERCEL_PROJECT_PRODUCTION_URL: z.string().optional(),
+  VERCEL_URL: z.string().optional(),
   SESSION_SECRET: z.string().min(16, "SESSION_SECRET must be at least 16 characters"),
 
   COMMISSION_RATE_BPS: intFromEnv(1500),
@@ -34,9 +38,20 @@ if (!parsed.success) {
 
 const env = parsed.data;
 
+/**
+ * Absolute base URL. Used for links in emails, canonical tags, hreflang and
+ * payment return URLs, so it must be the address the user actually sees.
+ */
+function resolveAppUrl(): string {
+  if (env.APP_URL) return env.APP_URL.replace(/\/$/, "");
+  if (env.VERCEL_PROJECT_PRODUCTION_URL) return `https://${env.VERCEL_PROJECT_PRODUCTION_URL}`;
+  if (env.VERCEL_URL) return `https://${env.VERCEL_URL}`;
+  return "http://localhost:3000";
+}
+
 export const config = {
   databaseUrl: env.DATABASE_URL,
-  appUrl: env.APP_URL,
+  appUrl: resolveAppUrl(),
   sessionSecret: env.SESSION_SECRET,
   isProduction: env.NODE_ENV === "production",
 

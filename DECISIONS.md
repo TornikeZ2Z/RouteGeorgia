@@ -47,12 +47,29 @@ passengers for payment, so that check would have passed while leaving the
 largest liability uncovered. The driver upload page now states that passenger
 cover is required, and publication is blocked without an approved policy.
 
+## Payment sequencing — decided
+
+Cash and card ship together, and the ledger ships **with** them rather than a
+phase later. `REVIEW.md` flagged that the original plan accrued commission debt
+during the pilot with no system to record it. The resolution:
+
+* A cash trip posts a commission receivable against the driver at completion.
+* Each driver has a wallet with a credit limit (default 200 GEL).
+* Once unpaid commission exceeds the limit, that driver stops being offered
+  **cash** work. Card work is unaffected, so they can keep earning and settle.
+* Card trips post to a clearing account, then split into driver payable and
+  platform revenue. Nothing is derived from booking rows.
+
+Cash is not optional in Georgian tourism, so removing it was never the answer.
+Tracking it properly was.
+
 ## Still needs your decision
 
 | Question | Current default | Decide before |
 |---|---|---|
 | Brand and legal entity name | "Gamgzavri" placeholder | Any public content |
-| Cash vs card first | Neither is built | Phase 2 — see `REVIEW.md`, cash-first is the riskier order |
+| Driver credit limit | 200 GEL of unpaid commission | Pilot — tune from real behaviour |
+| Payment provider | Sandbox stub behind an adapter | Taking real money |
 | Cancellation policy | Free, not yet enforced | Checkout |
 | Driver classification (contractor vs employee) | Assumed contractor | Any real payout |
 | Who is merchant of record | Undecided | Payment provider contract |

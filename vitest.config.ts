@@ -14,6 +14,9 @@ export default defineConfig({
     alias: {
       "@": fileURLToPath(new URL("./src", import.meta.url)),
       "@db": fileURLToPath(new URL("./db", import.meta.url)),
+      // Next.js's server-only guard throws when imported outside a server
+      // component. Tests run under plain Node, so it is stubbed here.
+      "server-only": fileURLToPath(new URL("./tests/stubs/server-only.ts", import.meta.url)),
     },
   },
 });

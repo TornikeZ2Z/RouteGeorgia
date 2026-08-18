@@ -1,3 +1,4 @@
+import "server-only";
 /**
  * Directions provider behind an adapter.
  *

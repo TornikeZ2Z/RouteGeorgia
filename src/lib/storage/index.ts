@@ -1,3 +1,4 @@
+import "server-only";
 /**
  * Object storage behind an adapter.
  *

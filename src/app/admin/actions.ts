@@ -264,3 +264,48 @@ export async function moderateVehicleMediaAction(_prev: ActionState, formData: F
   revalidatePath("/admin/media");
   return { ok: true, message: `Photo ${state.toLowerCase()}.` };
 }
+
+const ReviewSchema = z.object({
+  reviewId: z.string().uuid(),
+  decision: z.enum(["PUBLISHED", "REJECTED"]),
+  publishedBody: z.string().max(2000).optional(),
+  reason: z.string().min(4),
+});
+
+/**
+ * Publish or reject a review.
+ *
+ * The original submission is never altered — `published_body` holds the
+ * redacted version. Publishing updates the driver's aggregate rating in the
+ * same transaction, so the profile and the review list cannot disagree.
+ */
+export async function moderateReviewAction(_prev: ActionState, formData: FormData): Promise<ActionState> {
+  const actor = await requirePermission("admin.drivers.decide");
+  const parsed = ReviewSchema.safeParse(Object.fromEntries(formData));
+  if (!parsed.success) return { ok: false, errors: parsed.error.issues.map((i) => i.message) };
+  const { reviewId, decision, publishedBody, reason } = parsed.data;
+
+  await sql.begin(async (tx) => {
+    const [row] = await tx<{ driver_id: string; rating_overall: number }[]>`
+      UPDATE reviews
+      SET status = ${decision}::review_status,
+          published_body = ${decision === "PUBLISHED" ? (publishedBody ?? null) : null},
+          moderator_id = ${actor.id}::uuid, moderated_at = now(), moderation_reason = ${reason}
+      WHERE id = ${reviewId}::uuid AND status = 'SUBMITTED'
+      RETURNING driver_id, rating_overall`;
+
+    if (row && decision === "PUBLISHED") {
+      await tx`
+        UPDATE driver_profiles
+        SET rating_sum = rating_sum + ${row.rating_overall}, rating_count = rating_count + 1
+        WHERE id = ${row.driver_id}::uuid`;
+    }
+  });
+
+  await writeAudit({
+    actorUserId: actor.id, action: `review.${decision.toLowerCase()}`,
+    objectType: "review", objectId: reviewId, reason,
+  });
+  revalidatePath("/admin/reviews");
+  return { ok: true, message: `Review ${decision.toLowerCase()}.` };
+}

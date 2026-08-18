@@ -96,20 +96,24 @@ error. That is server-side RBAC, not a hidden button.
 ## What is built
 
 **Public site** (`/en`, `/ka`, `/ru`)
-Route builder with intermediate stops, search results with real per-vehicle
-quotes, filters (class, language, 4x4, child seat, pets, Wi-Fi, rating) and
-sorting, driver profiles with photo galleries, indexable route landing pages at
-`/transfers/from-x-to-y`, an FAQ, a sitemap and GEL/USD/EUR display currency.
-Every price shows its full breakdown, and "Recommended" explains itself.
+Route builder with intermediate stops, filtered and sorted search over real
+per-vehicle quotes, driver profiles with photo galleries and published reviews,
+indexable route landing pages, FAQ, sitemap, GEL/USD/EUR display currency.
+**Checkout, booking, cash and card payment, a confirmation page, guest
+manage-booking with cancellation, and booking-scoped messaging.** Every price
+shows its full breakdown, and "Recommended" explains itself.
 
 **Driver app** (`/driver`)
-Application, languages, vehicle, photo upload, document upload with expiry
-tracking, versioned price plans, availability calendar.
+Application, languages, vehicle, photo upload, documents with expiry tracking,
+versioned price plans, availability calendar, **an order inbox with
+acknowledgement, decline, trip milestones and cash confirmation, plus an
+earnings page driven from the ledger.**
 
 **Operations console** (`/admin`)
-Verification queue, document and vehicle decisions with mandatory reasons,
-photo moderation queue, language-interview recording, publish gate, locations
-and route families, price bands, append-only audit log.
+Verification queue, document, vehicle and photo decisions with mandatory
+reasons, language-interview recording, publish gate, **booking command centre
+with acknowledgement-SLA alerts, review moderation**, locations and route
+families, price bands, append-only audit log.
 
 **Underneath**
 Deny-by-default RBAC, opaque hashed session tokens, immutable quote snapshots
@@ -118,13 +122,14 @@ refuses to let a driver be double-booked.
 
 ## What is deliberately not built
 
-No booking, no payments, no ledger, no chat, no reviews, no notifications.
-Those are Phases 2 and 3. The search flow issues real quotes and stops before
-checkout, on purpose — see `REVIEW.md` for why the original phase order needs
-changing before you build them.
+Tours and multi-day itineraries, the partner/affiliate programme, driver
+payouts execution, and live trip tracking. Notifications print to the server
+console rather than sending email — the outbox, templates and delivery
+tracking are real, only the transport is a stub.
 
-The routing provider is a distance estimate, not road routing. Fine for
-development; replace it before quoting real customers.
+The routing and payment providers are working stubs behind adapters. Both are
+a configuration change away from real ones, and both must be replaced before
+taking real money. See `REVIEW.md`.
 
 ---
 
@@ -169,12 +174,51 @@ Two rules worth keeping:
 npm test
 ```
 
-37 tests. The database ones skip cleanly if Postgres is not running.
+52 tests. The database ones skip cleanly if Postgres is not running.
 
 They cover the things that are expensive to get wrong: rounding at scale,
 quote determinism and replay, price bands, RBAC denials, and — against a real
 database — the booking race (two transactions, one driver, one winner), audit
 log immutability, and the constraint that stops an unapproved driver going live.
+
+## Putting it online
+
+Vercel hosts Next.js natively, deploys on every push, and has a free tier.
+GitHub stores the code; it cannot run it.
+
+1. Go to <https://vercel.com/new> and sign in with GitHub.
+2. Import the `traveller` repository.
+3. Before clicking Deploy, open **Environment Variables** and add:
+
+   | Name | Value |
+   |---|---|
+   | `DATABASE_URL` | your Neon connection string (the **pooled** one) |
+   | `SESSION_SECRET` | a **new** 64-character hex string, not your local one |
+
+   Generate the secret with:
+
+   ```bash
+   node -e "console.log(require('crypto').randomBytes(32).toString('hex'))"
+   ```
+
+   Leave `APP_URL` unset — it is derived from the deployment URL automatically.
+
+4. Click **Deploy**. The build runs migrations first, then compiles.
+5. Your site is live at `https://traveller-<something>.vercel.app`.
+
+Every `git push` to `main` redeploys. Pull requests get their own preview URL.
+
+### Before you share the link with anyone real
+
+- **Delete the seeded accounts.** They all use a password published in this
+  README. Run `db:seed` only against a development database.
+- **Move file storage off local disk.** `STORAGE_DRIVER=local` writes to the
+  server's filesystem, which is wiped on every Vercel deploy. Driver documents
+  and vehicle photos need S3 or Cloudflare R2 first.
+- **Replace the routing provider.** The bundled estimator approximates road
+  distance; quoted distance is a price input and a promise to the customer.
+- **Replace the payment provider.** The sandbox settles without moving money.
+  A real Georgian acquirer needs a legal entity and a merchant agreement.
 
 ## Going to production
 

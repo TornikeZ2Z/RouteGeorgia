@@ -231,8 +231,14 @@ export default async function SearchPage({ params, searchParams }: Props) {
                             )}
                             <p className="text-xs text-ink-500">{t("search.priceForVehicle")}</p>
                             <Link
+                              href={`/${locale}/checkout?quote=${offer.quoteId}`}
+                              className="mt-3 inline-block rounded-lg bg-wine-600 px-4 py-2 text-sm font-medium text-white hover:bg-wine-700"
+                            >
+                              Book this driver
+                            </Link>
+                            <Link
                               href={`/${locale}/drivers/${offer.handle}`}
-                              className="mt-3 inline-block rounded-lg border border-ink-200 px-3 py-1.5 text-sm hover:bg-ink-50"
+                              className="mt-2 block text-xs text-ink-500 underline hover:text-ink-800"
                             >
                               {t("driver.viewProfile")}
                             </Link>
@@ -269,7 +275,7 @@ export default async function SearchPage({ params, searchParams }: Props) {
               <p className="text-xs text-ink-500">
                 Prices are held until{" "}
                 {result.offers[0]!.expiresAt.toLocaleTimeString(locale, { timeStyle: "short" })}.
-                Booking is not enabled in this build — Phase 1 covers supply and pricing only.
+                After that, search again for a fresh quote.
               </p>
             </>
           )}

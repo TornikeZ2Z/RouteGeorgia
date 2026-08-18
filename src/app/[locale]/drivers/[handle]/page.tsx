@@ -35,7 +35,16 @@ async function loadDriver(handle: string) {
       AND moderation_state = 'APPROVED'
     ORDER BY position`;
 
-  return { driver, languages, vehicles, media };
+  // Only moderator-approved text is shown, and the redacted version if one exists.
+  const reviews = await sql<ReviewRow[]>`
+    SELECT id, rating_overall, rating_safety, rating_punctuality, rating_cleanliness,
+           rating_communication, author_name,
+           coalesce(published_body, '') AS body, driver_response, created_at
+    FROM reviews
+    WHERE driver_id = ${driver.id}::uuid AND status = 'PUBLISHED'
+    ORDER BY created_at DESC LIMIT 20`;
+
+  return { driver, languages, vehicles, media, reviews };
 }
 
 export async function generateMetadata({ params }: Props): Promise<Metadata> {
@@ -55,7 +64,7 @@ export default async function DriverProfile({ params }: Props) {
 
   const data = await loadDriver(handle);
   if (!data) notFound();
-  const { driver, languages, vehicles, media } = data;
+  const { driver, languages, vehicles, media, reviews } = data;
 
   return (
     <div className="space-y-6">
@@ -143,6 +152,52 @@ export default async function DriverProfile({ params }: Props) {
           })}
         </ul>
       </section>
+
+      <section>
+        <h2 className="mb-2 text-lg font-semibold text-ink-900">
+          Reviews {driver.rating_count > 0 && (
+            <span className="font-normal text-ink-500">
+              — {(driver.rating_sum / driver.rating_count).toFixed(1)} out of 5 from {driver.rating_count}
+            </span>
+          )}
+        </h2>
+
+        {reviews.length === 0 ? (
+          <p className="text-sm text-ink-500">
+            No published reviews yet. Only travellers who completed a booking can leave one.
+          </p>
+        ) : (
+          <ul className="space-y-3">
+            {reviews.map((r) => (
+              <li key={r.id}>
+                <Card className="p-4">
+                  <div className="flex flex-wrap items-center gap-2">
+                    <span className="font-medium text-ink-900" aria-label={`${r.rating_overall} out of 5`}>
+                      {"★".repeat(r.rating_overall)}<span className="text-ink-300">{"★".repeat(5 - r.rating_overall)}</span>
+                    </span>
+                    <span className="text-sm text-ink-600">{r.author_name ?? "A traveller"}</span>
+                    <span className="text-xs text-ink-400">
+                      {new Date(r.created_at).toLocaleDateString(locale, { month: "long", year: "numeric" })}
+                    </span>
+                  </div>
+                  {r.body && <p className="mt-2 text-sm leading-relaxed text-ink-700">{r.body}</p>}
+                  <ul className="mt-2 flex flex-wrap gap-1.5">
+                    {([["safety", r.rating_safety], ["punctuality", r.rating_punctuality],
+                       ["cleanliness", r.rating_cleanliness], ["communication", r.rating_communication]] as const)
+                      .filter(([, v]) => v !== null)
+                      .map(([k, v]) => <li key={k}><Badge>{k} {v}/5</Badge></li>)}
+                  </ul>
+                  {r.driver_response && (
+                    <p className="mt-3 border-l-2 border-ink-200 pl-3 text-sm text-ink-600">
+                      <span className="font-medium">Reply from {driver.public_name}: </span>{r.driver_response}
+                    </p>
+                  )}
+                </Card>
+              </li>
+            ))}
+          </ul>
+        )}
+      </section>
     </div>
   );
 }
@@ -155,6 +210,11 @@ interface DriverRow {
 interface VehicleRow {
   id: string; make: string; model: string; year: number; color: string | null;
   class: string; seats: number; luggage: number; amenities: unknown; capabilities: unknown;
+}
+interface ReviewRow {
+  id: string; rating_overall: number; rating_safety: number | null; rating_punctuality: number | null;
+  rating_cleanliness: number | null; rating_communication: number | null;
+  author_name: string | null; body: string; driver_response: string | null; created_at: Date;
 }
 interface MediaRow {
   id: string; vehicle_id: string; storage_key: string; alt_text: string | null; view_type: string | null;

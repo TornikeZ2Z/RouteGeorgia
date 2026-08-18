@@ -7,6 +7,8 @@ export const metadata = { robots: { index: false } };
 
 const NAV = [
   { href: "/driver", label: "Overview" },
+  { href: "/driver/orders", label: "Orders" },
+  { href: "/driver/earnings", label: "Earnings" },
   { href: "/driver/application", label: "Profile" },
   { href: "/driver/vehicle", label: "Vehicle" },
   { href: "/driver/documents", label: "Documents" },

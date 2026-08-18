@@ -1,27 +1,9 @@
-# Dependencies
-node_modules/
-
-# Build output
-.next/
-out/
+node_modules
+.next
+.env
+.env.local
+/.pgdata
+/.storage
 *.tsbuildinfo
 next-env.d.ts
-
-# Local database and uploaded files
-.pgdata/
-.storage/
-
-# Secrets — never commit these
-.env
-.env.*
-!.env.example
-
-# Test and tooling output
-coverage/
-.vitest/
-
-# Editor and OS noise
-.vscode/
-.idea/
-.DS_Store
-Thumbs.db
+coverage

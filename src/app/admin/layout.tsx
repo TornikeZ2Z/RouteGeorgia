@@ -9,7 +9,9 @@ export const metadata = { robots: { index: false } };
 const NAV = [
   { href: "/admin", label: "Command centre", permission: "admin.access" },
   { href: "/admin/drivers", label: "Drivers", permission: "admin.drivers.read" },
+  { href: "/admin/bookings", label: "Bookings", permission: "admin.bookings.read" },
   { href: "/admin/media", label: "Photos", permission: "admin.drivers.decide" },
+  { href: "/admin/reviews", label: "Reviews", permission: "admin.drivers.decide" },
   { href: "/admin/locations", label: "Locations & routes", permission: "admin.locations.write" },
   { href: "/admin/pricing", label: "Price bands", permission: "admin.pricing.approve" },
   { href: "/admin/audit", label: "Audit log", permission: "admin.audit.read" },

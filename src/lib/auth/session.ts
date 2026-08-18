@@ -1,10 +1,12 @@
 import "server-only";
 import { cookies, headers } from "next/headers";
+import { redirect } from "next/navigation";
 import { createHash, randomBytes } from "node:crypto";
 import { eq, and, isNull, gt } from "drizzle-orm";
 import { db, sql } from "@db/client";
 import { users, userRoles, sessions } from "@db/schema";
 import { ForbiddenError, type Permission, type Role, can } from "@/lib/rbac";
+import { config } from "@/lib/config";
 
 const COOKIE = "gt_session";
 const TTL_DAYS = 14;
@@ -46,7 +48,7 @@ export async function createSession(userId: string, roles: Role[]): Promise<stri
   jar.set(COOKIE, token, {
     httpOnly: true,
     sameSite: "lax",
-    secure: process.env.NODE_ENV === "production",
+    secure: config.isProduction,
     path: "/",
     expires,
   });
@@ -96,13 +98,19 @@ export async function revokeAllSessions(userId: string): Promise<void> {
     .where(and(eq(sessions.userId, userId), isNull(sessions.revokedAt), gt(sessions.expiresAt, new Date())));
 }
 
-export class UnauthenticatedError extends Error {
-  constructor() { super("Authentication required"); this.name = "UnauthenticatedError"; }
-}
-
+/**
+ * Not signed in and not signed in with the wrong role are different problems
+ * and get different answers:
+ *
+ *   no session      → redirect to the sign-in page. There is nothing to
+ *                     explain; the person simply needs to log in.
+ *   wrong role      → throw ForbiddenError, caught by the route's error
+ *                     boundary, which explains that the page is not available
+ *                     to them. Redirecting here would send someone in a loop.
+ */
 export async function requireUser(): Promise<SessionUser> {
   const user = await getSessionUser();
-  if (!user) throw new UnauthenticatedError();
+  if (!user) redirect("/login");
   return user;
 }
 
