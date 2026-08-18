@@ -13,7 +13,7 @@ export default async function LoginPage({
   const { error, next } = await searchParams;
 
   return (
-    <div className="contours flex min-h-dvh flex-col justify-center bg-forest-800 px-4 py-12 text-forest-100">
+    <div className="contours-quiet flex min-h-dvh flex-col justify-center bg-forest-800 px-4 py-12 text-forest-100">
       <div className="mx-auto w-full max-w-md">
         <div className="mb-8 flex items-center gap-3">
           <span aria-hidden className="grid size-10 place-items-center rounded-full bg-wine-600 text-white">
