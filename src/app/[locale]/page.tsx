@@ -66,8 +66,8 @@ export default async function Home({ params }: { params: Promise<{ locale: strin
     <div className="space-y-20">
       {/* Full-bleed: the hero should meet the edges of the window, not sit inside
           the page gutter like another card. */}
-      <section className="contours relative left-1/2 w-screen -translate-x-1/2 overflow-hidden bg-forest-800 px-6 pb-32 pt-16 text-forest-50 sm:px-10 sm:pb-36 sm:pt-24">
-        <div className="relative mx-auto max-w-6xl px-0 sm:px-4">
+      <section className="contours relative left-1/2 -mt-10 w-screen -translate-x-1/2 overflow-hidden bg-forest-800 px-6 pb-28 pt-14 text-forest-50 sm:-mt-12 sm:px-10 sm:pb-32 sm:pt-20">
+        <div className="relative mx-auto max-w-6xl">
           <p className="eyebrow text-gold-400">Georgia · private drivers</p>
 
           <h1 className="font-display mt-5 max-w-4xl text-[2.75rem] leading-[1.05] sm:text-6xl lg:text-7xl">
@@ -93,8 +93,8 @@ export default async function Home({ params }: { params: Promise<{ locale: strin
         </div>
       </section>
 
-      <div className="relative z-10 -mt-24 sm:-mt-28">
-        <Card className="mx-auto max-w-5xl p-6 shadow-[0_18px_50px_-24px_rgba(32,38,37,.45)] sm:p-8">
+      <div className="relative z-10 -mt-20 sm:-mt-24">
+        <Card className="p-6 shadow-[0_18px_50px_-24px_rgba(32,38,37,.45)] sm:p-8">
           <p className="eyebrow text-wine-600">Plan your trip</p>
           <h2 className="font-display mt-2 mb-6 text-2xl text-ink-900">Where are you going?</h2>
           <SearchForm locale={locale} locations={locations} />

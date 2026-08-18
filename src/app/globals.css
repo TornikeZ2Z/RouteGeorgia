@@ -109,14 +109,14 @@ body {
 .contours {
   background-image:
     repeating-radial-gradient(
-      ellipse 120% 60% at 22% 108%,
-      transparent 0 22px,
-      color-mix(in oklab, currentColor 9%, transparent) 22px 23px
+      ellipse 130% 62% at 18% 112%,
+      transparent 0 26px,
+      color-mix(in oklab, currentColor 20%, transparent) 26px 28px
     ),
     repeating-radial-gradient(
-      ellipse 90% 55% at 82% 118%,
-      transparent 0 26px,
-      color-mix(in oklab, currentColor 7%, transparent) 26px 27px
+      ellipse 95% 58% at 86% 122%,
+      transparent 0 30px,
+      color-mix(in oklab, currentColor 14%, transparent) 30px 32px
     );
 }
 
