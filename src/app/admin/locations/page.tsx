@@ -3,6 +3,7 @@ import { sql } from "@db/client";
 import { Card, Field, Input, PageHeader, Select, Table } from "@/components/ui";
 import { ActionForm } from "@/components/form-state";
 import { saveLocationAction } from "../actions";
+import { RouteFamilyForm } from "./forms";
 
 export const dynamic = "force-dynamic";
 
@@ -11,7 +12,7 @@ export default async function LocationsPage() {
 
   const [locs, routes] = await Promise.all([
     sql<LocRow[]>`
-      SELECT slug, type::text AS type, name_en, name_ka, name_ru, lat, lon, in_service_area
+      SELECT id, slug, type::text AS type, name_en, name_ka, name_ru, lat, lon, in_service_area
       FROM locations ORDER BY name_en`,
     sql<RouteRow[]>`
       SELECT rf.slug, o.name_en AS origin, d.name_en AS destination, rf.distance_km,
@@ -70,6 +71,8 @@ export default async function LocationsPage() {
         </Table>
       </section>
 
+      <RouteFamilyForm locations={locs.map((l) => ({ id: l.id, name_en: l.name_en }))} />
+
       <Card className="p-4 sm:p-6">
         <h2 className="mb-4 font-semibold text-ink-900">Add a location</h2>
         <ActionForm action={saveLocationAction} submitLabel="Add location">
@@ -105,7 +108,7 @@ export default async function LocationsPage() {
 }
 
 interface LocRow {
-  slug: string; type: string; name_en: string; name_ka: string | null; name_ru: string | null;
+  id: string; slug: string; type: string; name_en: string; name_ka: string | null; name_ru: string | null;
   lat: number; lon: number; in_service_area: boolean;
 }
 interface RouteRow {

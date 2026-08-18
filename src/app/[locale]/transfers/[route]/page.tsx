@@ -105,7 +105,7 @@ export default async function RoutePage({ params }: Props) {
       </nav>
 
       <header>
-        <h1 className="text-3xl font-semibold tracking-tight text-ink-900">
+        <h1 className="font-display text-4xl text-ink-900 sm:text-5xl">
           {data.originName} to {data.destinationName} by private driver
         </h1>
         <div className="mt-3 flex flex-wrap items-center gap-x-6 gap-y-2 text-sm text-ink-600">
@@ -141,7 +141,7 @@ export default async function RoutePage({ params }: Props) {
       </Card>
 
       <section>
-        <h2 className="mb-3 text-lg font-semibold text-ink-900">What is included</h2>
+        <h2 className="font-display mb-4 text-2xl text-ink-900">What is included</h2>
         <ul className="grid gap-3 sm:grid-cols-2">
           {[
             ["Fixed price", "Agreed before you travel. It does not change afterwards unless you change the trip."],
@@ -161,7 +161,7 @@ export default async function RoutePage({ params }: Props) {
 
       {related.length > 0 && (
         <section>
-          <h2 className="mb-3 text-lg font-semibold text-ink-900">Related routes</h2>
+          <h2 className="font-display mb-4 text-2xl text-ink-900">Related routes</h2>
           <ul className="grid gap-2 sm:grid-cols-2 lg:grid-cols-3">
             {related.map((r) => (
               <li key={r.slug}>

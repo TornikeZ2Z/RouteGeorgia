@@ -88,7 +88,9 @@ export default async function AdminBookings({
         <Table head={["Code", "Departure", "Route", "Driver", "Traveller", "Payment", "Status"]}>
           {rows.map((b) => (
             <tr key={b.id}>
-              <td className="px-4 py-2.5 font-mono text-xs">{b.code}</td>
+              <td className="px-4 py-2.5 font-mono text-xs">
+                <Link href={`/admin/bookings/${b.id}`} className="text-wine-700 underline">{b.code}</Link>
+              </td>
               <td className="px-4 py-2.5 whitespace-nowrap text-xs">
                 {new Date(b.service_start_at).toLocaleString("en-GB", { dateStyle: "short", timeStyle: "short" })}
               </td>

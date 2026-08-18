@@ -63,49 +63,54 @@ export default async function Home({ params }: { params: Promise<{ locale: strin
   const popular = routes.slice(0, 6);
 
   return (
-    <div className="space-y-16">
-      <section className="relative overflow-hidden rounded-3xl border border-forest-700 bg-forest-600 px-6 py-12 text-white sm:px-10 sm:py-16">
-        {/* Caucasus ridgeline. Drawn rather than photographed: an illustration
-            promises nothing about a specific place the traveller has not chosen. */}
-        <svg
-          className="pointer-events-none absolute inset-x-0 bottom-0 h-40 w-full opacity-25"
-          viewBox="0 0 1200 200" preserveAspectRatio="none" aria-hidden
-        >
-          <path d="M0 150 L150 90 L280 130 L420 50 L560 110 L700 40 L860 100 L1000 60 L1200 120 L1200 200 L0 200 Z" fill="rgba(255,255,255,.35)" />
-          <path d="M0 175 L180 125 L320 160 L470 95 L620 145 L780 85 L920 135 L1080 100 L1200 150 L1200 200 L0 200 Z" fill="rgba(255,255,255,.25)" />
-        </svg>
+    <div className="space-y-20">
+      {/* Full-bleed: the hero should meet the edges of the window, not sit inside
+          the page gutter like another card. */}
+      <section className="contours relative left-1/2 w-screen -translate-x-1/2 overflow-hidden bg-forest-800 px-6 pb-32 pt-16 text-forest-50 sm:px-10 sm:pb-36 sm:pt-24">
+        <div className="relative mx-auto max-w-6xl px-0 sm:px-4">
+          <p className="eyebrow text-gold-400">Georgia · private drivers</p>
 
-        <div className="relative max-w-3xl">
-          <p className="text-sm font-medium uppercase tracking-[0.14em] text-forest-100">
-            Georgia · private drivers
-          </p>
-          <h1 className="mt-3 text-4xl font-semibold leading-[1.1] tracking-tight sm:text-5xl">
+          <h1 className="font-display mt-5 max-w-4xl text-[2.75rem] leading-[1.05] sm:text-6xl lg:text-7xl">
             {t("home.heroTitle")}
           </h1>
-          <p className="mt-4 max-w-2xl text-lg leading-relaxed text-forest-100">
+
+          <p className="mt-6 max-w-xl text-lg leading-relaxed text-forest-100">
             {t("home.heroSubtitle")}
           </p>
-          <p className="mt-6 flex flex-wrap gap-x-6 gap-y-2 text-sm text-forest-200">
-            <span>{stats[0]?.drivers ?? 0} verified drivers</span>
-            <span>{stats[0]?.routes ?? 0} priced routes</span>
-            <span>Free cancellation</span>
-          </p>
+
+          <dl className="mt-10 flex flex-wrap gap-x-12 gap-y-5">
+            {[
+              [stats[0]?.drivers ?? 0, "verified drivers"],
+              [stats[0]?.routes ?? 0, "priced routes"],
+              [tours.length, "curated tours"],
+            ].map(([value, label]) => (
+              <div key={label as string}>
+                <dt className="font-display text-3xl text-gold-300">{value as number}</dt>
+                <dd className="mt-0.5 text-sm text-forest-200">{label as string}</dd>
+              </div>
+            ))}
+          </dl>
         </div>
       </section>
 
-      <Card className="-mt-24 relative z-10 mx-auto max-w-5xl p-5 shadow-lg sm:p-7">
-        <h2 className="mb-4 text-lg font-semibold text-ink-900">Where are you going?</h2>
-        <SearchForm locale={locale} locations={locations} />
-      </Card>
+      <div className="relative z-10 -mt-24 sm:-mt-28">
+        <Card className="mx-auto max-w-5xl p-6 shadow-[0_18px_50px_-24px_rgba(32,38,37,.45)] sm:p-8">
+          <p className="eyebrow text-wine-600">Plan your trip</p>
+          <h2 className="font-display mt-2 mb-6 text-2xl text-ink-900">Where are you going?</h2>
+          <SearchForm locale={locale} locations={locations} />
+        </Card>
+      </div>
 
       <section>
-        <h2 className="text-2xl font-semibold tracking-tight text-ink-900">
-          Why book ahead instead of at the roadside
+        <p className="eyebrow text-wine-600">Why book ahead</p>
+        <h2 className="font-display mt-2 text-3xl text-ink-900 sm:text-4xl">
+          Everything agreed before you land
         </h2>
-        <ul className="mt-6 grid gap-4 sm:grid-cols-2">
+        <div className="rule-fade mt-5" />
+        <ul className="mt-8 grid gap-px overflow-hidden rounded-xl border border-ink-200 bg-ink-200 sm:grid-cols-2">
           {PROMISES.map(([title, body], i) => (
-            <li key={title} className="rounded-xl border border-ink-200 bg-white p-5">
-              <span aria-hidden className="grid size-9 place-items-center rounded-lg bg-wine-50 text-wine-700">
+            <li key={title} className="bg-white p-6">
+              <span aria-hidden className="grid size-10 place-items-center rounded-full bg-wine-50 text-wine-700">
                 <svg viewBox="0 0 24 24" className="size-5" fill="none" strokeWidth="1.7"
                      stroke="currentColor" strokeLinecap="round" strokeLinejoin="round">
                   {/* price tag */}
@@ -118,8 +123,8 @@ export default async function Home({ params }: { params: Promise<{ locale: strin
                   {i === 3 && <><path d="M12 3l7.5 3v6c0 4.8-3.2 8.1-7.5 9-4.3-.9-7.5-4.2-7.5-9V6L12 3z" /><path d="M9 12l2.2 2.2L15.5 10" /></>}
                 </svg>
               </span>
-              <p className="mt-3 font-semibold text-ink-900">{title}</p>
-              <p className="mt-1.5 text-sm leading-relaxed text-ink-600">{body}</p>
+              <p className="font-display mt-4 text-xl text-ink-900">{title}</p>
+              <p className="mt-2 text-sm leading-relaxed text-ink-600">{body}</p>
             </li>
           ))}
         </ul>
@@ -127,12 +132,16 @@ export default async function Home({ params }: { params: Promise<{ locale: strin
 
       {tours.length > 0 && (
         <section>
-          <div className="flex flex-wrap items-baseline justify-between gap-3">
-            <h2 className="text-2xl font-semibold tracking-tight text-ink-900">Tours worth taking</h2>
+          <div className="flex flex-wrap items-end justify-between gap-3">
+            <div>
+              <p className="eyebrow text-wine-600">Tours</p>
+              <h2 className="font-display mt-2 text-3xl text-ink-900 sm:text-4xl">Routes worth taking</h2>
+            </div>
             <Link href={`/${locale}/tours`} className="text-sm font-medium text-wine-700 underline underline-offset-4">
               See all tours
             </Link>
           </div>
+          <div className="rule-fade mt-5" />
           <ul className="mt-6 grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
             {tours.slice(0, 3).map((tour) => (
               <li key={tour.slug}>
@@ -140,18 +149,15 @@ export default async function Home({ params }: { params: Promise<{ locale: strin
                   href={`/${locale}/tours/${tour.slug}`}
                   className="group flex h-full flex-col overflow-hidden rounded-2xl border border-ink-200 bg-white hover:border-wine-300"
                 >
-                  <div className="relative h-32 bg-gradient-to-br from-forest-600 to-forest-700">
-                    <svg className="absolute inset-0 size-full opacity-30" viewBox="0 0 400 128" preserveAspectRatio="none" aria-hidden>
-                      <path d="M0 96 L80 66 L150 84 L230 40 L300 62 L400 30 L400 128 L0 128 Z" fill="rgba(255,255,255,.25)" />
-                    </svg>
-                    <span className="absolute left-3 top-3">
+                  <div className="contours relative h-36 bg-forest-700 text-forest-200">
+                    <span className="absolute left-4 top-4">
                       <Badge tone="neutral">
                         {tour.durationDays === 1 ? "Day trip" : `${tour.durationDays} days`}
                       </Badge>
                     </span>
                   </div>
-                  <div className="flex flex-1 flex-col p-5">
-                    <p className="font-semibold text-ink-900 group-hover:text-wine-700">{tour.title}</p>
+                  <div className="flex flex-1 flex-col p-6">
+                    <p className="font-display text-xl text-ink-900 group-hover:text-wine-700">{tour.title}</p>
                     <p className="mt-2 flex-1 text-sm leading-relaxed text-ink-600">{tour.summary}</p>
                   </div>
                 </Link>
@@ -163,12 +169,16 @@ export default async function Home({ params }: { params: Promise<{ locale: strin
 
       {popular.length > 0 && (
         <section>
-          <div className="flex flex-wrap items-baseline justify-between gap-3">
-            <h2 className="text-2xl font-semibold tracking-tight text-ink-900">Popular routes</h2>
+          <div className="flex flex-wrap items-end justify-between gap-3">
+            <div>
+              <p className="eyebrow text-wine-600">Transfers</p>
+              <h2 className="font-display mt-2 text-3xl text-ink-900 sm:text-4xl">Popular routes</h2>
+            </div>
             <Link href={`/${locale}/transfers`} className="text-sm font-medium text-wine-700 underline underline-offset-4">
               See all routes
             </Link>
           </div>
+          <div className="rule-fade mt-5" />
           <ul className="mt-6 grid gap-3 sm:grid-cols-2 lg:grid-cols-3">
             {popular.map((r) => (
               <li key={r.slug}>
@@ -190,31 +200,32 @@ export default async function Home({ params }: { params: Promise<{ locale: strin
       )}
 
       <section>
-        <h2 className="text-2xl font-semibold tracking-tight text-ink-900">How it works</h2>
-        <ol className="mt-6 grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
+        <p className="eyebrow text-wine-600">How it works</p>
+        <h2 className="font-display mt-2 text-3xl text-ink-900 sm:text-4xl">Four steps, no haggling</h2>
+        <div className="rule-fade mt-5" />
+        <ol className="mt-8 grid gap-8 sm:grid-cols-2 lg:grid-cols-4">
           {STEPS.map(([title, body], i) => (
-            <li key={title} className="relative rounded-xl border border-ink-200 bg-white p-5">
-              <span className="inline-flex size-8 items-center justify-center rounded-full bg-wine-600 text-sm font-semibold text-white">
-                {i + 1}
-              </span>
-              <p className="mt-3 font-semibold text-ink-900">{title}</p>
+            <li key={title} className="border-t-2 border-wine-600 pt-4">
+              <span className="font-display text-4xl text-ink-300">{String(i + 1).padStart(2, "0")}</span>
+              <p className="mt-2 font-semibold text-ink-900">{title}</p>
               <p className="mt-1.5 text-sm leading-relaxed text-ink-600">{body}</p>
             </li>
           ))}
         </ol>
       </section>
 
-      <section className="overflow-hidden rounded-2xl border border-ink-800 bg-ink-900 px-6 py-10 text-white sm:px-10">
+      <section className="contours overflow-hidden rounded-2xl bg-ink-900 px-6 py-12 text-ink-50 sm:px-12">
         <div className="max-w-2xl">
-          <h2 className="text-2xl font-semibold tracking-tight">Drive with us</h2>
-          <p className="mt-3 leading-relaxed text-ink-200">
+          <p className="eyebrow text-gold-400">For drivers</p>
+          <h2 className="font-display mt-3 text-3xl sm:text-4xl">Drive with us</h2>
+          <p className="mt-4 leading-relaxed text-ink-200">
             Set your own rates within published limits, control your own calendar, and keep 85% of
             every completed trip. We find the passenger, handle the paperwork, and answer the phone
             when plans change.
           </p>
           <Link
             href="/driver"
-            className="mt-6 inline-flex min-h-11 items-center rounded-lg bg-white px-5 py-2.5 text-sm font-semibold text-ink-900 hover:bg-ink-100"
+            className="mt-7 inline-flex min-h-12 items-center rounded-lg bg-gold-400 px-6 py-3 text-sm font-semibold text-ink-900 transition-colors hover:bg-gold-300"
           >
             {t("nav.becomeDriver")}
           </Link>

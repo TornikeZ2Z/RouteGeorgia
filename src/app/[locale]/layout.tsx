@@ -39,7 +39,7 @@ export default async function LocaleLayout({
   ];
 
   return (
-    <div className="flex min-h-dvh flex-col" lang={locale}>
+    <div className="flex min-h-dvh flex-col overflow-x-clip" lang={locale}>
       <a
         href="#main"
         className="sr-only focus:not-sr-only focus:absolute focus:left-4 focus:top-4 focus:z-50 focus:rounded-lg focus:bg-white focus:px-4 focus:py-2.5 focus:shadow-lg"
@@ -47,20 +47,21 @@ export default async function LocaleLayout({
         Skip to content
       </a>
 
-      <header className="sticky top-0 z-30 border-b border-ink-200 bg-ink-50/85 backdrop-blur-md">
+      <header className="sticky top-0 z-30 border-b border-ink-200/80 bg-ink-50/90 backdrop-blur-md">
         <div className="mx-auto flex max-w-6xl items-center gap-4 px-4 py-3">
           <Link
             href={`/${locale}`}
-            className="flex shrink-0 items-center gap-2.5 text-[15px] font-semibold tracking-tight text-ink-900"
+            className="flex shrink-0 items-center gap-2.5 text-ink-900"
           >
-            <span aria-hidden className="grid size-8 place-items-center rounded-lg bg-wine-600 text-white">
-              {/* A road disappearing over a hill — the product in one mark. */}
-              <svg viewBox="0 0 24 24" className="size-5" fill="none" aria-hidden>
-                <path d="M9 21 L11 4 M15 21 L13 4" stroke="currentColor" strokeWidth="2" strokeLinecap="round" />
-                <path d="M12 4 h.01" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" />
+            <span aria-hidden className="grid size-9 place-items-center rounded-full bg-wine-600 text-white">
+              {/* Contour rings with a route cutting through — the signature mark. */}
+              <svg viewBox="0 0 24 24" className="size-5" fill="none" stroke="currentColor" aria-hidden>
+                <ellipse cx="12" cy="14" rx="9" ry="5.5" strokeWidth="1.3" opacity=".45" />
+                <ellipse cx="12" cy="14" rx="5.5" ry="3.2" strokeWidth="1.3" opacity=".7" />
+                <path d="M4 18 C9 10, 15 16, 20 7" strokeWidth="2" strokeLinecap="round" />
               </svg>
             </span>
-            {t("brand.name")}
+            <span className="font-display text-lg">{t("brand.name")}</span>
           </Link>
 
           <nav className="hidden flex-1 items-center gap-1 text-sm sm:flex" aria-label="Main">
@@ -121,8 +122,8 @@ export default async function LocaleLayout({
       <footer className="mt-8 border-t border-ink-200 bg-white">
         <div className="mx-auto grid max-w-6xl gap-10 px-4 py-12 sm:grid-cols-2 lg:grid-cols-4">
           <div>
-            <p className="flex items-center gap-2 font-semibold text-ink-900">
-              <span aria-hidden className="inline-block size-5 rounded bg-wine-600" />
+            <p className="font-display flex items-center gap-2.5 text-xl text-ink-900">
+              <span aria-hidden className="inline-block size-5 rounded-full bg-wine-600" />
               {t("brand.name")}
             </p>
             <p className="mt-3 text-sm leading-relaxed text-ink-600">{t("brand.tagline")}</p>

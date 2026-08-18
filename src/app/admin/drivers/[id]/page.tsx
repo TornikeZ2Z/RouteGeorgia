@@ -4,6 +4,9 @@ import { can } from "@/lib/rbac";
 import { sql } from "@db/client";
 import { Alert, Badge, Card, PageHeader, Table } from "@/components/ui";
 import { DecisionPanel, DocumentDecision, VehicleDecision, LanguageVerification, PublishPanel } from "./panels";
+import { WalletPanel } from "../forms";
+import { driverBalance } from "@/lib/ledger";
+import { can as canDo } from "@/lib/rbac";
 
 export const dynamic = "force-dynamic";
 
@@ -37,6 +40,7 @@ export default async function DriverDetail({ params }: { params: Promise<{ id: s
       FROM driver_decisions WHERE driver_id = ${id}::uuid ORDER BY created_at DESC LIMIT 20`,
   ]);
 
+  const balance = canDo(actor.roles, "admin.finance.read") ? await driverBalance(id) : null;
   const mayDecide = can(actor.roles, "admin.drivers.decide");
   const mayPublish = can(actor.roles, "admin.drivers.publish");
   const mayDecideDocs = can(actor.roles, "admin.documents.decide");
@@ -71,7 +75,14 @@ export default async function DriverDetail({ params }: { params: Promise<{ id: s
             <Table head={["Type", "Expires", "State", "Note", ...(mayDecideDocs ? ["Decision"] : [])]}>
               {docs.map((d) => (
                 <tr key={d.id}>
-                  <td className="px-4 py-2.5">{d.type.replaceAll("_", " ").toLowerCase()}</td>
+                  <td className="px-4 py-2.5">
+                    {canDo(actor.roles, "admin.documents.read") ? (
+                      <a href={`/api/admin/documents/${d.id}`} target="_blank" rel="noreferrer"
+                         className="text-wine-700 underline">
+                        {d.type.replaceAll("_", " ").toLowerCase()}
+                      </a>
+                    ) : d.type.replaceAll("_", " ").toLowerCase()}
+                  </td>
                   <td className="px-4 py-2.5 tabular-nums">
                     {d.expires_on ?? "—"}
                     {d.expires_on && new Date(d.expires_on) < new Date() && (
@@ -93,7 +104,8 @@ export default async function DriverDetail({ params }: { params: Promise<{ id: s
               ))}
             </Table>
             <p className="mt-2 text-xs text-ink-500">
-              Document files are held in restricted storage. Opening one is itself an audited action.
+              Files are streamed from restricted storage, never linked directly. Every time a reviewer
+              opens one it is written to the audit log.
             </p>
           </section>
 
@@ -168,6 +180,15 @@ export default async function DriverDetail({ params }: { params: Promise<{ id: s
         </div>
 
         <div className="space-y-4">
+          {balance && canDo(actor.roles, "admin.finance.execute") && (
+            <WalletPanel
+              driverId={driver.id}
+              owedMinor={balance.owedToPlatformMinor.toString()}
+              creditLimitMinor={balance.creditLimitMinor.toString()}
+              blocked={balance.cashBlocked}
+              blockedReason={balance.blockedReason}
+            />
+          )}
           {mayDecide && <DecisionPanel driverId={driver.id} currentStatus={driver.status} />}
           {mayPublish && <PublishPanel driverId={driver.id} published={driver.published} />}
 

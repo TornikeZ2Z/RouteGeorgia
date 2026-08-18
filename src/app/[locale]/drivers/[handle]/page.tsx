@@ -74,7 +74,7 @@ export default async function DriverProfile({ params }: Props) {
             {driver.public_name.charAt(0)}
           </span>
           <div>
-            <h1 className="text-2xl font-semibold tracking-tight text-ink-900">{driver.public_name}</h1>
+            <h1 className="font-display text-3xl text-ink-900">{driver.public_name}</h1>
             <span className="mt-1 inline-block"><Badge tone="success">{t("driver.verified")}</Badge></span>
           </div>
         </div>

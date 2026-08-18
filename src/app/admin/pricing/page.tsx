@@ -3,11 +3,13 @@ import { sql } from "@db/client";
 import { config } from "@/lib/config";
 import { toMajorString } from "@/lib/money";
 import { Alert, Card, PageHeader, Table } from "@/components/ui";
+import { BandForm } from "./forms";
+import { can } from "@/lib/rbac";
 
 export const dynamic = "force-dynamic";
 
 export default async function PricingBandsPage() {
-  await requirePermission("admin.pricing.approve");
+  const actor = await requirePermission("admin.pricing.approve");
 
   const bands = await sql<BandRow[]>`
     SELECT class::text AS class, currency, min_rate_per_km_minor, max_rate_per_km_minor,
@@ -62,10 +64,33 @@ export default async function PricingBandsPage() {
         ))}
       </Table>
 
-      <p className="text-xs text-ink-500">
-        Editing bands from the UI is intentionally not built yet: a band change silently reprices the whole
-        marketplace, so it belongs behind four-eyes approval. Change them in the database during the pilot.
-      </p>
+      {can(actor.roles, "admin.pricing.bands.write") ? (
+        <section>
+          <h2 className="mb-1 font-semibold text-ink-900">Edit bands</h2>
+          <p className="mb-4 text-sm text-ink-600">
+            A band change reprices every future quote in that class. Bookings already made keep their own
+            frozen price, and drivers whose current rate falls outside the new band keep quoting their old
+            one until they edit it — you will be told how many.
+          </p>
+          <div className="grid gap-4 lg:grid-cols-2">
+            {bands.map((b) => (
+              <BandForm key={b.class} band={{
+                class: b.class,
+                minRate: toMajorString(b.min_rate_per_km_minor),
+                maxRate: toMajorString(b.max_rate_per_km_minor),
+                floor: toMajorString(b.min_fare_floor_minor),
+                ceiling: toMajorString(b.max_fare_ceiling_minor),
+                overnight: toMajorString(b.max_overnight_minor),
+                maxSeasonPct: Math.round(b.max_season_factor_bps / 100),
+              }} />
+            ))}
+          </div>
+        </section>
+      ) : (
+        <p className="text-xs text-ink-500">
+          Your role can read the bands but not change them. Band edits need the pricing permission.
+        </p>
+      )}
     </div>
   );
 }

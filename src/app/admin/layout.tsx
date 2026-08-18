@@ -12,8 +12,11 @@ const NAV = [
   { href: "/admin/bookings", label: "Bookings", permission: "admin.bookings.read" },
   { href: "/admin/media", label: "Photos", permission: "admin.drivers.decide" },
   { href: "/admin/reviews", label: "Reviews", permission: "admin.drivers.decide" },
+  { href: "/admin/finance", label: "Finance", permission: "admin.finance.read" },
   { href: "/admin/locations", label: "Locations & routes", permission: "admin.locations.write" },
   { href: "/admin/pricing", label: "Price bands", permission: "admin.pricing.approve" },
+  { href: "/admin/content", label: "Content", permission: "admin.content.write" },
+  { href: "/admin/staff", label: "Staff", permission: "admin.rbac.write" },
   { href: "/admin/audit", label: "Audit log", permission: "admin.audit.read" },
 ] as const;
 

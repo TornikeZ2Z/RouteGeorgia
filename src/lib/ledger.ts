@@ -16,8 +16,14 @@ import type { Minor } from "@/lib/money";
  * owed TO us or held BY us, and a CREDIT increases what we owe out.
  */
 export type AccountKind =
-  | "CARD_CLEARING" | "CASH_WITH_DRIVER" | "PLATFORM_REVENUE"
-  | "DRIVER_PAYABLE" | "DRIVER_RECEIVABLE" | "REFUNDS" | "PAYOUTS";
+  | "CARD_CLEARING"     // money the payment provider holds for us
+  | "CASH_WITH_DRIVER"  // fare the driver collected directly from the traveller
+  | "PLATFORM_CASH"     // money we actually hold, e.g. settled commission
+  | "PLATFORM_REVENUE"  // commission, earned
+  | "DRIVER_PAYABLE"    // we owe the driver, from card trips
+  | "DRIVER_RECEIVABLE" // the driver owes us commission, from cash trips
+  | "REFUNDS"
+  | "PAYOUTS";
 
 export interface PostingLine {
   account: AccountKind;

@@ -93,7 +93,7 @@ export default async function TourPage({ params }: Props) {
           {tour.requires4x4 && <Badge tone="warning">4x4 required</Badge>}
           <Badge tone="success">Private vehicle</Badge>
         </div>
-        <h1 className="mt-3 text-3xl font-semibold tracking-tight text-ink-900 sm:text-4xl">{tour.title}</h1>
+        <h1 className="font-display mt-4 text-4xl text-ink-900 sm:text-5xl">{tour.title}</h1>
         <p className="mt-3 text-lg leading-relaxed text-ink-600">{tour.summary}</p>
 
         <dl className="mt-5 flex flex-wrap gap-x-8 gap-y-3 border-t border-ink-200 pt-4 text-sm">
@@ -117,14 +117,14 @@ export default async function TourPage({ params }: Props) {
       <div className="grid gap-10 lg:grid-cols-[1fr_380px]">
         <div className="space-y-8">
           <section className="max-w-2xl">
-            <h2 className="text-xl font-semibold text-ink-900">About this trip</h2>
+            <h2 className="font-display text-2xl text-ink-900">About this trip</h2>
             <div className="mt-3 space-y-4 leading-relaxed text-ink-700">
               {tour.body.split("\n\n").map((paragraph, i) => <p key={i}>{paragraph}</p>)}
             </div>
           </section>
 
           <section>
-            <h2 className="text-xl font-semibold text-ink-900">The route</h2>
+            <h2 className="font-display text-2xl text-ink-900">The route</h2>
             <ol className="mt-4 space-y-0">
               {tour.stops.map((stop, i) => {
                 const last = i === tour.stops.length - 1;
@@ -184,7 +184,7 @@ export default async function TourPage({ params }: Props) {
 
       {others.length > 1 && (
         <section>
-          <h2 className="mb-4 text-xl font-semibold text-ink-900">Other tours</h2>
+          <h2 className="font-display mb-4 text-2xl text-ink-900">Other tours</h2>
           <ul className="grid gap-3 sm:grid-cols-2 lg:grid-cols-4">
             {others.filter((t) => t.slug !== slug).slice(0, 4).map((t) => (
               <li key={t.slug}>

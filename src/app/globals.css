@@ -1,80 +1,79 @@
 @import "tailwindcss";
 
 /* ---------------------------------------------------------------------------
-   Design tokens.
+   Route Georgia — design tokens.
 
-   Founder-supplied palette, expanded into usable scales:
-     Georgian wine red  #7B2936  →  wine-600   (primary action, brand)
-     Deep forest green  #26483E  →  forest-600 (confirmed, verified, safe)
-     Warm limestone     #F4EFE6  →  ink-50     (page background)
-     Charcoal           #202625  →  ink-900    (body text)
-     Muted gold         #C99A45  →  gold-500   (attention, expiry, seasonal)
+   The visual idea: a travel company from the Caucasus, not a rideshare app.
+   Editorial rather than tech — a display serif for voice, generous measure,
+   hairline rules, and a topographic contour motif as the ownable signature.
+   Contour lines because the whole product is about crossing terrain, and
+   because they are ours in a way stock photography of Kazbegi never is.
 
-   Neutrals are warm-tinted so they sit on limestone rather than fighting it.
-   Every pairing used for text on a background meets WCAG AA contrast.
+   Founder palette, deepened for contrast:
+     Georgian wine red  #7B2936  wine-600   action, brand
+     Deep forest green  #26483E  forest-600 the canvas for dark sections
+     Warm limestone     #F4EFE6  ink-50     page ground
+     Charcoal           #202625  ink-900    text
+     Muted gold         #C99A45  gold-500   accent, seasonal, attention
    --------------------------------------------------------------------------- */
 @theme {
-  /* Warm neutrals: limestone → charcoal */
-  --color-ink-50:  #f4efe6;
-  --color-ink-100: #eae2d4;
-  --color-ink-200: #dcd2c0;
-  --color-ink-300: #c3b8a3;
-  --color-ink-400: #9b9182;
-  --color-ink-500: #756e62;
-  --color-ink-600: #57524a;
-  --color-ink-700: #3d3a35;
-  --color-ink-800: #2c2e2b;
+  --color-ink-50:  #f6f2ea;
+  --color-ink-100: #ebe4d6;
+  --color-ink-200: #dbd1bd;
+  --color-ink-300: #c0b49c;
+  --color-ink-400: #978c76;
+  --color-ink-500: #6f6656;
+  --color-ink-600: #524b3f;
+  --color-ink-700: #3a352d;
+  --color-ink-800: #2a2b26;
   --color-ink-900: #202625;
 
-  /* Georgian wine red — primary */
-  --color-wine-50:  #faf2f3;
-  --color-wine-100: #f2e0e3;
-  --color-wine-200: #e4c2c7;
-  --color-wine-300: #cf959d;
+  --color-wine-50:  #fbf3f4;
+  --color-wine-100: #f4e2e5;
+  --color-wine-200: #e6c3c9;
+  --color-wine-300: #d0959f;
   --color-wine-400: #b26370;
   --color-wine-500: #94404e;
   --color-wine-600: #7b2936;
-  --color-wine-700: #66222d;
-  --color-wine-800: #501b24;
-  --color-wine-900: #3c141b;
+  --color-wine-700: #64212c;
+  --color-wine-800: #4e1a23;
+  --color-wine-900: #3a131a;
 
-  /* Deep forest green — verified, confirmed, safe */
-  --color-forest-50:  #eef3f1;
-  --color-forest-100: #dae6e1;
-  --color-forest-200: #b6ccc4;
-  --color-forest-300: #85a99c;
-  --color-forest-400: #4f7a6b;
-  --color-forest-500: #35604f;
+  --color-forest-50:  #eff4f2;
+  --color-forest-100: #dbe7e2;
+  --color-forest-200: #b7cdc4;
+  --color-forest-300: #87ab9d;
+  --color-forest-400: #517d6d;
+  --color-forest-500: #356152;
   --color-forest-600: #26483e;
-  --color-forest-700: #1e3a31;
-  --color-forest-800: #172d26;
-  --color-forest-900: #11211c;
+  --color-forest-700: #1d3a31;
+  --color-forest-800: #152b24;
+  --color-forest-900: #0f1f1a;
 
-  /* Muted gold — attention without alarm (expiring documents, seasonality) */
-  --color-gold-50:  #fcf7ec;
-  --color-gold-100: #f8efdc;
-  --color-gold-200: #efdcb8;
-  --color-gold-300: #e0c48d;
-  --color-gold-400: #d7ae68;
+  --color-gold-50:  #fdf8ee;
+  --color-gold-100: #f9efd9;
+  --color-gold-200: #f0dcb2;
+  --color-gold-300: #e3c384;
+  --color-gold-400: #d5ac60;
   --color-gold-500: #c99a45;
-  --color-gold-600: #a87e33;
-  --color-gold-700: #86632a;
+  --color-gold-600: #a87c33;
+  --color-gold-700: #82602a;
 
-  /* Cool steel, reserved for neutral information so it cannot be mistaken
-     for either the wine primary or the forest success state. */
-  --color-steel-50:  #eef2f4;
-  --color-steel-100: #e0e8ec;
+  --color-steel-50:  #eff3f5;
+  --color-steel-100: #e1e9ed;
   --color-steel-700: #2f4a58;
 
-  /* Error red, kept deliberately distinct from the wine brand colour so a
-     failure never reads as a call to action. */
-  --color-danger: #b3261e;
-  --color-danger-bg: #fdeceb;
+  --color-danger: #a8291f;
+  --color-danger-bg: #fbeceb;
 
-  --font-sans: "Inter", ui-sans-serif, system-ui, -apple-system, "Segoe UI",
-               "Noto Sans Georgian", sans-serif;
+  --font-sans: ui-sans-serif, system-ui, -apple-system, "Segoe UI", Roboto,
+               "Noto Sans Georgian", "Helvetica Neue", Arial, sans-serif;
 
-  --radius-card: 0.75rem;
+  /* Book serifs that are actually installed on the devices travellers use. */
+  --font-display: "Iowan Old Style", "Palatino Linotype", Palatino, "Book Antiqua",
+                  "Noto Serif Georgian", Georgia, ui-serif, serif;
+
+  --radius-card: 0.875rem;
 }
 
 html { -webkit-text-size-adjust: 100%; }
@@ -83,13 +82,58 @@ body {
   background: var(--color-ink-50);
   color: var(--color-ink-900);
   font-family: var(--font-sans);
+  font-feature-settings: "cv05" 1, "ss01" 1;
 }
 
-/* Visible focus is a WCAG 2.2 AA requirement, not a preference. */
+/* Display face carries the brand voice: headlines, prices, numbers that matter. */
+.font-display {
+  font-family: var(--font-display);
+  font-weight: 400;
+  letter-spacing: -0.02em;
+  line-height: 1.08;
+}
+
+/* Small-caps eyebrow above section headings — editorial, and it gives the
+   page a rhythm that card grids alone never do. */
+.eyebrow {
+  font-size: 0.6875rem;
+  font-weight: 600;
+  letter-spacing: 0.16em;
+  text-transform: uppercase;
+}
+
+/* ---------------------------------------------------------------------------
+   The signature: topographic contour lines.
+   Used as a background on dark sections and cards. Drawn, not photographed.
+   --------------------------------------------------------------------------- */
+.contours {
+  background-image:
+    repeating-radial-gradient(
+      ellipse 120% 60% at 22% 108%,
+      transparent 0 22px,
+      color-mix(in oklab, currentColor 9%, transparent) 22px 23px
+    ),
+    repeating-radial-gradient(
+      ellipse 90% 55% at 82% 118%,
+      transparent 0 26px,
+      color-mix(in oklab, currentColor 7%, transparent) 26px 27px
+    );
+}
+
+/* A hairline that fades out — used under section headings. */
+.rule-fade {
+  height: 1px;
+  background: linear-gradient(
+    to right,
+    color-mix(in oklab, var(--color-ink-900) 22%, transparent),
+    transparent
+  );
+}
+
 :focus-visible {
   outline: 2px solid var(--color-wine-600);
   outline-offset: 2px;
-  border-radius: 3px;
+  border-radius: 4px;
 }
 
 ::selection {

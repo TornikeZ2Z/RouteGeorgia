@@ -32,7 +32,8 @@ export default async function TransfersIndex({ params }: Props) {
   return (
     <div className="space-y-6">
       <header>
-        <h1 className="text-2xl font-semibold tracking-tight text-ink-900">
+        <p className="eyebrow text-wine-600">Transfers</p>
+        <h1 className="font-display mt-3 text-4xl text-ink-900 sm:text-5xl">
           Private transfers across Georgia
         </h1>
         <p className="mt-2 max-w-2xl text-ink-600">

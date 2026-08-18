@@ -1,6 +1,20 @@
 import type { Metadata } from "next";
 import "./globals.css";
 
+/**
+ * Typography is deliberately webfont-free.
+ *
+ * The display face is a stack of book serifs that ship with macOS, Windows
+ * and most Linux desktops — Iowan Old Style, Palatino, Georgia. They give the
+ * editorial voice a travel company should have, and they render on the first
+ * paint with no network request, no layout shift, and nothing loaded from a
+ * font CDN. On a Georgian phone on mobile data that is worth more than a
+ * fashionable variable font.
+ *
+ * Georgian and Cyrillic fall through to the Noto faces, which are the ones
+ * actually installed on devices in the region.
+ */
+
 export const metadata: Metadata = {
   title: {
     default: "Route Georgia — private drivers and tours across Georgia",

@@ -116,7 +116,7 @@ export default async function SearchPage({ params, searchParams }: Props) {
   return (
     <div className="space-y-6">
       <div className="rounded-xl border border-ink-200 bg-white p-5">
-        <h1 className="text-xl font-semibold tracking-tight text-ink-900">
+        <h1 className="font-display text-2xl text-ink-900 sm:text-3xl">
           {result.route.originName || from}
           <span className="mx-2 text-ink-400" aria-hidden>→</span>
           {result.route.destinationName || to}
@@ -190,7 +190,7 @@ export default async function SearchPage({ params, searchParams }: Props) {
 
                           <div className="min-w-0 flex-1">
                             <div className="flex flex-wrap items-center gap-2">
-                              <h2 className="text-lg font-semibold text-ink-900">{offer.driverName}</h2>
+                              <h2 className="font-display text-xl text-ink-900">{offer.driverName}</h2>
                               <Badge tone="success">{t("driver.verified")}</Badge>
                               {index === 0 && filterState.sort === "recommended" && (
                                 <Badge tone="info">Recommended</Badge>
@@ -226,7 +226,7 @@ export default async function SearchPage({ params, searchParams }: Props) {
                           </div>
 
                           <div className="ml-auto shrink-0 text-right">
-                            <p className="text-2xl font-semibold tracking-tight text-ink-900">{shown.primary}</p>
+                            <p className="font-display text-3xl text-ink-900">{shown.primary}</p>
                             {shown.secondary && (
                               <p className="text-sm text-ink-500">≈ {shown.secondary}</p>
                             )}

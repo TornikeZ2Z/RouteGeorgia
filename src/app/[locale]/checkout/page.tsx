@@ -64,7 +64,7 @@ export default async function CheckoutPage({ params, searchParams }: Props) {
   return (
     <div className="grid gap-8 lg:grid-cols-[1fr_360px]">
       <div>
-        <h1 className="text-2xl font-semibold tracking-tight text-ink-900">Complete your booking</h1>
+        <h1 className="font-display text-3xl text-ink-900">Complete your booking</h1>
         <p className="mt-1 text-sm text-ink-600">
           Your driver is held for you while you fill this in.
         </p>
@@ -118,7 +118,7 @@ export default async function CheckoutPage({ params, searchParams }: Props) {
           <div className="mt-4 border-t border-ink-100 pt-3">
             <div className="flex items-baseline justify-between">
               <span className="font-medium text-ink-900">Total</span>
-              <span className="text-xl font-semibold text-ink-900">
+              <span className="font-display text-2xl text-ink-900">
                 {formatMoney(gross, CANONICAL, locale)}
               </span>
             </div>
