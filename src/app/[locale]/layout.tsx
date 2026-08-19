@@ -52,7 +52,7 @@ export default async function LocaleLayout({
       </a>
 
       <header className="sticky top-0 z-30 border-b border-ink-100 bg-white/95 backdrop-blur-md">
-        <div className="mx-auto flex max-w-6xl items-center gap-3 px-4 py-3">
+        <div className="mx-auto flex max-w-[1400px] items-center gap-3 px-4 py-3 sm:px-6 lg:px-10">
           <Link href={`/${locale}`} aria-label={t("brand.name")} className="shrink-0">
             <Logo />
           </Link>
@@ -120,12 +120,12 @@ export default async function LocaleLayout({
         </nav>
       </header>
 
-      <main id="main" className="mx-auto w-full max-w-6xl flex-1 px-4 py-10 sm:py-12">{children}</main>
+      <main id="main" className="mx-auto w-full max-w-[1400px] flex-1 px-4 py-10 sm:px-6 sm:py-12 lg:px-10">{children}</main>
 
       <CookieNotice locale={locale as Locale} returnTo={`/${locale}`} />
 
       <footer className="mt-8 bg-pine-900 text-pine-100">
-        <div className="mx-auto grid max-w-6xl gap-10 px-4 py-14 sm:grid-cols-2 lg:grid-cols-4">
+        <div className="mx-auto grid max-w-[1400px] gap-10 px-4 py-14 sm:grid-cols-2 sm:px-6 lg:grid-cols-4 lg:px-10">
           <div>
             <Logo dark />
             <p className="mt-4 text-sm leading-relaxed text-pine-200">{t("brand.tagline")}</p>
@@ -176,7 +176,7 @@ export default async function LocaleLayout({
         </div>
 
         <div className="border-t border-pine-700/60">
-          <div className="mx-auto flex max-w-6xl flex-wrap items-center justify-between gap-3 px-4 py-5 text-xs text-pine-300">
+          <div className="mx-auto flex max-w-[1400px] flex-wrap items-center justify-between gap-3 px-4 py-5 text-xs text-pine-300 sm:px-6 lg:px-10">
             <p>© {new Date().getFullYear()} {t("brand.name")}</p>
             <ul className="flex gap-4">
               {LOCALES.map((l) => (

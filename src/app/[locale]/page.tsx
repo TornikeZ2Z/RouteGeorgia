@@ -102,7 +102,7 @@ export default async function Home({ params }: { params: Promise<{ locale: strin
   ].filter(([v]) => (v as number) > 0) as [number, string][];
 
   return (
-    <div className="space-y-20 sm:space-y-24">
+    <div className="space-y-20 sm:space-y-28">
       {/* ------------------------------------------------ hero ------------ */}
       <section className="relative left-1/2 -mt-10 w-screen -translate-x-1/2 overflow-hidden bg-pine-800 text-white sm:-mt-12">
         <div className="absolute inset-0" aria-hidden>
@@ -115,10 +115,10 @@ export default async function Home({ params }: { params: Promise<{ locale: strin
           <div className="pointer-events-none absolute inset-x-0 bottom-0 h-40 bg-gradient-to-t from-pine-900/80 to-transparent" />
         </div>
 
-        <div className="relative mx-auto max-w-6xl px-4 pb-28 pt-16 sm:pb-36 sm:pt-24">
+        <div className="relative mx-auto max-w-[1400px] px-4 pb-32 pt-16 sm:px-6 sm:pb-44 sm:pt-28 lg:px-10">
           <div className="flex flex-wrap items-start justify-between gap-8">
             <div className="max-w-2xl">
-              <h1 className="font-display text-[2.6rem] leading-[1.06] sm:text-6xl">
+              <h1 className="font-display text-[2.6rem] leading-[1.06] sm:text-6xl xl:text-7xl">
                 {t("home.heroTitle")}
               </h1>
               <p className="mt-5 max-w-xl text-lg leading-relaxed text-pine-100">
@@ -143,7 +143,7 @@ export default async function Home({ params }: { params: Promise<{ locale: strin
             {tours.length > 0 && (
               <Link
                 href={`/${locale}/tours`}
-                className="group hidden w-72 shrink-0 rounded-2xl bg-pine-900/70 p-5 backdrop-blur-md transition-colors hover:bg-pine-900/85 lg:block"
+                className="group hidden w-80 shrink-0 rounded-2xl bg-pine-900/70 p-5 backdrop-blur-md transition-colors hover:bg-pine-900/85 lg:block"
               >
                 <p className="eyebrow text-brand-300">{t("home.promoEyebrow")}</p>
                 <p className="font-display mt-2 text-xl">{t("home.promoTitle")}</p>
@@ -159,7 +159,7 @@ export default async function Home({ params }: { params: Promise<{ locale: strin
       </section>
 
       {/* -------------------------------------------- booking widget ------ */}
-      <div id="book" className="relative z-10 -mt-32 scroll-mt-24 sm:-mt-40">
+      <div id="book" className="relative z-10 -mt-36 scroll-mt-24 sm:-mt-48">
         <Card className="p-6 shadow-[0_24px_60px_-28px_rgba(12,31,24,.5)] sm:p-8">
           <SearchTabs locale={locale} locations={locations} />
           <ul className="mt-6 flex flex-wrap gap-x-6 gap-y-2 border-t border-ink-100 pt-4">
@@ -202,12 +202,15 @@ export default async function Home({ params }: { params: Promise<{ locale: strin
                     <p className="mt-1.5 text-sm leading-relaxed text-ink-600">{t(svc.b)}</p>
                   </div>
                   <div className="mt-auto px-5 pb-5">
-                    {photo ? (
-                      // eslint-disable-next-line @next/next/no-img-element
-                      <img src={photo} alt="" loading="lazy" className="h-24 w-full rounded-xl object-cover" />
-                    ) : (
-                      <PlaceImage imageKey={null} alt="" seedText={svc.seed} className="h-24 w-full" rounded="rounded-xl" />
-                    )}
+                    <div className="overflow-hidden rounded-xl">
+                      {photo ? (
+                        // eslint-disable-next-line @next/next/no-img-element
+                        <img src={photo} alt="" loading="lazy"
+                             className="h-32 w-full object-cover transition-transform duration-500 group-hover:scale-105" />
+                      ) : (
+                        <PlaceImage imageKey={null} alt="" seedText={svc.seed} className="h-32 w-full" />
+                      )}
+                    </div>
                   </div>
                 </Link>
               </li>
@@ -218,7 +221,7 @@ export default async function Home({ params }: { params: Promise<{ locale: strin
 
       {/* ------------------------------------------------ trust band ------ */}
       <section className="relative left-1/2 w-screen -translate-x-1/2 bg-ink-50">
-        <ul className="mx-auto grid max-w-6xl gap-x-6 gap-y-8 px-4 py-12 grid-cols-2 sm:grid-cols-3 lg:grid-cols-5">
+        <ul className="mx-auto grid max-w-[1400px] gap-x-6 gap-y-8 px-4 py-14 grid-cols-2 sm:grid-cols-3 sm:px-6 lg:grid-cols-5 lg:px-10">
           {TRUST.map(([key, icon]) => (
             <li key={key} className="flex flex-col items-center gap-3 text-center">
               <svg viewBox="0 0 24 24" className="size-8 text-brand-700" fill="none" stroke="currentColor"
@@ -283,13 +286,13 @@ export default async function Home({ params }: { params: Promise<{ locale: strin
                   href={`/${locale}/tours/${tour.slug}`}
                   className="group flex h-full flex-col overflow-hidden rounded-2xl border border-ink-200 bg-white transition-shadow hover:border-brand-300 hover:shadow-lg hover:shadow-brand-900/5"
                 >
-                  <div className="relative">
+                  <div className="relative overflow-hidden">
                     <PlaceImage
                       imageKey={tour.heroImageKey}
                       photoSrc={sitePhoto(`tours/${tour.slug}.jpg`)}
                       alt={tour.heroImageAlt ?? tour.title}
                       seedText={tour.slug}
-                      className="h-40 w-full"
+                      className="h-52 w-full transition-transform duration-500 group-hover:scale-105"
                     />
                     <span className="absolute left-4 top-4">
                       <Badge tone="neutral">
@@ -325,15 +328,17 @@ export default async function Home({ params }: { params: Promise<{ locale: strin
               <li key={r.slug}>
                 <Link
                   href={`/${locale}/transfers/${r.slug}`}
-                  className="block h-full overflow-hidden rounded-2xl border border-ink-200 bg-white transition-shadow hover:border-brand-300 hover:shadow-lg hover:shadow-brand-900/5"
+                  className="group block h-full overflow-hidden rounded-2xl border border-ink-200 bg-white transition-shadow hover:border-brand-300 hover:shadow-lg hover:shadow-brand-900/5"
                 >
+                  <span className="block overflow-hidden">
                   <PlaceImage
                     imageKey={r.imageKey}
                     photoSrc={sitePhoto(`routes/${r.slug}.jpg`)}
                     alt={r.imageAlt ?? `${r.originName} to ${r.destinationName}`}
                     seedText={r.slug}
-                    className="h-24 w-full"
+                    className="h-32 w-full transition-transform duration-500 group-hover:scale-105"
                   />
+                  </span>
                   <span className="block px-4 py-3">
                   <span className="font-semibold text-ink-800">{r.originName}</span>
                   <span className="mx-2 text-ink-400" aria-hidden>→</span>

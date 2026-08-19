@@ -24,7 +24,7 @@ export async function CookieNotice({ locale, returnTo }: { locale: Locale; retur
       aria-label="Cookie notice"
       className="fixed inset-x-0 bottom-0 z-40 border-t border-ink-200 bg-white/95 backdrop-blur-md"
     >
-      <div className="mx-auto flex max-w-6xl flex-col gap-3 px-4 py-4 sm:flex-row sm:items-center sm:justify-between">
+      <div className="mx-auto flex max-w-[1400px] flex-col gap-3 px-4 py-4 sm:flex-row sm:items-center sm:justify-between">
         <p className="text-sm leading-relaxed text-ink-700">
           {t("cookie.body")}{" "}
           <Link href={`/${locale}/legal/privacy`} className="text-brand-700 underline underline-offset-2">
