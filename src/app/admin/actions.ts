@@ -1169,3 +1169,25 @@ export async function toggleTourAction(_prev: ActionState, formData: FormData): 
   revalidatePath("/admin/tours");
   return { ok: true, message: `${tour.slug} is now ${tour.active ? "visible" : "hidden"}.` };
 }
+
+
+const TourCategorySchema = z.object({
+  tourId: z.string().uuid(),
+  category: z.enum(["sea", "mountains", "winter", "culture", "wine"]),
+});
+
+export async function saveTourCategoryAction(_prev: ActionState, formData: FormData): Promise<ActionState> {
+  const actor = await requirePermission("admin.content.write");
+  const parsed = TourCategorySchema.safeParse(Object.fromEntries(formData));
+  if (!parsed.success) return { ok: false, errors: parsed.error.issues.map((i) => i.message) };
+  const [tour] = await sql<{ slug: string }[]>`
+    UPDATE tours SET category = ${parsed.data.category} WHERE id = ${parsed.data.tourId}::uuid RETURNING slug`;
+  if (!tour) return { ok: false, message: "Tour not found." };
+  await writeAudit({
+    actorUserId: actor.id, action: "tour.category_changed", objectType: "tour",
+    objectId: parsed.data.tourId, after: { category: parsed.data.category }, reason: "content edit",
+  });
+  for (const l of ["en", "ka", "ru"]) revalidatePath(`/${l}/tours`);
+  revalidatePath("/admin/tours");
+  return { ok: true, message: `${tour.slug} is now in "${parsed.data.category}".` };
+}

@@ -47,6 +47,8 @@ export async function POST(request: NextRequest) {
 
   const form = await request.formData();
   const parsed = Schema.safeParse(Object.fromEntries(form));
+  const vehicleTypes = form.getAll("vehicleType").map(String).filter(Boolean);
+  const packages = form.getAll("package").map(String).filter(Boolean);
   const origin = new URL(request.url).origin;
 
   if (!parsed.success) {
@@ -66,6 +68,8 @@ export async function POST(request: NextRequest) {
     d.start ? `Start:   ${d.start}` : null,
     d.hours ? `Hours:   ${d.hours}` : null,
     d.passengers ? `Passengers: ${d.passengers}` : null,
+    vehicleTypes.length ? `Vehicles: ${vehicleTypes.join(", ")}` : null,
+    packages.length ? `Add-ons: ${packages.join(", ")}` : null,
     `Locale:  ${d.locale}`,
     "",
     d.message,

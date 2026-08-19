@@ -2,6 +2,7 @@ import { notFound } from "next/navigation";
 import Link from "next/link";
 import { sql } from "@db/client";
 import { isLocale, getTranslator, type Locale } from "@/lib/i18n";
+import { config } from "@/lib/config";
 import { formatMoney } from "@/lib/money";
 import { getDisplayCurrency, getRate, convert, CANONICAL } from "@/lib/currency";
 import { driverBalance } from "@/lib/ledger";
@@ -87,6 +88,7 @@ export default async function CheckoutPage({ params, searchParams }: Props) {
             cashAvailable={!balance.cashBlocked}
             isAirport={points.some((p) => p.includes("airport"))}
             error={error}
+            childSeatFeeLabel={formatMoney(BigInt(config.policy.childSeatFeeMinor), CANONICAL, locale)}
           />
         </div>
       </div>

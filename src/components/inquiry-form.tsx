@@ -9,6 +9,7 @@ import { Alert, Field, Input, Textarea } from "@/components/ui";
  */
 export function InquiryForm({
   locale, kind, sent = false, error = false, withCompany = false, withHourly = false,
+  withVehicleTypes = false, withPackages = false,
 }: {
   locale: Locale;
   kind: "business" | "school" | "hourly";
@@ -16,6 +17,10 @@ export function InquiryForm({
   error?: boolean;
   withCompany?: boolean;
   withHourly?: boolean;
+  /** Business: which vehicle classes the company needs. */
+  withVehicleTypes?: boolean;
+  /** Schools: add-on service packages (chaperone, guide, …). */
+  withPackages?: boolean;
 }) {
   const t = getTranslator(locale);
   const paths = { business: "business", school: "schools", hourly: "hourly" } as const;
@@ -73,6 +78,36 @@ export function InquiryForm({
           <Input id="inq-pax" name="passengers" type="number" min={1} max={60} />
         </Field>
       </div>
+
+      {withVehicleTypes && (
+        <fieldset>
+          <legend className="mb-2 block text-sm font-medium text-ink-800">{t("inquiry.vehicleType")}</legend>
+          <div className="flex flex-wrap gap-x-6 gap-y-2">
+            {([["sedan", "inquiry.veh1"], ["minivan", "inquiry.veh2"],
+               ["minibus", "inquiry.veh3"], ["bus", "inquiry.veh4"]] as const).map(([value, key]) => (
+              <label key={value} className="flex items-center gap-2 text-sm text-ink-900">
+                <input type="checkbox" name="vehicleType" value={value} className="size-4 rounded border-ink-300" />
+                {t(key)}
+              </label>
+            ))}
+          </div>
+        </fieldset>
+      )}
+
+      {withPackages && (
+        <fieldset>
+          <legend className="mb-2 block text-sm font-medium text-ink-800">{t("schools.pkgTitle")}</legend>
+          <div className="flex flex-wrap gap-x-6 gap-y-2">
+            {([["chaperone", "schools.pkg1"], ["guide", "schools.pkg2"],
+               ["meal-stop", "schools.pkg3"], ["extra-waiting", "schools.pkg4"]] as const).map(([value, key]) => (
+              <label key={value} className="flex items-center gap-2 text-sm text-ink-900">
+                <input type="checkbox" name="package" value={value} className="size-4 rounded border-ink-300" />
+                {t(key)}
+              </label>
+            ))}
+          </div>
+        </fieldset>
+      )}
 
       <Field label={t("inquiry.message")} htmlFor="inq-message" required>
         <Textarea id="inq-message" name="message" rows={5} required minLength={5} maxLength={2000} />

@@ -13,7 +13,7 @@ import { sitePhoto } from "@/lib/site-photos";
 
 export const revalidate = 3600;
 
-interface Props { params: Promise<{ locale: string }> }
+interface Props { params: Promise<{ locale: string }>; searchParams: Promise<Record<string, string | string[] | undefined>> }
 
 export async function generateMetadata({ params }: Props): Promise<Metadata> {
   const { locale } = await params;
@@ -30,7 +30,7 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
   };
 }
 
-export default async function ToursIndex({ params }: Props) {
+export default async function ToursIndex({ params, searchParams }: Props) {
   const { locale } = await params;
   if (!isLocale(locale)) notFound();
 
@@ -40,7 +40,16 @@ export default async function ToursIndex({ params }: Props) {
     getDisplayCurrency(),
   ]);
   const rate = await getRate(currency);
-  const prices = await Promise.all(tours.map((t) => tourPriceFrom(t.slug)));
+  const sp = await searchParams;
+  const rawCat = Array.isArray(sp.cat) ? sp.cat[0] : sp.cat;
+  const CATS = ["sea", "mountains", "winter", "culture", "wine"] as const;
+  const activeCat = CATS.includes(rawCat as (typeof CATS)[number]) ? rawCat : undefined;
+  const shown = activeCat ? tours.filter((x) => x.category === activeCat) : tours;
+  const prices = await Promise.all(shown.map((t) => tourPriceFrom(t.slug)));
+  const CAT_KEY: Record<string, string> = {
+    sea: "tours.catSea", mountains: "tours.catMountains", winter: "tours.catWinter",
+    culture: "tours.catCulture", wine: "tours.catWine",
+  };
 
   return (
     <div className="space-y-10">
@@ -54,11 +63,27 @@ export default async function ToursIndex({ params }: Props) {
         </p>
       </header>
 
+      <nav className="flex flex-wrap gap-2" aria-label="Tour categories">
+        {[undefined, ...CATS].map((cat) => (
+          <Link
+            key={cat ?? "all"}
+            href={cat ? `/${locale}/tours?cat=${cat}` : `/${locale}/tours`}
+            className={`rounded-lg border px-4 py-2 text-sm transition-colors ${
+              activeCat === cat || (!activeCat && !cat)
+                ? "border-ink-900 bg-ink-900 text-white"
+                : "border-ink-300 text-ink-900 hover:border-ink-500"
+            }`}
+          >
+            {cat ? t(CAT_KEY[cat] as never) : t("tours.catAll")}
+          </Link>
+        ))}
+      </nav>
+
       {tours.length === 0 ? (
         <EmptyState title={t("tours.empty")} />
       ) : (
         <ul className="grid gap-6 md:grid-cols-2 lg:grid-cols-3">
-          {tours.map((tour, index) => {
+          {shown.map((tour, index) => {
             const price = prices[index];
             return (
               <li key={tour.slug}>

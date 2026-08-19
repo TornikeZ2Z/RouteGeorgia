@@ -135,9 +135,13 @@ export async function createBooking(quoteId: string, details: CheckoutDetails): 
     : serviceWindow(travelAt, quote.drive_minutes ?? 0);
   const code = bookingCode();
   const manageToken = randomBytes(32).toString("base64url");
-  const gross = BigInt(quote.gross_minor);
+  // Child seats are a flat per-seat fee on top of the quoted fare. The driver
+  // supplies and fits the seat, so the fee passes to the driver untouched —
+  // commission applies only to the quoted fare. gross = commission + net holds.
+  const childSeatFee = BigInt(details.childSeats) * BigInt(config.policy.childSeatFeeMinor);
+  const gross = BigInt(quote.gross_minor) + childSeatFee;
   const commission = BigInt(quote.commission_minor);
-  const net = BigInt(quote.driver_net_minor);
+  const net = BigInt(quote.driver_net_minor) + childSeatFee;
   const itinerary = itineraryEarly;
   const routeLabel =
     [itinerary.origin, ...(itinerary.stops ?? []), itinerary.destination].map(humanise).join(" → ") +

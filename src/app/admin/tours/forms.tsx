@@ -3,7 +3,7 @@
 import { useActionState } from "react";
 import { Alert, Card, Field, Input, Select, Textarea } from "@/components/ui";
 import { SubmitButton } from "@/components/form-state";
-import { saveTourTranslationAction, toggleTourAction } from "@/app/admin/actions";
+import { saveTourTranslationAction, toggleTourAction, saveTourCategoryAction } from "@/app/admin/actions";
 
 const INITIAL = { ok: false } as const;
 
@@ -88,5 +88,29 @@ export function LocaleTabs({ tourId, translations }: { tourId: string; translati
         </div>
       ))}
     </div>
+  );
+}
+
+
+const CATEGORIES = ["sea", "mountains", "winter", "culture", "wine"] as const;
+
+export function TourCategoryForm({ tourId, category }: { tourId: string; category: string }) {
+  const [state, action] = useActionState(saveTourCategoryAction, INITIAL);
+  return (
+    <Card className="p-4">
+      <h3 className="font-semibold text-ink-900">Category</h3>
+      <form action={action} className="mt-3 flex items-end gap-3">
+        <input type="hidden" name="tourId" value={tourId} />
+        <div className="flex-1">
+          <Field label="Shown under" htmlFor={`cat-${tourId}`}>
+            <Select id={`cat-${tourId}`} name="category" defaultValue={category}>
+              {CATEGORIES.map((c) => <option key={c} value={c}>{c}</option>)}
+            </Select>
+          </Field>
+        </div>
+        <SubmitButton>Save</SubmitButton>
+      </form>
+      <Result state={state} />
+    </Card>
   );
 }

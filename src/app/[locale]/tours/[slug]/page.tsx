@@ -2,6 +2,7 @@ import Link from "next/link";
 import { notFound } from "next/navigation";
 import type { Metadata } from "next";
 import { sql } from "@db/client";
+import { currentWeather } from "@/lib/weather";
 import { isLocale, LOCALES, getTranslator, type Locale } from "@/lib/i18n";
 import { getTour, listTours, tourPriceFrom } from "@/lib/tours";
 import { formatMoney } from "@/lib/money";
@@ -45,6 +46,13 @@ export default async function TourPage({ params }: Props) {
 
   const tour = await getTour(slug, locale as Locale);
   if (!tour) notFound();
+
+  // Weather at the tour's far point — decorative, hidden when unavailable.
+  const [far] = await sql<{ lat: number; lon: number; name: string }[]>`
+    SELECT l.lat, l.lon, l.name_en AS name FROM tour_stops ts
+    JOIN locations l ON l.id = ts.location_id
+    WHERE ts.tour_id = ${tour.id}::uuid ORDER BY ts.position DESC LIMIT 1`;
+  const weather = far ? await currentWeather(Number(far.lat), Number(far.lon)) : null;
   const t = getTranslator(locale as Locale);
 
   const [price, locations, others, currency] = await Promise.all([
@@ -129,6 +137,11 @@ export default async function TourPage({ params }: Props) {
             </div>
           )}
         </dl>
+        {weather && (
+        <p className="mt-3 text-sm text-ink-500">
+          {t("weather.label")}: {weather.temperatureC}°C · {t(("weather." + weather.bucket) as never)}
+        </p>
+      )}
       </header>
 
       <div className="grid gap-10 lg:grid-cols-[1fr_380px]">

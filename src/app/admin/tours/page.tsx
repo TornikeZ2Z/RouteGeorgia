@@ -1,7 +1,7 @@
 import { requirePermission } from "@/lib/auth/session";
 import { sql } from "@db/client";
 import { Alert, Badge, Card, PageHeader } from "@/components/ui";
-import { LocaleTabs, TourVisibilityForm, type TourTranslationValue } from "./forms";
+import { LocaleTabs, TourVisibilityForm, TourCategoryForm, type TourTranslationValue } from "./forms";
 
 export const dynamic = "force-dynamic";
 
@@ -18,8 +18,8 @@ export default async function ToursAdmin() {
   await requirePermission("admin.content.write");
 
   const [tours, translations] = await Promise.all([
-    sql<{ id: string; slug: string; active: boolean; duration_days: number; distance_km: string }[]>`
-      SELECT id, slug, active, duration_days, distance_km FROM tours ORDER BY duration_days, slug`,
+    sql<{ id: string; slug: string; active: boolean; category: string; duration_days: number; distance_km: string }[]>`
+      SELECT id, slug, active, category, duration_days, distance_km FROM tours ORDER BY duration_days, slug`,
     sql<{ tour_id: string; locale: string; title: string; summary: string; body: string }[]>`
       SELECT tour_id, locale, title, summary, body FROM tour_translations`,
   ]);
@@ -53,8 +53,9 @@ export default async function ToursAdmin() {
               </span>
             </div>
             <LocaleTabs tourId={tour.id} translations={trs} />
-            <div className="mt-5 max-w-md">
+            <div className="mt-5 grid max-w-2xl gap-4 sm:grid-cols-2">
               <TourVisibilityForm tourId={tour.id} active={tour.active} />
+              <TourCategoryForm tourId={tour.id} category={tour.category} />
             </div>
           </Card>
         );

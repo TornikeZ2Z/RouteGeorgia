@@ -23,6 +23,7 @@ const Schema = z.object({
   QUOTE_TTL_SECONDS: intFromEnv(900),
   HOLD_TTL_SECONDS: intFromEnv(600),
   DRIVER_ACK_SLA_MINUTES: intFromEnv(10),
+  CHILD_SEAT_FEE_MINOR: intFromEnv(2000),
 
   ROUTING_PROVIDER: z.enum(["haversine", "google", "mapbox"]).default("haversine"),
   ROUTING_API_KEY: z.string().default(""),
@@ -75,6 +76,7 @@ export const config = {
     quoteTtlSeconds: env.QUOTE_TTL_SECONDS,
     holdTtlSeconds: env.HOLD_TTL_SECONDS,
     driverAckSlaMinutes: env.DRIVER_ACK_SLA_MINUTES,
+    childSeatFeeMinor: env.CHILD_SEAT_FEE_MINOR,
     /** Version stamped onto every booking so history survives policy edits. */
     version: "policy-2026-08-v1",
   },

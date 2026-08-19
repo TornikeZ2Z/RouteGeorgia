@@ -377,6 +377,13 @@ async function main() {
       ('GEL','EUR', 340000, now(), 'seed')`;
 
 
+  const TOUR_CATEGORY: Record<string, string> = {
+    "kazbegi-gergeti-day-trip": "mountains",
+    "svaneti-three-days": "mountains",
+    "kakheti-wine-day-trip": "wine",
+    "mtskheta-jvari-day-trip": "culture",
+    "borjomi-vardzia-day-trip": "culture",
+  };
   console.log("Seeding tours …");
   for (const t of TOURS) {
     const [tour] = await sql<{ id: string }[]>`
@@ -441,6 +448,10 @@ Before real customers:
 `);
     await sql.end();
     return;
+  }
+
+  for (const [slug, category] of Object.entries(TOUR_CATEGORY)) {
+    await sql`UPDATE tours SET category = ${category} WHERE slug = ${slug}`;
   }
 
   console.log("Seeding staff accounts …");

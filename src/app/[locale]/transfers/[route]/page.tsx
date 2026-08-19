@@ -3,6 +3,7 @@ import { notFound } from "next/navigation";
 import type { Metadata } from "next";
 import { isLocale, LOCALES, getTranslator, type Locale } from "@/lib/i18n";
 import { getRoute, relatedRoutes, listRoutes } from "@/lib/routes-content";
+import { currentWeather } from "@/lib/weather";
 import { routePriceFrom } from "@/lib/offers";
 import { formatMoney } from "@/lib/money";
 import { getDisplayCurrency, getRate, convert, CANONICAL } from "@/lib/currency";
@@ -57,6 +58,12 @@ export default async function RoutePage({ params }: Props) {
   const data = await getRoute(route, locale);
   if (!data) notFound();
   const t = getTranslator(locale);
+
+  // Weather at the destination — decorative, never blocking, hidden on failure.
+  const [dest] = await sql<{ lat: number; lon: number }[]>`
+    SELECT l.lat, l.lon FROM route_families rf JOIN locations l ON l.id = rf.destination_id
+    WHERE rf.slug = ${route}`;
+  const weather = dest ? await currentWeather(Number(dest.lat), Number(dest.lon)) : null;
 
   const [pricing, related, locations, currency] = await Promise.all([
     routePriceFrom(route),
@@ -139,6 +146,11 @@ export default async function RoutePage({ params }: Props) {
         <p className="mt-3 max-w-2xl text-ink-600">
           {t("transfers.routeIntro")}
         </p>
+        {weather && (
+        <p className="mt-3 text-sm text-ink-500">
+          {t("weather.label")}: {weather.temperatureC}°C · {t(("weather." + weather.bucket) as never)}
+        </p>
+      )}
       </header>
 
       {data.seasonalNote && (

@@ -38,6 +38,13 @@ export function getLegalDocument(slug: string, _locale: Locale): LegalDocument |
           `driver performs the journey and is responsible for doing so safely and lawfully.`,
         sections: [
           {
+            heading: "Changes arranged privately with the driver",
+            body: [
+              "Your booking covers the itinerary shown on your confirmation. If you and the driver privately agree to change or extend the route during the trip, that arrangement is outside the booked service: it is not covered by our price, our support, our insurance requirements or our responsibility.",
+              "To change the itinerary with full cover, request the change through the booking page or support before or during the trip, and accept the revised quote.",
+            ],
+          },
+          {
             heading: "What we do and do not do",
             body: [
               `We verify each driver's identity, licence, vehicle registration and insurance before ` +

@@ -3,12 +3,11 @@ import { notFound } from "next/navigation";
 import type { Metadata } from "next";
 import { sql } from "@db/client";
 import { isLocale, getTranslator, LOCALES } from "@/lib/i18n";
-import { listRoutes } from "@/lib/routes-content";
 import { config } from "@/lib/config";
 import { Badge, Card } from "@/components/ui";
-import { ContourField } from "@/components/contour-field";
 import { PlaceImage } from "@/components/place-image";
-import { sitePhoto } from "@/lib/site-photos";
+import { sitePhoto, listTravellerPhotos } from "@/lib/site-photos";
+import { GeorgiaMap } from "@/components/georgia-map";
 import { listTours } from "@/lib/tours";
 import { formatApproxDuration, formatDistance } from "@/lib/format";
 import { SearchTabs } from "@/components/search-tabs";
@@ -71,35 +70,21 @@ export default async function Home({ params }: { params: Promise<{ locale: strin
   if (!isLocale(locale)) notFound();
   const t = getTranslator(locale);
 
-  const [locations, routes, stats, tours] = await Promise.all([
-    sql<{ slug: string; name_en: string; type: string }[]>`
+  const [locations, tours] = await Promise.all([
+    sql<{ slug: string; name_en: string; type: string; lat: number; lon: number }[]>`
       SELECT slug,
              coalesce(CASE WHEN ${locale} = 'ka' THEN name_ka
                            WHEN ${locale} = 'ru' THEN name_ru END, name_en) AS name_en,
-             type::text AS type
+             type::text AS type, lat, lon
       FROM locations WHERE in_service_area ORDER BY type, 2`,
-    listRoutes(locale),
-    sql<{ drivers: number; routes: number; trips: number }[]>`
-      SELECT (SELECT count(*) FROM driver_profiles WHERE published)::int AS drivers,
-             (SELECT count(*) FROM route_families WHERE active)::int AS routes,
-             (SELECT count(*) FROM bookings WHERE status = 'COMPLETED')::int AS trips`,
     listTours(locale),
   ]);
 
-  const popular = routes.slice(0, 6);
   const heroSlides = ["hero.jpg", "hero-2.jpg", "hero-3.jpg", "hero-4.jpg", "hero-5.jpg"]
     .map((name) => sitePhoto(name))
     .filter((src): src is string => src !== null);
-  const aboutPhoto = sitePhoto("about.jpg");
+  const travellers = listTravellerPhotos();
 
-  /* A zero is not a statistic: pre-launch numbers hide rather than advertise
-     an empty marketplace. */
-  const numbers = [
-    [stats[0]?.drivers ?? 0, t("home.statDrivers")],
-    [locations.length, t("home.statLocations")],
-    [tours.length, t("home.statTours")],
-    [stats[0]?.trips ?? 0, t("home.statTrips")],
-  ].filter(([v]) => (v as number) > 0) as [number, string][];
 
   return (
     <div className="space-y-20 sm:space-y-28">
@@ -219,51 +204,58 @@ export default async function Home({ params }: { params: Promise<{ locale: strin
         </ul>
       </section>
 
-      {/* ------------------------------------------------ trust band ------ */}
-      <section className="relative left-1/2 w-screen -translate-x-1/2 border-y border-ink-200 bg-white">
-        <ul className="mx-auto grid max-w-[1400px] 2xl:max-w-[1680px] gap-x-6 gap-y-8 px-4 py-14 grid-cols-2 sm:grid-cols-3 sm:px-6 lg:grid-cols-5 lg:px-10">
-          {TRUST.map(([key, icon]) => (
-            <li key={key} className="flex flex-col items-center gap-3 text-center">
-              <svg viewBox="0 0 24 24" className="size-8 text-ink-900" fill="none" stroke="currentColor"
-                   strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" aria-hidden>
-                <path d={icon} />
-              </svg>
-              <span className="text-sm font-semibold leading-snug text-ink-800">{t(key)}</span>
+      {/* ------------------------------------------------ explore map ----- */}
+      <section>
+        <div className="text-center">
+          <p className="eyebrow">{t("home.mapEyebrow")}</p>
+          <h2 className="font-display mt-2 text-3xl text-ink-900 sm:text-4xl">{t("home.mapTitle")}</h2>
+          <p className="mx-auto mt-3 max-w-xl text-ink-500">{t("home.mapBody")}</p>
+        </div>
+        <div className="mt-8">
+          <GeorgiaMap
+            locale={locale}
+            places={locations.map((l) => ({ slug: l.slug, name: l.name_en, lat: Number(l.lat), lon: Number(l.lon), type: l.type }))}
+          />
+        </div>
+      </section>
+
+      {/* ------------------------------------------------ how many days --- */}
+      <section>
+        <p className="eyebrow">{t("home.daysEyebrow")}</p>
+        <h2 className="font-display mt-2 text-3xl text-ink-900 sm:text-4xl">{t("home.daysTitle")}</h2>
+        <ul className="mt-8 grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
+          {([["1", "home.day1t", "home.day1b"], ["3", "home.day2t", "home.day2b"],
+             ["5", "home.day3t", "home.day3b"], ["7", "home.day4t", "home.day4b"]] as const).map(([d, title, body]) => (
+            <li key={d}>
+              <Link
+                href={`/${locale}/plan?d=${d}&i=nature&p=0`}
+                className="flex h-full flex-col rounded-lg border border-ink-300 bg-white p-6 transition-colors hover:border-ink-500"
+              >
+                <span className="font-display text-3xl text-ink-900">{t(title)}</span>
+                <span className="mt-2 flex-1 text-sm leading-relaxed text-ink-500">{t(body)}</span>
+                <span className="mt-4 text-sm font-bold tracking-[-0.02em] text-ink-900 underline underline-offset-4">
+                  {t("home.daysCta")}
+                </span>
+              </Link>
             </li>
           ))}
         </ul>
       </section>
 
-      {/* ------------------------------------------------ about ----------- */}
-      <section className="grid items-center gap-10 lg:grid-cols-2">
-        <div>
-          <p className="eyebrow">{t("home.aboutEyebrow")}</p>
-          <h2 className="font-display mt-2 text-3xl text-ink-900 sm:text-4xl">{t("home.aboutTitle")}</h2>
-          <p className="mt-4 max-w-xl leading-relaxed text-ink-600">{t("home.aboutBody")}</p>
-          {numbers.length > 0 && (
-            <dl className="mt-8 grid max-w-lg grid-cols-2 gap-x-8 gap-y-6 sm:grid-cols-3">
-              {numbers.map(([value, label]) => (
-                <div key={label}>
-                  <dt className="font-display text-3xl text-ink-900">{value}</dt>
-                  <dd className="mt-0.5 text-sm text-ink-500">{label}</dd>
-                </div>
-              ))}
-            </dl>
-          )}
+      {/* ------------------------------------------------ build my route -- */}
+      <section className="rounded-lg bg-pine-800 px-6 py-14 text-white sm:px-12">
+        <div className="flex flex-wrap items-center justify-between gap-8">
+          <div className="max-w-2xl">
+            <p className="eyebrow text-pine-300">{t("home.planTeaserEyebrow")}</p>
+            <h2 className="font-display mt-3 text-3xl sm:text-4xl">{t("home.planTeaserTitle")}</h2>
+            <p className="mt-4 leading-relaxed text-pine-100">{t("home.planTeaserBody")}</p>
+          </div>
           <Link
-            href={`/${locale}/about`}
-            className="mt-8 inline-flex min-h-11 items-center rounded-lg bg-brand-600 px-5 py-2.5 text-sm text-white shadow-[0_0_2px_0_rgba(0,0,0,.16)] transition-colors hover:bg-brand-700"
+            href={`/${locale}/plan`}
+            className="inline-flex min-h-12 items-center rounded-lg bg-white px-6 py-3 font-bold tracking-[-0.02em] text-ink-900 transition-colors hover:bg-ink-100"
           >
-            {t("home.aboutCta")}
+            {t("home.planTeaserCta")}
           </Link>
-        </div>
-        <div className="overflow-hidden rounded-2xl">
-          {aboutPhoto ? (
-            // eslint-disable-next-line @next/next/no-img-element
-            <img src={aboutPhoto} alt="" loading="lazy" className="aspect-[4/3] w-full object-cover" />
-          ) : (
-            <PlaceImage imageKey={null} alt="" seedText="caucasus-road" className="aspect-[4/3] w-full" />
-          )}
         </div>
       </section>
 
@@ -311,83 +303,70 @@ export default async function Home({ params }: { params: Promise<{ locale: strin
         </section>
       )}
 
-      {/* --------------------------------------------- popular routes ----- */}
-      {popular.length > 0 && (
-        <section>
-          <div className="flex flex-wrap items-end justify-between gap-3">
-            <div>
-              <p className="eyebrow">{t("home.transfersEyebrow")}</p>
-              <h2 className="font-display mt-2 text-3xl text-ink-900 sm:text-4xl">{t("home.transfersTitle")}</h2>
-            </div>
-            <Link href={`/${locale}/transfers`} className="text-sm font-semibold text-ink-900 underline underline-offset-4">
-              {t("home.seeAllRoutes")}
+      {/* ------------------------------------------------ seasons --------- */}
+      <section>
+        <p className="eyebrow">{t("home.seasonsEyebrow")}</p>
+        <h2 className="font-display mt-2 text-3xl text-ink-900 sm:text-4xl">{t("home.seasonsTitle")}</h2>
+        <ul className="mt-8 grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
+          {([["home.season1t", "home.season1b"], ["home.season2t", "home.season2b"],
+             ["home.season3t", "home.season3b"], ["home.season4t", "home.season4b"]] as const).map(([title, body]) => (
+            <li key={title} className="rounded-lg border border-ink-300 bg-white p-6">
+              <p className="font-display text-2xl text-ink-900">{t(title)}</p>
+              <p className="mt-2 text-sm leading-relaxed text-ink-500">{t(body)}</p>
+            </li>
+          ))}
+        </ul>
+      </section>
+
+      {/* ------------------------------------------------ organisations --- */}
+      <section className="rounded-lg border border-ink-300 bg-white p-6 sm:p-10">
+        <div className="flex flex-wrap items-center justify-between gap-6">
+          <div className="max-w-2xl">
+            <p className="eyebrow">{t("home.b2bEyebrow")}</p>
+            <h2 className="font-display mt-2 text-2xl text-ink-900 sm:text-3xl">{t("home.b2bTitle")}</h2>
+            <p className="mt-3 leading-relaxed text-ink-500">{t("home.b2bBody")}</p>
+          </div>
+          <div className="flex flex-wrap gap-3">
+            <Link href={`/${locale}/business`} className="rounded-lg border border-ink-300 px-5 py-3 text-sm text-ink-900 hover:border-ink-500">
+              {t("home.b2bBusiness")}
+            </Link>
+            <Link href={`/${locale}/schools`} className="rounded-lg border border-ink-300 px-5 py-3 text-sm text-ink-900 hover:border-ink-500">
+              {t("home.b2bSchools")}
             </Link>
           </div>
-          <ul className="mt-7 grid gap-3 sm:grid-cols-2 lg:grid-cols-3">
-            {popular.map((r) => (
-              <li key={r.slug}>
-                <Link
-                  href={`/${locale}/transfers/${r.slug}`}
-                  className="group block h-full overflow-hidden rounded-lg border border-ink-300 bg-white transition-colors hover:border-ink-500"
-                >
-                  <span className="block overflow-hidden">
-                  <PlaceImage
-                    imageKey={r.imageKey}
-                    photoSrc={sitePhoto(`routes/${r.slug}.jpg`)}
-                    alt={r.imageAlt ?? `${r.originName} to ${r.destinationName}`}
-                    seedText={r.slug}
-                    className="h-32 w-full transition-transform duration-500 group-hover:scale-105"
-                  />
-                  </span>
-                  <span className="block px-4 py-3">
-                  <span className="font-semibold text-ink-800">{r.originName}</span>
-                  <span className="mx-2 text-ink-400" aria-hidden>→</span>
-                  <span className="font-semibold text-ink-800">{r.destinationName}</span>
-                  <span className="mt-0.5 block text-xs text-ink-500">
-                    {formatDistance(r.distanceKm)} · {formatApproxDuration(r.driveMinutes)} {t("tours.driving")}
-                  </span>
-                  </span>
-                </Link>
+        </div>
+      </section>
+
+      {/* ------------------------------------------------ travellers ------ */}
+      {travellers.length > 0 && (
+        <section>
+          <p className="eyebrow">{t("home.travellersEyebrow")}</p>
+          <h2 className="font-display mt-2 text-3xl text-ink-900 sm:text-4xl">{t("home.travellersTitle")}</h2>
+          <p className="mt-3 max-w-xl text-ink-500">{t("home.travellersBody")}</p>
+          <ul className="mt-8 grid grid-cols-2 gap-4 lg:grid-cols-4">
+            {travellers.map((photo) => (
+              <li key={photo.src} className="overflow-hidden rounded-lg border border-ink-300 bg-white">
+                {/* eslint-disable-next-line @next/next/no-img-element */}
+                <img src={photo.src} alt={photo.caption} loading="lazy" className="aspect-square w-full rounded-t-lg object-cover" />
+                <p className="px-4 py-3 text-sm text-ink-500">{photo.caption}</p>
               </li>
             ))}
           </ul>
         </section>
       )}
 
-      {/* --------------------------------------------- how it works ------- */}
-      <section>
-        <p className="eyebrow">{t("home.howEyebrow")}</p>
-        <h2 className="font-display mt-2 text-3xl text-ink-900 sm:text-4xl">{t("home.howTitle")}</h2>
-        <ol className="mt-9 grid gap-8 sm:grid-cols-2 lg:grid-cols-4">
-          {STEP_KEYS.map(([title, body], i) => (
-            <li key={title} className="rounded-lg border border-ink-300 bg-white p-6">
-              <span className="grid size-9 place-items-center rounded-lg bg-ink-900 text-sm text-white">
-                {i + 1}
-              </span>
-              <p className="mt-4 font-semibold text-ink-900">{t(title)}</p>
-              <p className="mt-1.5 text-sm leading-relaxed text-ink-600">{t(body)}</p>
-            </li>
-          ))}
-        </ol>
+      {/* ------------------------------------------------ closing CTA ----- */}
+      <section className="rounded-lg bg-pine-800 px-6 py-14 text-center text-white sm:px-12">
+        <h2 className="font-display text-3xl sm:text-4xl">{t("home.closingTitle")}</h2>
+        <p className="mx-auto mt-4 max-w-xl leading-relaxed text-pine-100">{t("home.closingBody")}</p>
+        <a
+          href="#book"
+          className="mt-8 inline-flex min-h-12 items-center rounded-lg bg-brand-600 px-8 py-3 text-white shadow-[0_0_2px_0_rgba(0,0,0,.16)] transition-colors hover:bg-brand-700"
+        >
+          {t("home.closingCta")}
+        </a>
       </section>
 
-      {/* --------------------------------------------- drive with us ------ */}
-      <section className="relative overflow-hidden rounded-lg bg-pine-800 px-6 py-14 text-white sm:px-12">
-        <ContourField className="text-pine-300" opacity={0.16} seed={3} />
-        <div className="relative max-w-2xl">
-          <p className="eyebrow text-pine-300">{t("home.driveEyebrow")}</p>
-          <h2 className="font-display mt-3 text-3xl sm:text-4xl">{t("home.driveTitle")}</h2>
-          <p className="mt-4 leading-relaxed text-pine-100">
-            {t("home.driveBody")}
-          </p>
-          <Link
-            href="/driver"
-            className="mt-7 inline-flex min-h-12 items-center rounded-lg bg-white px-6 py-3 text-sm font-semibold text-pine-800 transition-colors hover:bg-ink-100"
-          >
-            {t("nav.becomeDriver")}
-          </Link>
-        </div>
-      </section>
     </div>
   );
 }

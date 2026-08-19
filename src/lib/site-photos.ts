@@ -1,5 +1,5 @@
 import "server-only";
-import { existsSync } from "node:fs";
+import { existsSync, readdirSync } from "node:fs";
 import path from "node:path";
 
 /**
@@ -17,4 +17,27 @@ export function sitePhoto(name: string): string | null {
     cache.set(name, hit);
   }
   return hit;
+}
+
+
+/**
+ * Traveller photos: drop consented JPGs into public/photos/travellers/ named
+ * `name-country-place.jpg` (e.g. anna-germany-kazbegi.jpg) and the homepage
+ * section appears by itself. No files, no section — nothing fabricated.
+ */
+export function listTravellerPhotos(): { src: string; caption: string }[] {
+  try {
+    const dir = path.join(process.cwd(), "public", "photos", "travellers");
+    if (!existsSync(dir)) return [];
+    return readdirSync(dir)
+      .filter((f) => /\.(jpe?g|png|webp)$/i.test(f))
+      .slice(0, 8)
+      .map((f) => ({
+        src: `/photos/travellers/${f}`,
+        caption: f.replace(/\.[a-z]+$/i, "").split("-")
+          .map((w) => w.charAt(0).toUpperCase() + w.slice(1)).join(" · "),
+      }));
+  } catch {
+    return [];
+  }
 }

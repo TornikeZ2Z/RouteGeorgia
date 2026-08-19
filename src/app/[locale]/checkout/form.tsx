@@ -6,7 +6,7 @@ import { SubmitButton } from "@/components/form-state";
 import { getTranslator, type Locale } from "@/lib/i18n";
 
 export function CheckoutForm({
-  quoteId, locale, defaults, cashAvailable, isAirport, error,
+  quoteId, locale, defaults, cashAvailable, isAirport, error, childSeatFeeLabel,
 }: {
   quoteId: string;
   locale: Locale;
@@ -14,6 +14,7 @@ export function CheckoutForm({
   cashAvailable: boolean;
   isAirport: boolean;
   error?: string;
+  childSeatFeeLabel: string;
 }) {
   const [payment, setPayment] = useState<"CASH" | "CARD">(cashAvailable ? "CASH" : "CARD");
   const t = getTranslator(locale);
@@ -44,7 +45,7 @@ export function CheckoutForm({
           <Field label={t("checkout.bags")} htmlFor="luggage">
             <Input id="luggage" name="luggage" type="number" min={0} max={30} defaultValue={defaults.luggage} />
           </Field>
-          <Field label={t("checkout.childSeats")} htmlFor="childSeats" hint={t("checkout.childSeatsHint")}>
+          <Field label={t("checkout.childSeats")} htmlFor="childSeats" hint={`${t("checkout.childSeatsHint")} ${t("checkout.childSeatFee", { amount: childSeatFeeLabel })}`}>
             <Input id="childSeats" name="childSeats" type="number" min={0} max={6} defaultValue={0} />
           </Field>
           <div className="flex items-end">

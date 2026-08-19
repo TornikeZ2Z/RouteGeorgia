@@ -60,7 +60,7 @@ export default async function BusinessPage({
       <Card className="p-6 sm:p-8">
         <h2 className="font-display mb-6 text-2xl text-ink-900">{t("business.formTitle")}</h2>
         <InquiryForm
-          locale={locale} kind="business" withCompany
+          locale={locale} kind="business" withCompany withVehicleTypes
           sent={sp.sent === "1"} error={sp.error === "1"}
         />
       </Card>
