@@ -3,7 +3,8 @@ Drop real, licensed photographs here and the site uses them automatically
 
 Expected filenames — JPG, landscape, ~1600px wide or better:
 
-  hero.jpg      homepage hero (mountains / Gergeti-style shot works best)
+  hero.jpg      homepage hero, slide 1
+  hero-2.jpg …  hero-5.jpg   further carousel slides (any that exist are shown)
   airport.jpg   "Airport transfers" service card
   cityroad.jpg  "City to city" service card
   tour.jpg      "Tours & trips" service card

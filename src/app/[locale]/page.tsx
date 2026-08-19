@@ -12,6 +12,7 @@ import { sitePhoto } from "@/lib/site-photos";
 import { listTours } from "@/lib/tours";
 import { formatApproxDuration, formatDistance } from "@/lib/format";
 import { SearchTabs } from "@/components/search-tabs";
+import { HeroCarousel } from "@/components/hero-carousel";
 
 export const dynamic = "force-dynamic";
 
@@ -86,7 +87,9 @@ export default async function Home({ params }: { params: Promise<{ locale: strin
   ]);
 
   const popular = routes.slice(0, 6);
-  const heroPhoto = sitePhoto("hero.jpg");
+  const heroSlides = ["hero.jpg", "hero-2.jpg", "hero-3.jpg", "hero-4.jpg", "hero-5.jpg"]
+    .map((name) => sitePhoto(name))
+    .filter((src): src is string => src !== null);
   const aboutPhoto = sitePhoto("about.jpg");
 
   /* A zero is not a statistic: pre-launch numbers hide rather than advertise
@@ -103,14 +106,13 @@ export default async function Home({ params }: { params: Promise<{ locale: strin
       {/* ------------------------------------------------ hero ------------ */}
       <section className="relative left-1/2 -mt-10 w-screen -translate-x-1/2 overflow-hidden bg-pine-800 text-white sm:-mt-12">
         <div className="absolute inset-0" aria-hidden>
-          {heroPhoto ? (
-            // eslint-disable-next-line @next/next/no-img-element
-            <img src={heroPhoto} alt="" className="size-full object-cover" />
+          {heroSlides.length > 0 ? (
+            <HeroCarousel images={heroSlides} />
           ) : (
             <PlaceImage imageKey={null} alt="" seedText="stepantsminda-gergeti" className="size-full" />
           )}
-          <div className="absolute inset-0 bg-gradient-to-r from-pine-900/90 via-pine-900/60 to-pine-900/25" />
-          <div className="absolute inset-x-0 bottom-0 h-40 bg-gradient-to-t from-pine-900/80 to-transparent" />
+          <div className="pointer-events-none absolute inset-0 bg-gradient-to-r from-pine-900/90 via-pine-900/60 to-pine-900/25" />
+          <div className="pointer-events-none absolute inset-x-0 bottom-0 h-40 bg-gradient-to-t from-pine-900/80 to-transparent" />
         </div>
 
         <div className="relative mx-auto max-w-6xl px-4 pb-28 pt-16 sm:pb-36 sm:pt-24">
