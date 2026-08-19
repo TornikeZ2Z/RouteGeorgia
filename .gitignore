@@ -7,3 +7,6 @@ node_modules
 *.tsbuildinfo
 next-env.d.ts
 coverage
+
+# Original photo drops stay local; only the web crops in public/photos ship.
+/Photoes/

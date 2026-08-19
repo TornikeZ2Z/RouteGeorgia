@@ -10,6 +10,7 @@ import { config } from "@/lib/config";
 import { Alert, Badge, Card } from "@/components/ui";
 import { formatDuration, formatDistance } from "@/lib/format";
 import { PlaceImage } from "@/components/place-image";
+import { sitePhoto } from "@/lib/site-photos";
 import { SearchForm } from "@/components/search-form";
 import { sql } from "@db/client";
 
@@ -111,6 +112,7 @@ export default async function RoutePage({ params }: Props) {
 
       <PlaceImage
         imageKey={data.imageKey}
+        photoSrc={sitePhoto(`routes/${data.slug}.jpg`)}
         alt={data.imageAlt ?? `${data.originName} to ${data.destinationName}`}
         seedText={data.slug}
         className="h-52 w-full sm:h-64"

@@ -284,6 +284,7 @@ export default async function Home({ params }: { params: Promise<{ locale: strin
                   <div className="relative">
                     <PlaceImage
                       imageKey={tour.heroImageKey}
+                      photoSrc={sitePhoto(`tours/${tour.slug}.jpg`)}
                       alt={tour.heroImageAlt ?? tour.title}
                       seedText={tour.slug}
                       className="h-40 w-full"
@@ -326,6 +327,7 @@ export default async function Home({ params }: { params: Promise<{ locale: strin
                 >
                   <PlaceImage
                     imageKey={r.imageKey}
+                    photoSrc={sitePhoto(`routes/${r.slug}.jpg`)}
                     alt={r.imageAlt ?? `${r.originName} to ${r.destinationName}`}
                     seedText={r.slug}
                     className="h-24 w-full"

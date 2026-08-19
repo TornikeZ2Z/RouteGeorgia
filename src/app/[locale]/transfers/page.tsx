@@ -6,6 +6,7 @@ import { listRoutes } from "@/lib/routes-content";
 import { config } from "@/lib/config";
 import { Badge } from "@/components/ui";
 import { PlaceImage } from "@/components/place-image";
+import { sitePhoto } from "@/lib/site-photos";
 import { formatDuration, formatDistance } from "@/lib/format";
 
 export const revalidate = 3600;
@@ -52,6 +53,7 @@ export default async function TransfersIndex({ params }: Props) {
             >
               <PlaceImage
                 imageKey={r.imageKey}
+                photoSrc={sitePhoto(`routes/${r.slug}.jpg`)}
                 alt={r.imageAlt ?? `${r.originName} to ${r.destinationName}`}
                 seedText={r.slug}
                 className="h-28 w-full"

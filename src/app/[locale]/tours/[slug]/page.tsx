@@ -10,6 +10,7 @@ import { getDisplayCurrency, getRate, convert, CANONICAL } from "@/lib/currency"
 import { config } from "@/lib/config";
 import { Alert, Badge, Card } from "@/components/ui";
 import { PlaceImage } from "@/components/place-image";
+import { sitePhoto } from "@/lib/site-photos";
 import { SearchForm } from "@/components/search-form";
 
 export const revalidate = 3600;
@@ -95,6 +96,7 @@ export default async function TourPage({ params }: Props) {
 
       <PlaceImage
         imageKey={tour.heroImageKey}
+        photoSrc={sitePhoto(`tours/${tour.slug}.jpg`)}
         alt={tour.heroImageAlt ?? tour.title}
         seedText={tour.slug}
         className="h-56 w-full sm:h-72"

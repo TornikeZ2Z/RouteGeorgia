@@ -9,6 +9,7 @@ import { getDisplayCurrency, getRate, convert, CANONICAL } from "@/lib/currency"
 import { config } from "@/lib/config";
 import { Badge, EmptyState } from "@/components/ui";
 import { PlaceImage } from "@/components/place-image";
+import { sitePhoto } from "@/lib/site-photos";
 
 export const revalidate = 3600;
 
@@ -70,6 +71,7 @@ export default async function ToursIndex({ params }: Props) {
                   <div className="relative">
                     <PlaceImage
                       imageKey={tour.heroImageKey}
+                      photoSrc={sitePhoto(`tours/${tour.slug}.jpg`)}
                       alt={tour.heroImageAlt ?? tour.title}
                       seedText={tour.slug}
                       className="h-44 w-full"
