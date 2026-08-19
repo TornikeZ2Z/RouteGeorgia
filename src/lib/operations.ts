@@ -48,7 +48,16 @@ export async function replacementOptions(bookingId: string): Promise<Replacement
     WHERE b.id = ${bookingId}::uuid`;
   if (!booking) return [];
 
-  const window = serviceWindow(new Date(booking.service_start_at), booking.drive_minutes);
+  // The booking's own calendar block is the truth about how long the driver
+  // is engaged — a round trip spans through the return, which a naive
+  // serviceWindow() recomputation would miss. Fall back only if the block is
+  // somehow gone.
+  const [blk] = await sql<{ s: Date; e: Date }[]>`
+    SELECT lower(period) AS s, upper(period) AS e
+    FROM availability_blocks WHERE booking_id = ${bookingId}::uuid`;
+  const window = blk
+    ? { startsAt: new Date(blk.s), endsAt: new Date(blk.e) }
+    : serviceWindow(new Date(booking.service_start_at), booking.drive_minutes);
 
   const rows = await sql<{
     driver_id: string; vehicle_id: string; public_name: string; handle: string;
@@ -118,7 +127,15 @@ export async function reassignBooking(input: {
       throw new Error("A finished booking cannot be reassigned.");
     }
 
-    const window = serviceWindow(new Date(booking.service_start_at), booking.drive_minutes);
+    // Reuse the original block's exact period: for a round trip that is the
+    // full out-stay-return span, and the replacement must be free for all of
+    // it. Read it before deleting it.
+    const [blk] = await tx<{ s: Date; e: Date }[]>`
+      SELECT lower(period) AS s, upper(period) AS e
+      FROM availability_blocks WHERE booking_id = ${input.bookingId}::uuid`;
+    const window = blk
+      ? { startsAt: new Date(blk.s), endsAt: new Date(blk.e) }
+      : serviceWindow(new Date(booking.service_start_at), booking.drive_minutes);
 
     // Free the previous driver, then claim the new one. The exclusion
     // constraint refuses if the replacement was taken in the meantime.
