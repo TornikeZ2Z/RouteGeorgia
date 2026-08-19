@@ -111,21 +111,21 @@ export default async function Home({ params }: { params: Promise<{ locale: strin
           ) : (
             <PlaceImage imageKey={null} alt="" seedText="stepantsminda-gergeti" className="size-full" />
           )}
-          <div className="pointer-events-none absolute inset-0 bg-gradient-to-r from-pine-900/90 via-pine-900/60 to-pine-900/25" />
-          <div className="pointer-events-none absolute inset-x-0 bottom-0 h-40 bg-gradient-to-t from-pine-900/80 to-transparent" />
+          <div className="pointer-events-none absolute inset-0 z-[1] bg-gradient-to-r from-pine-900/90 via-pine-900/55 to-pine-900/20" />
+          <div className="pointer-events-none absolute inset-x-0 bottom-0 z-[1] h-32 bg-gradient-to-t from-pine-900/80 to-transparent" />
         </div>
 
-        <div className="relative mx-auto max-w-[1400px] 2xl:max-w-[1680px] px-4 pb-32 pt-16 sm:px-6 sm:pb-44 sm:pt-28 lg:px-10">
+        <div className="relative z-[2] mx-auto max-w-[1400px] 2xl:max-w-[1680px] px-4 pb-28 pt-12 sm:px-6 sm:pb-36 sm:pt-16 lg:px-10">
           <div className="flex flex-wrap items-start justify-between gap-8">
             <div className="max-w-2xl">
-              <h1 className="font-display max-w-3xl text-balance text-[2.6rem] leading-[1.06] sm:text-6xl xl:text-7xl">
+              <h1 className="font-display max-w-3xl text-balance text-[2.4rem] leading-[1.06] sm:text-5xl xl:text-6xl">
                 {t("home.heroTitle")}
               </h1>
-              <p className="mt-5 max-w-xl text-lg leading-relaxed text-pine-100">
+              <p className="mt-4 max-w-xl text-base leading-relaxed text-pine-100 sm:text-lg">
                 {t("home.heroSubtitle")}
               </p>
 
-              <ul className="mt-9 flex flex-wrap gap-x-7 gap-y-4">
+              <ul className="mt-7 flex flex-wrap gap-x-7 gap-y-4">
                 {HERO_CHIPS.map(([key, icon]) => (
                   <li key={key} className="flex items-center gap-2.5">
                     <span className="grid size-10 place-items-center rounded-full bg-white/12 backdrop-blur-sm">
@@ -159,7 +159,7 @@ export default async function Home({ params }: { params: Promise<{ locale: strin
       </section>
 
       {/* -------------------------------------------- booking widget ------ */}
-      <div id="book" className="relative z-10 -mt-36 scroll-mt-24 sm:-mt-48">
+      <div id="book" className="relative z-10 -mt-24 scroll-mt-24 sm:-mt-32">
         <Card className="p-6 shadow-[0_24px_60px_-28px_rgba(12,31,24,.5)] sm:p-8">
           <SearchTabs locale={locale} locations={locations} />
           <ul className="mt-6 flex flex-wrap gap-x-6 gap-y-2 border-t border-ink-100 pt-4">

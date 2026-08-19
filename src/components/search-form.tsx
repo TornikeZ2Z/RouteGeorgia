@@ -80,36 +80,42 @@ export function SearchForm({
   ));
 
   return (
-    <form onSubmit={submit} className="space-y-4">
+    <form
+      onSubmit={submit}
+      action={`/${locale}/search`}
+      method="get"
+      className="space-y-4"
+    >
+      {tourSlug && <input type="hidden" name="tour" value={tourSlug} />}
       <div className={compact ? "space-y-4" : "grid gap-4 sm:grid-cols-2 lg:grid-cols-6"}>
         {lockRoute && (
           <>
-            <input type="hidden" value={from} readOnly />
-            <input type="hidden" value={to} readOnly />
+            <input type="hidden" name="from" value={from} readOnly />
+            <input type="hidden" name="to" value={to} readOnly />
           </>
         )}
         <div className={`${compact ? "" : "lg:col-span-2"}${lockRoute ? " hidden" : ""}`}>
           <Field label={t("search.from")} htmlFor="from" required>
-            <Select id="from" value={from} onChange={(e) => setFrom(e.target.value)}>{options}</Select>
+            <Select id="from" name="from" value={from} onChange={(e) => setFrom(e.target.value)}>{options}</Select>
           </Field>
         </div>
 
         <div className={`${compact ? "" : "lg:col-span-2"}${lockRoute ? " hidden" : ""}`}>
           <Field label={t("search.to")} htmlFor="to" required>
-            <Select id="to" value={to} onChange={(e) => setTo(e.target.value)}>{options}</Select>
+            <Select id="to" name="to" value={to} onChange={(e) => setTo(e.target.value)}>{options}</Select>
           </Field>
         </div>
 
         <div className={compact ? "" : "lg:col-span-2"}>
           <Field label={t("search.date")} htmlFor="when" hint={t("search.dateHint")} required>
-            <Input id="when" type="datetime-local" value={when} onChange={(e) => setWhen(e.target.value)} />
+            <Input id="when" name="when" type="datetime-local" value={when} onChange={(e) => setWhen(e.target.value)} />
           </Field>
         </div>
 
         {roundTrip && (
           <div className={compact ? "" : "lg:col-span-2"}>
             <Field label={t("search.return")} htmlFor="return-when" required>
-              <Input id="return-when" type="datetime-local" value={returnWhen}
+              <Input id="return-when" name="return" type="datetime-local" value={returnWhen}
                      onChange={(e) => setReturnWhen(e.target.value)} />
             </Field>
           </div>
@@ -126,6 +132,7 @@ export function SearchForm({
                 <Field label={t("search.stop", { n: i + 1 })} htmlFor={`stop-${i}`}>
                   <Select
                     id={`stop-${i}`}
+                    name="stop"
                     value={stop}
                     onChange={(e) => setStops(stops.map((s, j) => (j === i ? e.target.value : s)))}
                   >
@@ -148,12 +155,12 @@ export function SearchForm({
 
       <div className={compact ? "grid grid-cols-2 gap-3" : "grid gap-4 sm:grid-cols-2 lg:grid-cols-6"}>
         <Field label={t("search.passengers")} htmlFor="pax">
-          <Input id="pax" type="number" min={1} max={20} value={passengers}
+          <Input id="pax" name="passengers" type="number" min={1} max={20} value={passengers}
                  onChange={(e) => setPassengers(Number(e.target.value))} />
         </Field>
 
         <Field label={t("search.luggage")} htmlFor="bags">
-          <Input id="bags" type="number" min={0} max={20} value={luggage}
+          <Input id="bags" name="luggage" type="number" min={0} max={20} value={luggage}
                  onChange={(e) => setLuggage(Number(e.target.value))} />
         </Field>
 
