@@ -115,10 +115,10 @@ export default async function Home({ params }: { params: Promise<{ locale: strin
           <div className="pointer-events-none absolute inset-x-0 bottom-0 h-40 bg-gradient-to-t from-pine-900/80 to-transparent" />
         </div>
 
-        <div className="relative mx-auto max-w-[1400px] px-4 pb-32 pt-16 sm:px-6 sm:pb-44 sm:pt-28 lg:px-10">
+        <div className="relative mx-auto max-w-[1400px] 2xl:max-w-[1680px] px-4 pb-32 pt-16 sm:px-6 sm:pb-44 sm:pt-28 lg:px-10">
           <div className="flex flex-wrap items-start justify-between gap-8">
             <div className="max-w-2xl">
-              <h1 className="font-display text-[2.6rem] leading-[1.06] sm:text-6xl xl:text-7xl">
+              <h1 className="font-display max-w-3xl text-balance text-[2.6rem] leading-[1.06] sm:text-6xl xl:text-7xl">
                 {t("home.heroTitle")}
               </h1>
               <p className="mt-5 max-w-xl text-lg leading-relaxed text-pine-100">
@@ -221,7 +221,7 @@ export default async function Home({ params }: { params: Promise<{ locale: strin
 
       {/* ------------------------------------------------ trust band ------ */}
       <section className="relative left-1/2 w-screen -translate-x-1/2 bg-ink-50">
-        <ul className="mx-auto grid max-w-[1400px] gap-x-6 gap-y-8 px-4 py-14 grid-cols-2 sm:grid-cols-3 sm:px-6 lg:grid-cols-5 lg:px-10">
+        <ul className="mx-auto grid max-w-[1400px] 2xl:max-w-[1680px] gap-x-6 gap-y-8 px-4 py-14 grid-cols-2 sm:grid-cols-3 sm:px-6 lg:grid-cols-5 lg:px-10">
           {TRUST.map(([key, icon]) => (
             <li key={key} className="flex flex-col items-center gap-3 text-center">
               <svg viewBox="0 0 24 24" className="size-8 text-brand-700" fill="none" stroke="currentColor"
@@ -241,7 +241,7 @@ export default async function Home({ params }: { params: Promise<{ locale: strin
           <h2 className="font-display mt-2 text-3xl text-ink-900 sm:text-4xl">{t("home.aboutTitle")}</h2>
           <p className="mt-4 max-w-xl leading-relaxed text-ink-600">{t("home.aboutBody")}</p>
           {numbers.length > 0 && (
-            <dl className="mt-8 grid max-w-md grid-cols-2 gap-x-8 gap-y-6">
+            <dl className="mt-8 grid max-w-lg grid-cols-2 gap-x-8 gap-y-6 sm:grid-cols-3">
               {numbers.map(([value, label]) => (
                 <div key={label}>
                   <dt className="font-display text-3xl text-brand-700">{value}</dt>

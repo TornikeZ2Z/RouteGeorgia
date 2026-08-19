@@ -10,7 +10,7 @@
  * travellers; "console.*" is the console drivers themselves work in.
  */
 export const en = {
-  "brand.name": "Route Georgia",
+  "brand.name": "RouteGeorgia",
   "brand.tagline": "Private drivers across Georgia, booked in advance.",
 
   "nav.transfers": "Transfers",

@@ -5,7 +5,7 @@ import type { Dictionary } from "./index";
  * of visitors to Georgia; tests/i18n.test.ts enforces complete coverage.
  */
 export const ru: Partial<Dictionary> = {
-  "brand.name": "Route Georgia",
+  "brand.name": "RouteGeorgia",
   "brand.tagline": "Частные водители по Грузии с бронированием заранее.",
 
   "nav.transfers": "Трансферы",

@@ -35,8 +35,11 @@ export function SearchForm({
   const compact = layout === "compact";
   const t = getTranslator(isLocale(locale) ? (locale as Locale) : "en");
   const router = useRouter();
-  const [from, setFrom] = useState(initial?.from ?? locations[0]?.slug ?? "");
-  const [to, setTo] = useState(initial?.to ?? locations[1]?.slug ?? "");
+  // Default to the single most common trip in Georgia, not the first two
+  // names the alphabet happens to produce (Batumi Airport → Kutaisi Airport).
+  const has = (slug: string) => locations.some((l) => l.slug === slug);
+  const [from, setFrom] = useState(initial?.from ?? (has("tbilisi-airport") ? "tbilisi-airport" : locations[0]?.slug ?? ""));
+  const [to, setTo] = useState(initial?.to ?? (has("tbilisi") ? "tbilisi" : locations[1]?.slug ?? ""));
   const [stops, setStops] = useState<string[]>([]);
   const [when, setWhen] = useState(defaultWhen());
   const [returnWhen, setReturnWhen] = useState(defaultReturnWhen());

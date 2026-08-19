@@ -34,7 +34,7 @@ export default async function AdminLayout({ children }: { children: React.ReactN
   return (
     <div className="flex min-h-dvh flex-col bg-ink-50">
       <header className="border-b border-ink-200 bg-white">
-        <div className="mx-auto flex max-w-[1400px] flex-wrap items-center justify-between gap-3 px-4 py-3">
+        <div className="mx-auto flex max-w-[1400px] 2xl:max-w-[1680px] flex-wrap items-center justify-between gap-3 px-4 py-3">
           <Link href="/admin" className="flex items-center gap-2.5">
             <span aria-hidden className="grid size-8 place-items-center rounded-full bg-brand-600 text-white">
               <svg viewBox="0 0 24 24" className="size-4" fill="none" stroke="currentColor" aria-hidden>
@@ -52,7 +52,7 @@ export default async function AdminLayout({ children }: { children: React.ReactN
             </form>
           </div>
         </div>
-        <nav aria-label="Admin" className="mx-auto max-w-[1400px] overflow-x-auto px-2 pb-2">
+        <nav aria-label="Admin" className="mx-auto max-w-[1400px] 2xl:max-w-[1680px] overflow-x-auto px-2 pb-2">
           <ul className="flex gap-1 text-sm">
             {nav.map((item) => (
               <li key={item.href}>
@@ -64,7 +64,7 @@ export default async function AdminLayout({ children }: { children: React.ReactN
           </ul>
         </nav>
       </header>
-      <main className="mx-auto w-full max-w-[1400px] flex-1 px-4 py-6">{children}</main>
+      <main className="mx-auto w-full max-w-[1400px] 2xl:max-w-[1680px] flex-1 px-4 py-6">{children}</main>
     </div>
   );
 }
