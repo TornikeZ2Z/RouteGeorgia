@@ -3,7 +3,7 @@ import { requirePermission } from "@/lib/auth/session";
 import { can } from "@/lib/rbac";
 import { sql } from "@db/client";
 import { Alert, Badge, Card, PageHeader, Table } from "@/components/ui";
-import { DecisionPanel, DocumentDecision, VehicleDecision, LanguageVerification, PublishPanel } from "./panels";
+import { DecisionPanel, DocumentDecision, VehicleDecision, LanguageVerification, PublishPanel, UploadDocumentPanel } from "./panels";
 import { WalletPanel } from "../forms";
 import { driverBalance } from "@/lib/ledger";
 import { can as canDo } from "@/lib/rbac";
@@ -103,6 +103,14 @@ export default async function DriverDetail({ params }: { params: Promise<{ id: s
                 </tr>
               ))}
             </Table>
+            {mayDecideDocs && (
+              <div className="mt-4">
+                <UploadDocumentPanel
+                  driverId={driver.id}
+                  vehicles={vehicleRows.map((v) => ({ id: v.id, label: `${v.make} ${v.model} (${v.plate ?? v.year})` }))}
+                />
+              </div>
+            )}
             <p className="mt-2 text-xs text-ink-500">
               Files are streamed from restricted storage, never linked directly. Every time a reviewer
               opens one it is written to the audit log.

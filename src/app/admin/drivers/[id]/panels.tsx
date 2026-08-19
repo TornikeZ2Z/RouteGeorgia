@@ -5,8 +5,9 @@ import { Alert, Card, Field, Select, Textarea } from "@/components/ui";
 import { SubmitButton } from "@/components/form-state";
 import {
   decideDriverAction, decideDocumentAction, decideVehicleAction,
-  verifyLanguageAction, publishDriverAction,
+  verifyLanguageAction, publishDriverAction, uploadDriverDocumentAction,
 } from "@/app/admin/actions";
+import { Input } from "@/components/ui";
 
 const INITIAL = { ok: false } as const;
 
@@ -136,5 +137,54 @@ export function LanguageVerification({ driverId, language }: { driverId: string;
       <SubmitButton variant="secondary">Set</SubmitButton>
       {!state.ok && state.message && <span className="text-xs text-[--color-danger]">{state.message}</span>}
     </form>
+  );
+}
+
+
+/** Scan-and-upload across the desk: lands as PENDING for normal review. */
+export function UploadDocumentPanel({
+  driverId, vehicles,
+}: { driverId: string; vehicles: { id: string; label: string }[] }) {
+  const [state, action] = useActionState(uploadDriverDocumentAction, INITIAL);
+  return (
+    <Card className="p-4">
+      <h3 className="font-semibold text-ink-900">Upload a document for this driver</h3>
+      <p className="mt-1 text-xs text-ink-500">
+        For office onboarding. It arrives as pending and still needs an approval below.
+      </p>
+      <form action={action} className="mt-3 space-y-3">
+        <input type="hidden" name="driverId" value={driverId} />
+        <Field label="Type" htmlFor="staff-doc-type">
+          <Select id="staff-doc-type" name="type" defaultValue="DRIVING_LICENSE">
+            <option value="IDENTITY">Identity document</option>
+            <option value="DRIVING_LICENSE">Driving licence</option>
+            <option value="VEHICLE_REGISTRATION">Vehicle registration</option>
+            <option value="INSURANCE">Insurance</option>
+            <option value="INSPECTION">Technical inspection</option>
+          </Select>
+        </Field>
+        {vehicles.length > 0 && (
+          <Field label="Vehicle (for vehicle documents)" htmlFor="staff-doc-vehicle">
+            <Select id="staff-doc-vehicle" name="vehicleId" defaultValue="">
+              <option value="">Not vehicle-specific</option>
+              {vehicles.map((v) => <option key={v.id} value={v.id}>{v.label}</option>)}
+            </Select>
+          </Field>
+        )}
+        <div className="grid gap-3 sm:grid-cols-2">
+          <Field label="Expiry date" htmlFor="staff-doc-expiry" hint="Required for licence and insurance.">
+            <Input id="staff-doc-expiry" name="expiresOn" type="date" />
+          </Field>
+          <Field label="Document number" htmlFor="staff-doc-number" hint="Stored as a hash only.">
+            <Input id="staff-doc-number" name="number" maxLength={64} />
+          </Field>
+        </div>
+        <Field label="Scan or photo" htmlFor="staff-doc-file" required>
+          <Input id="staff-doc-file" name="file" type="file" accept="image/jpeg,image/png,image/webp,application/pdf" required />
+        </Field>
+        <SubmitButton>Upload as pending</SubmitButton>
+      </form>
+      <Result state={state} />
+    </Card>
   );
 }

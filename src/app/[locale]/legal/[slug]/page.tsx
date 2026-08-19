@@ -3,6 +3,40 @@ import { notFound } from "next/navigation";
 import type { Metadata } from "next";
 import { isLocale, LOCALES, type Locale } from "@/lib/i18n";
 import { getLegalDocument, LEGAL_SLUGS } from "@/lib/legal";
+import { sql } from "@db/client";
+
+/**
+ * An edited page in content_pages (published, matching slug+locale) wins over
+ * the code default. This is how the post-lawyer text goes live without a
+ * deploy. Body convention: lines starting with "## " open a section; blank
+ * lines separate paragraphs.
+ */
+async function getOverride(slug: string, locale: string) {
+  const [row] = await sql<{ title: string; body: string; updated_at: Date }[]>`
+    SELECT title, body, updated_at FROM content_pages
+    WHERE slug = ${slug} AND locale = ${locale} AND published`;
+  if (!row) return null;
+  const sections: { heading: string; body: string[] }[] = [];
+  let current = { heading: "", body: [] as string[] };
+  for (const block of row.body.split(/\n\s*\n/)) {
+    const text = block.trim();
+    if (!text) continue;
+    if (text.startsWith("## ")) {
+      if (current.heading || current.body.length) sections.push(current);
+      current = { heading: text.slice(3).trim(), body: [] };
+    } else {
+      current.body.push(text.replace(/\n/g, " "));
+    }
+  }
+  if (current.heading || current.body.length) sections.push(current);
+  return {
+    title: row.title,
+    updated: new Date(row.updated_at).toISOString().slice(0, 10),
+    intro: sections[0]?.heading === "" ? (sections.shift()?.body.join(" ") ?? "") : "",
+    sections,
+    edited: true as const,
+  };
+}
 import { config } from "@/lib/config";
 import { Alert } from "@/components/ui";
 
@@ -17,7 +51,7 @@ export function generateStaticParams() {
 export async function generateMetadata({ params }: Props): Promise<Metadata> {
   const { locale, slug } = await params;
   if (!isLocale(locale)) return {};
-  const doc = getLegalDocument(slug, locale as Locale);
+  const doc = (await getOverride(slug, locale)) ?? getLegalDocument(slug, locale as Locale);
   if (!doc) return { title: "Not found" };
   return {
     title: doc.title,
@@ -32,8 +66,9 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
 export default async function LegalPage({ params }: Props) {
   const { locale, slug } = await params;
   if (!isLocale(locale)) notFound();
-  const doc = getLegalDocument(slug, locale as Locale);
+  const doc = (await getOverride(slug, locale)) ?? getLegalDocument(slug, locale as Locale);
   if (!doc) notFound();
+  const edited = "edited" in doc;
 
   return (
     <div className="mx-auto max-w-3xl">
@@ -50,12 +85,12 @@ export default async function LegalPage({ params }: Props) {
         <p className="mt-5 text-lg leading-relaxed text-ink-700">{doc.intro}</p>
       </header>
 
-      <div className="mt-6">
+      {!edited && <div className="mt-6">
         <Alert tone="warning" title="Not yet reviewed by a Georgian lawyer">
           These terms describe accurately what this service does and what it stores, but they have
           not been checked by qualified local counsel. That review is required before trading.
         </Alert>
-      </div>
+      </div>}
 
       <div className="mt-10 space-y-10">
         {doc.sections.map((section) => (

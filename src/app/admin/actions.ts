@@ -11,7 +11,7 @@ import { randomBytes } from "node:crypto";
 import { parseMajor } from "@/lib/money";
 import { hashPassword } from "@/lib/auth/password";
 import { config } from "@/lib/config";
-import { getStorage, assertUploadAllowed, UploadRejectedError } from "@/lib/storage";
+import { getStorage, assertUploadAllowed, UploadRejectedError, hashDocumentNumber } from "@/lib/storage";
 import { cancelBooking } from "@/lib/booking";
 import { dispatchPending } from "@/lib/notifications";
 import { reassignBooking, refundBooking, recordCashSettlement } from "@/lib/operations";
@@ -1047,4 +1047,125 @@ export async function updateTicketAction(_prev: ActionState, formData: FormData)
   });
   revalidatePath("/admin/support");
   return { ok: true, message: "Ticket updated." };
+}
+
+
+// ------------------------------------------------ office document upload ---
+/**
+ * Upload a document ON BEHALF of a driver.
+ *
+ * Real onboarding happens across a desk: the driver brings paper, staff scan
+ * it. The upload lands as PENDING — the same reviewer flow as a driver's own
+ * upload — so "staff uploaded it" never silently becomes "staff approved it".
+ */
+const StaffDocSchema = z.object({
+  driverId: z.string().uuid(),
+  vehicleId: z.string().uuid().optional().or(z.literal("")),
+  type: z.enum(["IDENTITY", "DRIVING_LICENSE", "VEHICLE_REGISTRATION", "INSURANCE", "INSPECTION"]),
+  expiresOn: z.string().optional(),
+  number: z.string().max(64).optional(),
+});
+
+export async function uploadDriverDocumentAction(_prev: ActionState, formData: FormData): Promise<ActionState> {
+  const actor = await requirePermission("admin.drivers.decide");
+  const parsed = StaffDocSchema.safeParse(Object.fromEntries(formData));
+  if (!parsed.success) return { ok: false, errors: parsed.error.issues.map((i) => i.message) };
+  const v = parsed.data;
+
+  const file = formData.get("file");
+  if (!(file instanceof File) || file.size === 0) return { ok: false, message: "Choose a file to upload." };
+  if (["DRIVING_LICENSE", "INSURANCE"].includes(v.type) && !v.expiresOn) {
+    return { ok: false, message: "An expiry date is required for this document type." };
+  }
+
+  try {
+    const buffer = Buffer.from(await file.arrayBuffer());
+    assertUploadAllowed(file.type, buffer.byteLength);
+    const stored = await getStorage().put("restricted-kyc", buffer, file.type);
+
+    await sql`
+      INSERT INTO driver_documents
+        (driver_id, vehicle_id, type, storage_key, number_hash, mime_type, size_bytes,
+         checksum, expires_on, is_mandatory, state)
+      VALUES (${v.driverId}::uuid, ${v.vehicleId || null}::uuid, ${v.type}::doc_type, ${stored.key},
+              ${v.number ? hashDocumentNumber(v.number) : null}, ${stored.mimeType}, ${stored.sizeBytes},
+              ${stored.checksum}, ${v.expiresOn || null}::date, true, 'PENDING')`;
+
+    await writeAudit({
+      actorUserId: actor.id, action: "driver.document_uploaded_by_staff",
+      objectType: "driver_document", objectId: v.driverId,
+      after: { type: v.type, expiresOn: v.expiresOn || null, sizeBytes: stored.sizeBytes },
+      reason: "office onboarding",
+    });
+  } catch (err) {
+    if (err instanceof UploadRejectedError) return { ok: false, message: err.message };
+    throw err;
+  }
+
+  revalidatePath(`/admin/drivers/${v.driverId}`);
+  return { ok: true, message: "Uploaded as pending. Review and approve it below." };
+}
+
+// --------------------------------------------------------- tour editing ----
+const TourTranslationSchema = z.object({
+  tourId: z.string().uuid(),
+  locale: z.enum(["en", "ka", "ru"]),
+  title: z.string().min(3).max(120),
+  summary: z.string().min(10).max(400),
+  body: z.string().min(10).max(8000),
+});
+
+export async function saveTourTranslationAction(_prev: ActionState, formData: FormData): Promise<ActionState> {
+  const actor = await requirePermission("admin.content.write");
+  const parsed = TourTranslationSchema.safeParse(Object.fromEntries(formData));
+  if (!parsed.success) return { ok: false, errors: parsed.error.issues.map((i) => i.message) };
+  const v = parsed.data;
+
+  const [tour] = await sql<{ slug: string }[]>`SELECT slug FROM tours WHERE id = ${v.tourId}::uuid`;
+  if (!tour) return { ok: false, message: "Tour not found." };
+
+  await sql`
+    INSERT INTO tour_translations (tour_id, locale, title, summary, body)
+    VALUES (${v.tourId}::uuid, ${v.locale}, ${v.title}, ${v.summary}, ${v.body})
+    ON CONFLICT (tour_id, locale) DO UPDATE SET
+      title = EXCLUDED.title, summary = EXCLUDED.summary, body = EXCLUDED.body`;
+
+  await writeAudit({
+    actorUserId: actor.id, action: "tour.translation_saved", objectType: "tour",
+    objectId: v.tourId, after: { locale: v.locale, title: v.title }, reason: "content edit",
+  });
+
+  for (const l of ["en", "ka", "ru"]) {
+    revalidatePath(`/${l}/tours`);
+    revalidatePath(`/${l}/tours/${tour.slug}`);
+    revalidatePath(`/${l}`);
+  }
+  revalidatePath("/admin/tours");
+  return { ok: true, message: `Saved ${v.locale.toUpperCase()} text for ${tour.slug}.` };
+}
+
+const TourActiveSchema = z.object({
+  tourId: z.string().uuid(),
+  active: z.enum(["on", "off"]),
+  reason: z.string().min(5),
+});
+
+export async function toggleTourAction(_prev: ActionState, formData: FormData): Promise<ActionState> {
+  const actor = await requirePermission("admin.content.write");
+  const parsed = TourActiveSchema.safeParse(Object.fromEntries(formData));
+  if (!parsed.success) return { ok: false, errors: parsed.error.issues.map((i) => i.message) };
+  const v = parsed.data;
+
+  const [tour] = await sql<{ slug: string; active: boolean }[]>`
+    UPDATE tours SET active = ${v.active === "on"} WHERE id = ${v.tourId}::uuid
+    RETURNING slug, active`;
+  if (!tour) return { ok: false, message: "Tour not found." };
+
+  await writeAudit({
+    actorUserId: actor.id, action: "tour.active_toggled", objectType: "tour",
+    objectId: v.tourId, after: { active: tour.active }, reason: v.reason,
+  });
+  for (const l of ["en", "ka", "ru"]) { revalidatePath(`/${l}/tours`); revalidatePath(`/${l}`); }
+  revalidatePath("/admin/tours");
+  return { ok: true, message: `${tour.slug} is now ${tour.active ? "visible" : "hidden"}.` };
 }

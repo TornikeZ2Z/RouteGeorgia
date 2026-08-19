@@ -16,7 +16,7 @@ export function ContentForm() {
       </p>
       <form action={action} className="mt-4 space-y-3">
         <div className="grid gap-3 sm:grid-cols-3">
-          <Field label="Slug" htmlFor="contentSlug" hint="e.g. faq, terms, privacy" required>
+          <Field label="Slug" htmlFor="contentSlug" hint="terms, privacy or cancellation — published rows replace the built-in legal pages" required>
             <Input id="contentSlug" name="slug" pattern="[a-z0-9-]+" required />
           </Field>
           <Field label="Language" htmlFor="contentLocale" required>
