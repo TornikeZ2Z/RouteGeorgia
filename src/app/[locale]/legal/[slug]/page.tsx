@@ -79,7 +79,7 @@ export default async function LegalPage({ params }: Props) {
       </nav>
 
       <header className="mt-6">
-        <p className="eyebrow text-brand-600">Legal</p>
+        <p className="eyebrow">Legal</p>
         <h1 className="font-display mt-3 text-4xl text-ink-900 sm:text-5xl">{doc.title}</h1>
         <p className="mt-2 text-sm text-ink-500">Last updated {doc.updated}</p>
         <p className="mt-5 text-lg leading-relaxed text-ink-700">{doc.intro}</p>
@@ -110,12 +110,12 @@ export default async function LegalPage({ params }: Props) {
         {LEGAL_SLUGS.filter((s) => s !== slug).map((s) => {
           const other = getLegalDocument(s, locale as Locale)!;
           return (
-            <Link key={s} href={`/${locale}/legal/${s}`} className="text-brand-700 underline underline-offset-4">
+            <Link key={s} href={`/${locale}/legal/${s}`} className="text-ink-900 underline underline-offset-4">
               {other.title}
             </Link>
           );
         })}
-        <Link href={`/${locale}/contact`} className="text-brand-700 underline underline-offset-4">Contact</Link>
+        <Link href={`/${locale}/contact`} className="text-ink-900 underline underline-offset-4">Contact</Link>
       </nav>
     </div>
   );

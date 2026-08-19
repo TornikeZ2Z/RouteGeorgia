@@ -1,53 +1,61 @@
 @import "tailwindcss";
 
 /* ---------------------------------------------------------------------------
-   RouteGeorgia — design tokens.
+   RouteGeorgia — design tokens. Third system: editorial monochrome.
 
-   Direction chosen from the approved mockup: a bright, modern booking product.
-   White surfaces, generous radii, a confident green as the single brand hue,
-   deep pine for dark bands, and a cool neutral scale. The display face is the
-   sans at heavy weight — no webfonts are bundled, so the stack leans on
-   Segoe UI / system-ui, which every target device renders well.
+   Reference: a type-museum aesthetic. Paper-white canvas, near-black ink,
+   steel-gray secondary voice, hairline fog/mist borders, flat surfaces —
+   and exactly ONE chromatic colour, Signal Blue, reserved for conversion
+   buttons. If something is blue, it books a car. Everything decorative is
+   grayscale; the photography carries all the colour on the page.
 
-   Scales:
-     brand  — primary green: actions, links, highlights   (#0f7a4a at 600)
-     pine   — deep green canvas: hero, footer, dark bands  (#122b22 at 800)
-     ink    — cool neutrals: text and lines
-     gold   — amber accent: stars, warnings (kept from v1)
+   Scales (names kept stable so components restyle by value):
+     ink    — grays from paper-adjacent 50 to text 900 (#1e242c)
+     pine   — the dark inverted band family (footer, hero overlay)
+     brand  — Signal Blue, for primary actions ONLY
+     steel  — the workhorse mid-gray voice (also badge tints)
+     gold   — functional amber kept for ratings and warnings only
    --------------------------------------------------------------------------- */
 @theme {
-  --color-ink-50:  #f4f7f5;
-  --color-ink-100: #e9efec;
-  --color-ink-200: #d9e1dd;
-  --color-ink-300: #bcc7c2;
-  --color-ink-400: #919d97;
-  --color-ink-500: #68746e;
-  --color-ink-600: #4d5751;
-  --color-ink-700: #37403b;
-  --color-ink-800: #252c28;
-  --color-ink-900: #161c19;
+  --color-ink-50:  #f7f8fa;
+  --color-ink-100: #eef0f3;
+  --color-ink-200: #e7eaee; /* mist — dividers */
+  --color-ink-300: #dbdfe5; /* fog — card borders */
+  --color-ink-400: #aab3bf;
+  --color-ink-500: #576579; /* steel */
+  --color-ink-600: #4a5568;
+  --color-ink-700: #39434f;
+  --color-ink-800: #2a323d;
+  --color-ink-900: #1e242c; /* ink */
 
-  --color-brand-50:  #ecf7f1;
-  --color-brand-100: #d3eee0;
-  --color-brand-200: #a9ddc3;
-  --color-brand-300: #78c69f;
-  --color-brand-400: #46aa79;
-  --color-brand-500: #219158;
-  --color-brand-600: #0f7a4a;
-  --color-brand-700: #0d633d;
-  --color-brand-800: #0b4e31;
-  --color-brand-900: #093c27;
+  --color-steel: #576579;
+  --color-steel-50:  #f2f4f7;
+  --color-steel-100: #e7eaee;
+  --color-steel-700: #39434f;
 
-  --color-pine-50:  #eef4f1;
-  --color-pine-100: #d8e6df;
-  --color-pine-200: #b2cdc1;
-  --color-pine-300: #82ab99;
-  --color-pine-400: #4e7d69;
-  --color-pine-500: #32604e;
-  --color-pine-600: #234a3c;
-  --color-pine-700: #1a3a2f;
-  --color-pine-800: #122b22;
-  --color-pine-900: #0c1f18;
+  /* Signal Blue. Conversion only: filled buttons that move money or book. */
+  --color-brand-50:  #e8f1fd;
+  --color-brand-100: #d2e3fc;
+  --color-brand-200: #aecbfa;
+  --color-brand-300: #8ab4f8;
+  --color-brand-400: #559af2;
+  --color-brand-500: #2f81ec;
+  --color-brand-600: #1a73e8;
+  --color-brand-700: #1a5fc4;
+  --color-brand-800: #174ea6;
+  --color-brand-900: #123a7d;
+
+  /* Dark inverted band (footer, hero overlay, announcement-style blocks). */
+  --color-pine-50:  #f4f6f8;
+  --color-pine-100: #e7eaee;
+  --color-pine-200: #c3cbd6;
+  --color-pine-300: #9aa6b5;
+  --color-pine-400: #6b7787;
+  --color-pine-500: #576579;
+  --color-pine-600: #39434f;
+  --color-pine-700: #2a323d;
+  --color-pine-800: #1e242c;
+  --color-pine-900: #14181e;
 
   --color-gold-50:  #fdf8ee;
   --color-gold-100: #f9efd9;
@@ -58,17 +66,15 @@
   --color-gold-600: #a87c33;
   --color-gold-700: #82602a;
 
-  --color-steel-50:  #eff3f5;
-  --color-steel-100: #e1e9ed;
-  --color-steel-700: #2f4a58;
-
   --color-danger: #b3261e;
   --color-danger-bg: #fbeceb;
 
-  --font-sans: "Segoe UI", ui-sans-serif, system-ui, -apple-system,
-               "Noto Sans Georgian", Roboto, "Helvetica Neue", Arial, sans-serif;
+  --font-sans: "Helvetica Now Text", "Helvetica Neue", Helvetica,
+               "Segoe UI", Arial, "Noto Sans Georgian", sans-serif;
 
-  --radius-card: 1rem;
+  --radius-card: 0.5rem;
+
+  --shadow-subtle: 0 0 2px 0 rgba(0, 0, 0, 0.16);
 }
 
 html { -webkit-text-size-adjust: 100%; }
@@ -77,45 +83,48 @@ body {
   background: #ffffff;
   color: var(--color-ink-900);
   font-family: var(--font-sans);
+  font-size: 16px;
+  line-height: 1.5;
 }
 
-/* Display style: the same sans, set heavy and tight. Carries headlines,
-   prices, and the numbers that matter. */
+/* Display voice: medium weight, tight leading, no synthetic boldness.
+   The reference calibrates its display face for large sizes only. */
 .font-display {
-  font-weight: 750;
-  letter-spacing: -0.02em;
-  line-height: 1.1;
+  font-weight: 500;
+  letter-spacing: -0.01em;
+  line-height: 1.12;
 }
 
-/* Small uppercase eyebrow above section headings. */
+/* Bold labels carry the -0.02em tracking — a deliberate typographic tic. */
+.font-semibold, .font-bold, strong { letter-spacing: -0.02em; }
+
+/* Micro caps annotation above sections — steel, quiet. */
 .eyebrow {
   font-size: 0.6875rem;
-  font-weight: 700;
-  letter-spacing: 0.14em;
+  font-weight: 400;
+  letter-spacing: 0.12em;
   text-transform: uppercase;
+  color: var(--color-steel);
 }
-
-/* The contour motif is drawn in SVG — see src/components/contour-field.tsx.
-   Used sparingly on dark pine bands as texture. */
 
 /* A hairline that fades out — used under section headings. */
 .rule-fade {
   height: 1px;
   background: linear-gradient(
     to right,
-    color-mix(in oklab, var(--color-ink-900) 18%, transparent),
+    color-mix(in oklab, var(--color-ink-900) 16%, transparent),
     transparent
   );
 }
 
 :focus-visible {
-  outline: 2px solid var(--color-brand-600);
+  outline: 2px solid var(--color-ink-900);
   outline-offset: 2px;
   border-radius: 4px;
 }
 
 ::selection {
-  background: var(--color-brand-100);
+  background: var(--color-ink-200);
   color: var(--color-ink-900);
 }
 

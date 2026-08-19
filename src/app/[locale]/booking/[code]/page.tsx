@@ -170,7 +170,7 @@ export default async function BookingPage({ params, searchParams }: Props) {
                 {t("booking.plateLater")}
               </p>
             )}
-            <Link href={`/${locale}/drivers/${booking.handle}`} className="mt-3 inline-block text-sm text-brand-700 underline">
+            <Link href={`/${locale}/drivers/${booking.handle}`} className="mt-3 inline-block text-sm text-ink-900 underline">
               {t("card.viewProfile")}
             </Link>
           </Card>

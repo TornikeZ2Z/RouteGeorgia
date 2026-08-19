@@ -35,7 +35,7 @@ export default async function TransfersIndex({ params }: Props) {
   return (
     <div className="space-y-6">
       <header>
-        <p className="eyebrow text-brand-600">{t("transfers.eyebrow")}</p>
+        <p className="eyebrow">{t("transfers.eyebrow")}</p>
         <h1 className="font-display mt-3 text-4xl text-ink-900 sm:text-5xl">
           {t("transfers.title")}
         </h1>
@@ -49,7 +49,7 @@ export default async function TransfersIndex({ params }: Props) {
           <li key={r.slug}>
             <Link
               href={`/${locale}/transfers/${r.slug}`}
-              className="block h-full overflow-hidden rounded-xl border border-ink-200 bg-white hover:border-brand-300"
+              className="block h-full overflow-hidden rounded-xl border border-ink-200 bg-white hover:border-ink-500"
             >
               <PlaceImage
                 imageKey={r.imageKey}

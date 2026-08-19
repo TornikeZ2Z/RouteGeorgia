@@ -37,7 +37,7 @@ export default async function HourlyPage({
   return (
     <div className="mx-auto max-w-4xl space-y-10">
       <header>
-        <p className="eyebrow text-brand-600">{t("nav.hourly")}</p>
+        <p className="eyebrow">{t("nav.hourly")}</p>
         <h1 className="font-display mt-2 text-4xl text-ink-900 sm:text-5xl">{t("hourly.title")}</h1>
         <p className="mt-4 max-w-2xl text-lg leading-relaxed text-ink-600">{t("hourly.lead")}</p>
       </header>

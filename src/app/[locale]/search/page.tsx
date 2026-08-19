@@ -146,7 +146,7 @@ export default async function SearchPage({ params, searchParams }: Props) {
             <p className="mt-1 text-xs text-ink-500">{t("search.estimateNote")}</p>
           </>
         )}
-        <Link href={`/${locale}`} className="mt-2 inline-block text-sm text-brand-700 underline">
+        <Link href={`/${locale}`} className="mt-2 inline-block text-sm text-ink-900 underline">
           {t("search.changeRoute")}
         </Link>
       </div>

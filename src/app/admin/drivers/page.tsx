@@ -58,7 +58,7 @@ export default async function DriversList({
               {d.rating_count > 0 ? `${(d.rating_sum / d.rating_count).toFixed(1)} (${d.rating_count})` : "—"}
             </td>
             <td className="px-4 py-2.5 text-right">
-              <Link href={`/admin/drivers/${d.id}`} className="text-brand-700 underline">Open</Link>
+              <Link href={`/admin/drivers/${d.id}`} className="text-ink-900 underline">Open</Link>
             </td>
           </tr>
         ))}

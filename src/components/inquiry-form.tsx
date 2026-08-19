@@ -80,7 +80,7 @@ export function InquiryForm({
 
       <button
         type="submit"
-        className="inline-flex min-h-12 items-center rounded-xl bg-brand-600 px-6 py-3 text-sm font-semibold text-white shadow-sm transition-colors hover:bg-brand-700"
+        className="inline-flex min-h-12 items-center rounded-lg bg-brand-600 px-6 py-3 text-sm text-white shadow-[0_0_2px_0_rgba(0,0,0,.16)] transition-colors hover:bg-brand-700"
       >
         {t("inquiry.send")}
       </button>

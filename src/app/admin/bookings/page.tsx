@@ -89,14 +89,14 @@ export default async function AdminBookings({
           {rows.map((b) => (
             <tr key={b.id}>
               <td className="px-4 py-2.5 font-mono text-xs">
-                <Link href={`/admin/bookings/${b.id}`} className="text-brand-700 underline">{b.code}</Link>
+                <Link href={`/admin/bookings/${b.id}`} className="text-ink-900 underline">{b.code}</Link>
               </td>
               <td className="px-4 py-2.5 whitespace-nowrap text-xs">
                 {new Date(b.service_start_at).toLocaleString("en-GB", { dateStyle: "short", timeStyle: "short" })}
               </td>
               <td className="px-4 py-2.5 text-xs">{b.route}</td>
               <td className="px-4 py-2.5 text-xs">
-                <Link href={`/admin/drivers/${b.driver_id}`} className="text-brand-700 underline">{b.driver_name}</Link>
+                <Link href={`/admin/drivers/${b.driver_id}`} className="text-ink-900 underline">{b.driver_name}</Link>
               </td>
               <td className="px-4 py-2.5 text-xs">{b.customer_name ?? b.customer_email}</td>
               <td className="px-4 py-2.5 text-xs">

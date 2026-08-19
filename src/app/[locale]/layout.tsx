@@ -61,7 +61,7 @@ export default async function LocaleLayout({
             {nav.map((item) => (
               <Link
                 key={item.href} href={item.href}
-                className="rounded-lg px-3 py-2 font-medium text-ink-600 transition-colors hover:bg-ink-50 hover:text-ink-900"
+                className="rounded-lg px-3 py-2 text-ink-500 transition-colors hover:text-ink-900"
               >
                 {item.label}
               </Link>
@@ -74,7 +74,7 @@ export default async function LocaleLayout({
                 href={`tel:${config.contact.phone.replace(/\s+/g, "")}`}
                 className="hidden items-center gap-1.5 rounded-lg px-2.5 py-2 text-sm font-semibold text-ink-800 hover:bg-ink-50 xl:flex"
               >
-                <svg viewBox="0 0 24 24" className="size-4 text-brand-600" fill="none" stroke="currentColor"
+                <svg viewBox="0 0 24 24" className="size-4 text-ink-900" fill="none" stroke="currentColor"
                      strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round" aria-hidden>
                   <path d="M4 5c0-1.1.9-2 2-2h2.2c.5 0 .9.3 1 .8l.9 3.3c.1.4 0 .9-.4 1.1l-1.6 1.2a13.5 13.5 0 006.5 6.5l1.2-1.6c.2-.4.7-.5 1.1-.4l3.3.9c.5.1.8.5.8 1V18c0 1.1-.9 2-2 2h-1C10.6 20 4 13.4 4 5.5V5z" />
                 </svg>
@@ -87,18 +87,18 @@ export default async function LocaleLayout({
             {user ? (
               <Link
                 href={user.isStaff ? "/admin" : "/driver"}
-                className="rounded-xl border border-ink-200 px-3 py-2 text-sm font-medium text-ink-700 hover:bg-ink-50"
+                className="rounded-lg border border-ink-300 px-3 py-2 text-sm text-ink-900 hover:border-ink-500"
               >
                 {user.isStaff ? "Operations" : "My driving"}
               </Link>
             ) : (
-              <Link href="/login" className="hidden rounded-xl px-3 py-2 text-sm font-medium text-ink-600 hover:bg-ink-50 sm:block">
+              <Link href="/login" className="hidden rounded-lg px-3 py-2 text-sm text-ink-500 hover:text-ink-900 sm:block">
                 {t("nav.signIn")}
               </Link>
             )}
             <Link
               href={`/${locale}#book`}
-              className="rounded-xl bg-brand-600 px-4 py-2.5 text-sm font-semibold text-white shadow-sm transition-colors hover:bg-brand-700"
+              className="rounded-lg bg-brand-600 px-4 py-2.5 text-sm text-white shadow-[0_0_2px_0_rgba(0,0,0,.16)] transition-colors hover:bg-brand-700"
             >
               {t("nav.bookRide")}
             </Link>
@@ -114,7 +114,7 @@ export default async function LocaleLayout({
               {item.label}
             </Link>
           ))}
-          <Link href="/driver" className="whitespace-nowrap rounded-lg px-3 py-1.5 font-medium text-brand-700">
+          <Link href="/driver" className="whitespace-nowrap rounded-lg px-3 py-1.5 font-medium text-ink-900">
             {t("nav.becomeDriver")}
           </Link>
         </nav>

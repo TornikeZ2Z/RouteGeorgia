@@ -21,7 +21,7 @@ export default async function DriverHome() {
   if (!driver) {
     return (
       <EmptyState title="You do not have a driver profile yet">
-        <Link className="text-brand-700 underline" href="/driver/application">Start your application</Link>
+        <Link className="text-ink-900 underline" href="/driver/application">Start your application</Link>
       </EmptyState>
     );
   }

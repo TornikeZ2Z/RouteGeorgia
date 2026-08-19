@@ -128,7 +128,7 @@ export default async function Home({ params }: { params: Promise<{ locale: strin
               <ul className="mt-7 flex flex-wrap gap-x-7 gap-y-4">
                 {HERO_CHIPS.map(([key, icon]) => (
                   <li key={key} className="flex items-center gap-2.5">
-                    <span className="grid size-10 place-items-center rounded-full bg-white/12 backdrop-blur-sm">
+                    <span className="grid size-10 place-items-center rounded-lg bg-white/12 backdrop-blur-sm">
                       <svg viewBox="0 0 24 24" className="size-5" fill="none" stroke="currentColor"
                            strokeWidth="1.7" strokeLinecap="round" strokeLinejoin="round" aria-hidden>
                         <path d={icon} />
@@ -143,12 +143,12 @@ export default async function Home({ params }: { params: Promise<{ locale: strin
             {tours.length > 0 && (
               <Link
                 href={`/${locale}/tours`}
-                className="group hidden w-80 shrink-0 rounded-2xl bg-pine-900/70 p-5 backdrop-blur-md transition-colors hover:bg-pine-900/85 lg:block"
+                className="group hidden w-80 shrink-0 rounded-lg bg-pine-900/75 p-5 backdrop-blur-md transition-colors hover:bg-pine-900/90 lg:block"
               >
-                <p className="eyebrow text-brand-300">{t("home.promoEyebrow")}</p>
+                <p className="eyebrow text-pine-300">{t("home.promoEyebrow")}</p>
                 <p className="font-display mt-2 text-xl">{t("home.promoTitle")}</p>
                 <p className="mt-2 text-sm leading-relaxed text-pine-100">{t("home.promoBody")}</p>
-                <span className="mt-4 inline-flex items-center gap-1.5 rounded-xl bg-white px-4 py-2 text-sm font-semibold text-pine-800 transition-colors group-hover:bg-brand-50">
+                <span className="mt-4 inline-flex items-center gap-1.5 rounded-lg bg-white px-4 py-2 text-sm font-semibold text-pine-800 transition-colors group-hover:bg-ink-100">
                   {t("home.promoCta")}
                   <span aria-hidden>→</span>
                 </span>
@@ -165,7 +165,7 @@ export default async function Home({ params }: { params: Promise<{ locale: strin
           <ul className="mt-6 flex flex-wrap gap-x-6 gap-y-2 border-t border-ink-100 pt-4">
             {(["home.check1", "home.check2", "home.check3", "home.check4"] as const).map((key) => (
               <li key={key} className="flex items-center gap-1.5 text-xs font-medium text-ink-600">
-                <svg viewBox="0 0 24 24" className="size-4 text-brand-600" fill="none" stroke="currentColor"
+                <svg viewBox="0 0 24 24" className="size-4 text-ink-900" fill="none" stroke="currentColor"
                      strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round" aria-hidden>
                   <path d="M5 12.5 10 17.5 19 7" />
                 </svg>
@@ -179,7 +179,7 @@ export default async function Home({ params }: { params: Promise<{ locale: strin
       {/* ------------------------------------------------ services -------- */}
       <section>
         <div className="text-center">
-          <p className="eyebrow text-brand-600">{t("home.servicesEyebrow")}</p>
+          <p className="eyebrow">{t("home.servicesEyebrow")}</p>
           <h2 className="font-display mt-2 text-3xl text-ink-900 sm:text-4xl">{t("home.servicesTitle")}</h2>
         </div>
         <ul className="mt-10 grid gap-4 sm:grid-cols-2 lg:grid-cols-5">
@@ -189,20 +189,20 @@ export default async function Home({ params }: { params: Promise<{ locale: strin
               <li key={svc.t}>
                 <Link
                   href={`/${locale}${svc.href}`}
-                  className="group flex h-full flex-col overflow-hidden rounded-2xl border border-ink-200 bg-white transition-shadow hover:border-brand-300 hover:shadow-lg hover:shadow-brand-900/5"
+                  className="group flex h-full flex-col overflow-hidden rounded-lg border border-ink-300 bg-white transition-colors hover:border-ink-500"
                 >
                   <div className="p-5 pb-4">
-                    <span className="grid size-11 place-items-center rounded-xl bg-brand-50 text-brand-700">
+                    <span className="grid size-11 place-items-center rounded-xl text-ink-900 font-bold tracking-[-0.02em]">
                       <svg viewBox="0 0 24 24" className="size-5.5" fill="none" stroke="currentColor"
                            strokeWidth="1.6" strokeLinecap="round" strokeLinejoin="round" aria-hidden>
                         <path d={svc.icon} />
                       </svg>
                     </span>
-                    <p className="mt-3.5 font-semibold text-ink-900 group-hover:text-brand-700">{t(svc.t)}</p>
+                    <p className="mt-3.5 font-semibold text-ink-900 group-hover:text-ink-900">{t(svc.t)}</p>
                     <p className="mt-1.5 text-sm leading-relaxed text-ink-600">{t(svc.b)}</p>
                   </div>
                   <div className="mt-auto px-5 pb-5">
-                    <div className="overflow-hidden rounded-xl">
+                    <div className="overflow-hidden rounded-2xl">
                       {photo ? (
                         // eslint-disable-next-line @next/next/no-img-element
                         <img src={photo} alt="" loading="lazy"
@@ -220,11 +220,11 @@ export default async function Home({ params }: { params: Promise<{ locale: strin
       </section>
 
       {/* ------------------------------------------------ trust band ------ */}
-      <section className="relative left-1/2 w-screen -translate-x-1/2 bg-ink-50">
+      <section className="relative left-1/2 w-screen -translate-x-1/2 border-y border-ink-200 bg-white">
         <ul className="mx-auto grid max-w-[1400px] 2xl:max-w-[1680px] gap-x-6 gap-y-8 px-4 py-14 grid-cols-2 sm:grid-cols-3 sm:px-6 lg:grid-cols-5 lg:px-10">
           {TRUST.map(([key, icon]) => (
             <li key={key} className="flex flex-col items-center gap-3 text-center">
-              <svg viewBox="0 0 24 24" className="size-8 text-brand-700" fill="none" stroke="currentColor"
+              <svg viewBox="0 0 24 24" className="size-8 text-ink-900" fill="none" stroke="currentColor"
                    strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" aria-hidden>
                 <path d={icon} />
               </svg>
@@ -237,14 +237,14 @@ export default async function Home({ params }: { params: Promise<{ locale: strin
       {/* ------------------------------------------------ about ----------- */}
       <section className="grid items-center gap-10 lg:grid-cols-2">
         <div>
-          <p className="eyebrow text-brand-600">{t("home.aboutEyebrow")}</p>
+          <p className="eyebrow">{t("home.aboutEyebrow")}</p>
           <h2 className="font-display mt-2 text-3xl text-ink-900 sm:text-4xl">{t("home.aboutTitle")}</h2>
           <p className="mt-4 max-w-xl leading-relaxed text-ink-600">{t("home.aboutBody")}</p>
           {numbers.length > 0 && (
             <dl className="mt-8 grid max-w-lg grid-cols-2 gap-x-8 gap-y-6 sm:grid-cols-3">
               {numbers.map(([value, label]) => (
                 <div key={label}>
-                  <dt className="font-display text-3xl text-brand-700">{value}</dt>
+                  <dt className="font-display text-3xl text-ink-900">{value}</dt>
                   <dd className="mt-0.5 text-sm text-ink-500">{label}</dd>
                 </div>
               ))}
@@ -252,7 +252,7 @@ export default async function Home({ params }: { params: Promise<{ locale: strin
           )}
           <Link
             href={`/${locale}/about`}
-            className="mt-8 inline-flex min-h-11 items-center rounded-xl bg-brand-600 px-5 py-2.5 text-sm font-semibold text-white shadow-sm transition-colors hover:bg-brand-700"
+            className="mt-8 inline-flex min-h-11 items-center rounded-lg bg-brand-600 px-5 py-2.5 text-sm text-white shadow-[0_0_2px_0_rgba(0,0,0,.16)] transition-colors hover:bg-brand-700"
           >
             {t("home.aboutCta")}
           </Link>
@@ -272,10 +272,10 @@ export default async function Home({ params }: { params: Promise<{ locale: strin
         <section>
           <div className="flex flex-wrap items-end justify-between gap-3">
             <div>
-              <p className="eyebrow text-brand-600">{t("home.toursEyebrow")}</p>
+              <p className="eyebrow">{t("home.toursEyebrow")}</p>
               <h2 className="font-display mt-2 text-3xl text-ink-900 sm:text-4xl">{t("home.toursTitle")}</h2>
             </div>
-            <Link href={`/${locale}/tours`} className="text-sm font-semibold text-brand-700 underline underline-offset-4">
+            <Link href={`/${locale}/tours`} className="text-sm font-semibold text-ink-900 underline underline-offset-4">
               {t("home.seeAllTours")}
             </Link>
           </div>
@@ -284,7 +284,7 @@ export default async function Home({ params }: { params: Promise<{ locale: strin
               <li key={tour.slug}>
                 <Link
                   href={`/${locale}/tours/${tour.slug}`}
-                  className="group flex h-full flex-col overflow-hidden rounded-2xl border border-ink-200 bg-white transition-shadow hover:border-brand-300 hover:shadow-lg hover:shadow-brand-900/5"
+                  className="group flex h-full flex-col overflow-hidden rounded-lg border border-ink-300 bg-white transition-colors hover:border-ink-500"
                 >
                   <div className="relative overflow-hidden">
                     <PlaceImage
@@ -301,7 +301,7 @@ export default async function Home({ params }: { params: Promise<{ locale: strin
                     </span>
                   </div>
                   <div className="flex flex-1 flex-col p-6">
-                    <p className="font-display text-xl text-ink-900 group-hover:text-brand-700">{tour.title}</p>
+                    <p className="font-display text-xl text-ink-900 group-hover:text-ink-900">{tour.title}</p>
                     <p className="mt-2 flex-1 text-sm leading-relaxed text-ink-600">{tour.summary}</p>
                   </div>
                 </Link>
@@ -316,10 +316,10 @@ export default async function Home({ params }: { params: Promise<{ locale: strin
         <section>
           <div className="flex flex-wrap items-end justify-between gap-3">
             <div>
-              <p className="eyebrow text-brand-600">{t("home.transfersEyebrow")}</p>
+              <p className="eyebrow">{t("home.transfersEyebrow")}</p>
               <h2 className="font-display mt-2 text-3xl text-ink-900 sm:text-4xl">{t("home.transfersTitle")}</h2>
             </div>
-            <Link href={`/${locale}/transfers`} className="text-sm font-semibold text-brand-700 underline underline-offset-4">
+            <Link href={`/${locale}/transfers`} className="text-sm font-semibold text-ink-900 underline underline-offset-4">
               {t("home.seeAllRoutes")}
             </Link>
           </div>
@@ -328,7 +328,7 @@ export default async function Home({ params }: { params: Promise<{ locale: strin
               <li key={r.slug}>
                 <Link
                   href={`/${locale}/transfers/${r.slug}`}
-                  className="group block h-full overflow-hidden rounded-2xl border border-ink-200 bg-white transition-shadow hover:border-brand-300 hover:shadow-lg hover:shadow-brand-900/5"
+                  className="group block h-full overflow-hidden rounded-lg border border-ink-300 bg-white transition-colors hover:border-ink-500"
                 >
                   <span className="block overflow-hidden">
                   <PlaceImage
@@ -356,12 +356,12 @@ export default async function Home({ params }: { params: Promise<{ locale: strin
 
       {/* --------------------------------------------- how it works ------- */}
       <section>
-        <p className="eyebrow text-brand-600">{t("home.howEyebrow")}</p>
+        <p className="eyebrow">{t("home.howEyebrow")}</p>
         <h2 className="font-display mt-2 text-3xl text-ink-900 sm:text-4xl">{t("home.howTitle")}</h2>
         <ol className="mt-9 grid gap-8 sm:grid-cols-2 lg:grid-cols-4">
           {STEP_KEYS.map(([title, body], i) => (
-            <li key={title} className="rounded-2xl border border-ink-200 bg-white p-6">
-              <span className="grid size-9 place-items-center rounded-full bg-brand-600 font-display text-sm text-white">
+            <li key={title} className="rounded-lg border border-ink-300 bg-white p-6">
+              <span className="grid size-9 place-items-center rounded-lg bg-ink-900 text-sm text-white">
                 {i + 1}
               </span>
               <p className="mt-4 font-semibold text-ink-900">{t(title)}</p>
@@ -372,17 +372,17 @@ export default async function Home({ params }: { params: Promise<{ locale: strin
       </section>
 
       {/* --------------------------------------------- drive with us ------ */}
-      <section className="relative overflow-hidden rounded-3xl bg-pine-800 px-6 py-14 text-white sm:px-12">
+      <section className="relative overflow-hidden rounded-lg bg-pine-800 px-6 py-14 text-white sm:px-12">
         <ContourField className="text-pine-300" opacity={0.16} seed={3} />
         <div className="relative max-w-2xl">
-          <p className="eyebrow text-brand-300">{t("home.driveEyebrow")}</p>
+          <p className="eyebrow text-pine-300">{t("home.driveEyebrow")}</p>
           <h2 className="font-display mt-3 text-3xl sm:text-4xl">{t("home.driveTitle")}</h2>
           <p className="mt-4 leading-relaxed text-pine-100">
             {t("home.driveBody")}
           </p>
           <Link
             href="/driver"
-            className="mt-7 inline-flex min-h-12 items-center rounded-xl bg-white px-6 py-3 text-sm font-semibold text-pine-800 transition-colors hover:bg-brand-50"
+            className="mt-7 inline-flex min-h-12 items-center rounded-lg bg-white px-6 py-3 text-sm font-semibold text-pine-800 transition-colors hover:bg-ink-100"
           >
             {t("nav.becomeDriver")}
           </Link>

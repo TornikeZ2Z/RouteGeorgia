@@ -62,7 +62,7 @@ export default async function LoginPage({
         </form>
 
         <p className="mt-5 text-sm">
-          <Link href="/forgot-password" className="text-brand-700 underline underline-offset-2">
+          <Link href="/forgot-password" className="text-ink-900 underline underline-offset-2">
             Forgotten your password?
           </Link>
         </p>

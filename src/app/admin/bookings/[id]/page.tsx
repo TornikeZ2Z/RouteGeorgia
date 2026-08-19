@@ -76,7 +76,7 @@ export default async function BookingDetail({ params }: { params: Promise<{ id: 
             <Badge tone={booking.payment_mode === "CASH" ? "warning" : "neutral"}>
               {booking.payment_mode.toLowerCase()}
             </Badge>
-            <Link href="/admin/bookings" className="text-sm text-brand-700 underline">All bookings</Link>
+            <Link href="/admin/bookings" className="text-sm text-ink-900 underline">All bookings</Link>
           </>
         }
       />
@@ -199,7 +199,7 @@ export default async function BookingDetail({ params }: { params: Promise<{ id: 
             </p>
             <p className="mt-2 text-sm text-ink-600">{booking.driver_email}<br />{booking.driver_phone}</p>
             <Link href={`/admin/drivers/${booking.driver_profile_id}`}
-                  className="mt-3 inline-block text-sm text-brand-700 underline">
+                  className="mt-3 inline-block text-sm text-ink-900 underline">
               Open driver record
             </Link>
           </Card>

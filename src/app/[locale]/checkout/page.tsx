@@ -45,7 +45,7 @@ export default async function CheckoutPage({ params, searchParams }: Props) {
     return (
       <EmptyState title={t("checkout.expiredT")}>
         <p>{t("checkout.expiredB")}</p>
-        <Link href={`/${locale}`} className="mt-3 inline-block text-brand-700 underline">{t("checkout.newSearch")}</Link>
+        <Link href={`/${locale}`} className="mt-3 inline-block text-ink-900 underline">{t("checkout.newSearch")}</Link>
       </EmptyState>
     );
   }

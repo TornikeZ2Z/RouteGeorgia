@@ -121,7 +121,7 @@ export default async function Finance() {
                     </Badge>
                   </td>
                   <td className="px-4 py-2.5 text-right">
-                    <Link href={`/admin/drivers/${d.driver_id}`} className="text-brand-700 underline">
+                    <Link href={`/admin/drivers/${d.driver_id}`} className="text-ink-900 underline">
                       Settle
                     </Link>
                   </td>

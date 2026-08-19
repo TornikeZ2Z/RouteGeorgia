@@ -84,7 +84,7 @@ export default async function Support() {
                         </Badge>
                         {t.booking_code && (
                           <Link href={`/admin/bookings/${t.booking_id}`}
-                                className="font-mono text-xs text-brand-700 underline">
+                                className="font-mono text-xs text-ink-900 underline">
                             {t.booking_code}
                           </Link>
                         )}

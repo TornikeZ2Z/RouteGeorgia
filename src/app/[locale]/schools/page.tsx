@@ -43,14 +43,14 @@ export default async function SchoolsPage({
   return (
     <div className="mx-auto max-w-4xl space-y-12">
       <header>
-        <p className="eyebrow text-brand-600">{t("nav.schools")}</p>
+        <p className="eyebrow">{t("nav.schools")}</p>
         <h1 className="font-display mt-2 text-4xl text-ink-900 sm:text-5xl">{t("schools.title")}</h1>
         <p className="mt-4 max-w-2xl text-lg leading-relaxed text-ink-600">{t("schools.lead")}</p>
       </header>
 
       <ul className="grid gap-4 sm:grid-cols-3">
         {POINTS.map(([title, body]) => (
-          <li key={title} className="rounded-2xl border border-ink-200 bg-white p-6">
+          <li key={title} className="rounded-lg border border-ink-300 bg-white p-6">
             <p className="font-semibold text-ink-900">{t(title)}</p>
             <p className="mt-2 text-sm leading-relaxed text-ink-600">{t(body)}</p>
           </li>

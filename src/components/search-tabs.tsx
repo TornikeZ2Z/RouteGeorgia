@@ -33,8 +33,8 @@ export function SearchTabs({ locale, locations }: { locale: string; locations: L
             key={id} role="tab" type="button"
             aria-selected={tab === id}
             onClick={() => setTab(id)}
-            className={`inline-flex items-center gap-2 rounded-xl px-4 py-2.5 text-sm font-semibold transition-colors ${
-              tab === id ? "bg-brand-50 text-brand-700" : "text-ink-600 hover:bg-ink-50 hover:text-ink-900"
+            className={`inline-flex items-center gap-2 px-1 py-2.5 text-sm transition-colors sm:px-2 ${
+              tab === id ? "font-bold tracking-[-0.02em] text-ink-900" : "text-ink-500 hover:text-ink-900"
             }`}
           >
             <svg viewBox="0 0 24 24" className="size-4.5" fill="none" stroke="currentColor"
@@ -66,7 +66,7 @@ function TeaserPanel({ body, cta, href }: { body: string; cta: string; href: str
       <p className="max-w-xl text-sm leading-relaxed text-ink-600">{body}</p>
       <Link
         href={href}
-        className="inline-flex min-h-11 shrink-0 items-center rounded-xl bg-brand-600 px-5 py-2.5 text-sm font-semibold text-white shadow-sm transition-colors hover:bg-brand-700"
+        className="inline-flex min-h-11 shrink-0 items-center rounded-lg bg-brand-600 px-5 py-2.5 text-sm text-white shadow-[0_0_2px_0_rgba(0,0,0,.16)] transition-colors hover:bg-brand-700"
       >
         {cta}
       </Link>

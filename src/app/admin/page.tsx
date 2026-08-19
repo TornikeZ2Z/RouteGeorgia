@@ -66,7 +66,7 @@ export default async function AdminHome() {
                 <td className="px-4 py-2.5">{d.submitted_at ? new Date(d.submitted_at).toLocaleDateString() : "—"}</td>
                 <td className="px-4 py-2.5 tabular-nums">{d.pending_docs}</td>
                 <td className="px-4 py-2.5 text-right">
-                  <Link href={`/admin/drivers/${d.id}`} className="text-brand-700 underline">Review</Link>
+                  <Link href={`/admin/drivers/${d.id}`} className="text-ink-900 underline">Review</Link>
                 </td>
               </tr>
             ))}
@@ -86,7 +86,7 @@ export default async function AdminHome() {
                 <td className="px-4 py-2.5">{e.type.replaceAll("_", " ").toLowerCase()}</td>
                 <td className="px-4 py-2.5 tabular-nums">{e.expires_on}</td>
                 <td className="px-4 py-2.5 text-right">
-                  <Link href={`/admin/drivers/${e.id}`} className="text-brand-700 underline">Open</Link>
+                  <Link href={`/admin/drivers/${e.id}`} className="text-ink-900 underline">Open</Link>
                 </td>
               </tr>
             ))}

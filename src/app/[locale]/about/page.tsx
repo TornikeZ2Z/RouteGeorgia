@@ -56,7 +56,7 @@ export default async function AboutPage({ params }: { params: Promise<{ locale: 
   return (
     <div className="mx-auto max-w-4xl space-y-14">
       <header>
-        <p className="eyebrow text-brand-600">{t("nav.about")}</p>
+        <p className="eyebrow">{t("nav.about")}</p>
         <h1 className="font-display mt-2 text-4xl text-ink-900 sm:text-5xl">{t("about.title")}</h1>
         <p className="mt-4 max-w-2xl text-lg leading-relaxed text-ink-600">{t("about.lead")}</p>
       </header>
@@ -82,7 +82,7 @@ export default async function AboutPage({ params }: { params: Promise<{ locale: 
           <dl className="mt-6 grid grid-cols-2 gap-x-8 gap-y-6 sm:grid-cols-3 lg:grid-cols-5">
             {numbers.map(([value, label]) => (
               <div key={label}>
-                <dt className="font-display text-3xl text-brand-700">{value}</dt>
+                <dt className="font-display text-3xl text-ink-900">{value}</dt>
                 <dd className="mt-0.5 text-sm text-ink-500">{label}</dd>
               </div>
             ))}
@@ -94,7 +94,7 @@ export default async function AboutPage({ params }: { params: Promise<{ locale: 
         <h2 className="font-display text-2xl text-ink-900 sm:text-3xl">{t("about.valuesTitle")}</h2>
         <ul className="mt-6 grid gap-4 sm:grid-cols-2">
           {VALUE_KEYS.map(([title, body]) => (
-            <li key={title} className="rounded-2xl border border-ink-200 bg-white p-6">
+            <li key={title} className="rounded-lg border border-ink-300 bg-white p-6">
               <p className="font-semibold text-ink-900">{t(title)}</p>
               <p className="mt-2 text-sm leading-relaxed text-ink-600">{t(body)}</p>
             </li>
@@ -107,7 +107,7 @@ export default async function AboutPage({ params }: { params: Promise<{ locale: 
           <p className="max-w-xl text-sm leading-relaxed text-ink-700">{t("home.driveBody")}</p>
           <Link
             href="/driver"
-            className="inline-flex min-h-11 items-center rounded-xl bg-brand-600 px-5 py-2.5 text-sm font-semibold text-white shadow-sm transition-colors hover:bg-brand-700"
+            className="inline-flex min-h-11 items-center rounded-lg bg-brand-600 px-5 py-2.5 text-sm text-white shadow-[0_0_2px_0_rgba(0,0,0,.16)] transition-colors hover:bg-brand-700"
           >
             {t("nav.becomeDriver")}
           </Link>

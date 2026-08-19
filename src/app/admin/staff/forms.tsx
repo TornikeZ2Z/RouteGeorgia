@@ -65,7 +65,7 @@ export function RevokeButton({ userId, email }: { userId: string; email: string 
               className="text-xs text-ink-500 underline">cancel</button>
     </form>
   ) : (
-    <button onClick={() => setConfirming(true)} className="text-xs text-brand-700 underline">
+    <button onClick={() => setConfirming(true)} className="text-xs text-ink-900 underline">
       revoke access
     </button>
   );

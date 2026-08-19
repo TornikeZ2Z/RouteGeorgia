@@ -13,7 +13,7 @@ export function Button({
   // Minimum 44px tall at md and above: the driver app is used one-handed on a
   // phone, often in a moving vehicle.
   const base =
-    "inline-flex items-center justify-center gap-2 rounded-xl font-semibold " +
+    "inline-flex items-center justify-center gap-2 rounded-lg font-normal " +
     "transition-[background-color,box-shadow,transform] duration-150 " +
     "active:translate-y-px disabled:opacity-50 disabled:cursor-not-allowed disabled:active:translate-y-0";
   const sizes = {
@@ -22,8 +22,8 @@ export function Button({
     lg: "px-6 py-3 text-base min-h-12",
   };
   const variants = {
-    primary: "bg-brand-600 text-white shadow-sm hover:bg-brand-700 hover:shadow",
-    secondary: "bg-white text-ink-800 border border-ink-300 hover:border-ink-400 hover:bg-ink-50",
+    primary: "bg-brand-600 text-white shadow-[0_0_2px_0_rgba(0,0,0,.16)] hover:bg-brand-700",
+    secondary: "bg-white text-ink-900 border border-ink-300 hover:border-ink-500",
     ghost: "text-ink-600 hover:bg-ink-100",
     danger: "bg-[--color-danger] text-white shadow-sm hover:opacity-90",
   };
@@ -32,7 +32,7 @@ export function Button({
 
 export function Card({ className, children }: { className?: string; children: ReactNode }) {
   return (
-    <div className={cx("rounded-2xl border border-ink-200 bg-white shadow-[0_1px_2px_rgba(22,28,25,.05)]", className)}>
+    <div className={cx("rounded-lg border border-ink-300 bg-white", className)}>
       {children}
     </div>
   );
@@ -59,9 +59,9 @@ export function Field({
 }
 
 const FIELD_BASE =
-  "w-full rounded-xl border border-ink-300 bg-white px-3 py-2.5 text-sm text-ink-900 " +
+  "w-full rounded-lg border border-ink-300 bg-white px-3 py-2.5 text-sm text-ink-900 " +
   "transition-colors placeholder:text-ink-400 hover:border-ink-400 " +
-  "focus:border-brand-600 focus:ring-0 disabled:bg-ink-50 disabled:text-ink-500";
+  "focus:border-ink-900 focus:ring-0 disabled:bg-ink-50 disabled:text-ink-500";
 
 export function Input({ className, ...props }: ComponentProps<"input">) {
   return <input className={cx(FIELD_BASE, className)} {...props} />;

@@ -78,7 +78,7 @@ export default async function DriverDetail({ params }: { params: Promise<{ id: s
                   <td className="px-4 py-2.5">
                     {canDo(actor.roles, "admin.documents.read") ? (
                       <a href={`/api/admin/documents/${d.id}`} target="_blank" rel="noreferrer"
-                         className="text-brand-700 underline">
+                         className="text-ink-900 underline">
                         {d.type.replaceAll("_", " ").toLowerCase()}
                       </a>
                     ) : d.type.replaceAll("_", " ").toLowerCase()}

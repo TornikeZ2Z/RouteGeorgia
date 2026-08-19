@@ -54,7 +54,7 @@ export default async function ReviewQueue() {
                     <div>
                       <p className="font-medium text-ink-900">
                         {r.rating_overall}/5 for{" "}
-                        <Link href={`/admin/drivers/${r.driver_id}`} className="text-brand-700 underline">
+                        <Link href={`/admin/drivers/${r.driver_id}`} className="text-ink-900 underline">
                           {r.driver_name}
                         </Link>
                       </p>

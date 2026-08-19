@@ -27,7 +27,7 @@ export async function CookieNotice({ locale, returnTo }: { locale: Locale; retur
       <div className="mx-auto flex max-w-[1400px] 2xl:max-w-[1680px] flex-col gap-3 px-4 py-4 sm:flex-row sm:items-center sm:justify-between">
         <p className="text-sm leading-relaxed text-ink-700">
           {t("cookie.body")}{" "}
-          <Link href={`/${locale}/legal/privacy`} className="text-brand-700 underline underline-offset-2">
+          <Link href={`/${locale}/legal/privacy`} className="text-ink-900 underline underline-offset-2">
             {t("cookie.link")}
           </Link>
         </p>

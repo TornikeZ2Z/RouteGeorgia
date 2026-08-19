@@ -93,7 +93,7 @@ export function CheckoutForm({
         <fieldset className="space-y-3">
           <legend className="sr-only">How would you like to pay?</legend>
 
-          <label className={`flex cursor-pointer gap-3 rounded-lg border p-3 ${payment === "CASH" ? "border-brand-600 bg-brand-50" : "border-ink-200"} ${!cashAvailable ? "opacity-50" : ""}`}>
+          <label className={`flex cursor-pointer gap-3 rounded-lg border p-3 ${payment === "CASH" ? "border-ink-900 bg-ink-50" : "border-ink-300"} ${!cashAvailable ? "opacity-50" : ""}`}>
             <input
               type="radio" name="paymentMode" value="CASH" className="mt-1 size-4"
               checked={payment === "CASH"} disabled={!cashAvailable}
@@ -107,7 +107,7 @@ export function CheckoutForm({
             </span>
           </label>
 
-          <label className={`flex cursor-pointer gap-3 rounded-lg border p-3 ${payment === "CARD" ? "border-brand-600 bg-brand-50" : "border-ink-200"}`}>
+          <label className={`flex cursor-pointer gap-3 rounded-lg border p-3 ${payment === "CARD" ? "border-ink-900 bg-ink-50" : "border-ink-300"}`}>
             <input
               type="radio" name="paymentMode" value="CARD" className="mt-1 size-4"
               checked={payment === "CARD"} onChange={() => setPayment("CARD")}

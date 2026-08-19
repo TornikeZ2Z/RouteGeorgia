@@ -26,7 +26,7 @@ export default async function ForgotPassword({
               <p className="text-sm text-ink-600">
                 Nothing arrived? Check spam, then try again — or ask operations to reset it for you.
               </p>
-              <Link href="/login" className="inline-block text-sm text-brand-700 underline">
+              <Link href="/login" className="inline-block text-sm text-ink-900 underline">
                 Back to sign in
               </Link>
             </div>
@@ -42,7 +42,7 @@ export default async function ForgotPassword({
                 </Field>
                 <Button type="submit" className="w-full">Send reset link</Button>
               </form>
-              <Link href="/login" className="mt-6 inline-block text-sm text-brand-700 underline">
+              <Link href="/login" className="mt-6 inline-block text-sm text-ink-900 underline">
                 Back to sign in
               </Link>
             </>

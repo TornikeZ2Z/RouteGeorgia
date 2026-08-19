@@ -22,7 +22,7 @@ export default async function ResetPassword({
               <Alert tone="danger">
                 This link is incomplete. Open the link from your email exactly as it was sent.
               </Alert>
-              <Link href="/forgot-password" className="inline-block text-sm text-brand-700 underline">
+              <Link href="/forgot-password" className="inline-block text-sm text-ink-900 underline">
                 Request a new link
               </Link>
             </div>
