@@ -19,7 +19,7 @@ export interface LegalDocument {
   sections: { heading: string; body: string[] }[];
 }
 
-const COMPANY = "Route Georgia";
+const COMPANY = "RouteGeorgia";
 const CONTACT = "support@routegeorgia.ge";
 
 export const LEGAL_SLUGS = ["terms", "privacy", "cancellation"] as const;
