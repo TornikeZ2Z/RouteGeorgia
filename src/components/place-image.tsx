@@ -29,7 +29,7 @@ function hash(input: string): number {
 }
 
 export function PlaceImage({
-  imageKey, alt, seedText, className = "h-40 w-full", rounded = "", photoSrc,
+  imageKey, alt, seedText, className = "h-40 w-full", rounded = "", photoSrc, eager = false,
 }: {
   imageKey?: string | null;
   alt: string;
@@ -39,6 +39,8 @@ export function PlaceImage({
   rounded?: string;
   /** A static photo from public/photos/ — wins over everything else. */
   photoSrc?: string | null;
+  /** For above-the-fold page heroes: paint immediately, never lazily. */
+  eager?: boolean;
 }) {
   if (photoSrc) {
     return (
@@ -46,7 +48,8 @@ export function PlaceImage({
       <img
         src={photoSrc}
         alt={alt}
-        loading="lazy"
+        loading={eager ? "eager" : "lazy"}
+        fetchPriority={eager ? "high" : "auto"}
         className={`${className} ${rounded} object-cover`}
       />
     );

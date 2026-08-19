@@ -117,6 +117,7 @@ export default async function RoutePage({ params }: Props) {
         seedText={data.slug}
         className="h-52 w-full sm:h-64"
         rounded="rounded-2xl"
+        eager
       />
 
       <header>

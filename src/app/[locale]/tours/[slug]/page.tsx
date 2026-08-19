@@ -101,6 +101,7 @@ export default async function TourPage({ params }: Props) {
         seedText={tour.slug}
         className="h-56 w-full sm:h-72"
         rounded="rounded-2xl"
+        eager
       />
 
       <header className="max-w-3xl">
