@@ -54,6 +54,18 @@ const LOCATIONS = [
   { slug: "mestia",          type: "TOWN",       en: "Mestia",    ka: "მესტია",   ru: "Местиа",   lat: 43.0450, lon: 42.7278, seo: true },
   { slug: "vardzia",         type: "ATTRACTION", en: "Vardzia",   ka: "ვარძია",   ru: "Вардзия",  lat: 41.3806, lon: 43.2847, seo: true },
   { slug: "sadakhlo-border", type: "BORDER",     en: "Sadakhlo (Armenia border)", ka: "სადახლო", ru: "Садахло", lat: 41.2100, lon: 44.7400, seo: false },
+  { slug: "bakhmaro",    type: "RESORT",     en: "Bakhmaro",             ka: "ბახმარო",    ru: "Бахмаро",    lat: 41.849, lon: 42.323, seo: false },
+  { slug: "shekvetili",  type: "RESORT",     en: "Shekvetili",           ka: "შეკვეთილი",  ru: "Шекветили",  lat: 41.943, lon: 41.772, seo: false },
+  { slug: "ureki",       type: "RESORT",     en: "Ureki",                ka: "ურეკი",      ru: "Уреки",      lat: 41.996, lon: 41.762, seo: false },
+  { slug: "ambrolauri",  type: "TOWN",       en: "Ambrolauri (Racha)",   ka: "ამბროლაური", ru: "Амбролаури", lat: 42.520, lon: 43.154, seo: false },
+  { slug: "oni",         type: "TOWN",       en: "Oni",                  ka: "ონი",        ru: "Они",        lat: 42.582, lon: 43.442, seo: false },
+  { slug: "martvili",    type: "ATTRACTION", en: "Martvili Canyon",      ka: "მარტვილი",   ru: "Мартвили",   lat: 42.457, lon: 42.378, seo: false },
+  { slug: "zugdidi",     type: "TOWN",       en: "Zugdidi",              ka: "ზუგდიდი",    ru: "Зугдиди",    lat: 42.509, lon: 41.870, seo: false },
+  { slug: "bakuriani",   type: "RESORT",     en: "Bakuriani",            ka: "ბაკურიანი",  ru: "Бакуриани",  lat: 41.750, lon: 43.530, seo: false },
+  { slug: "akhaltsikhe", type: "TOWN",       en: "Akhaltsikhe (Rabati)", ka: "ახალციხე",   ru: "Ахалцихе",   lat: 41.639, lon: 42.986, seo: false },
+  { slug: "abastumani",  type: "RESORT",     en: "Abastumani",           ka: "აბასთუმანი", ru: "Абастумани", lat: 41.752, lon: 42.826, seo: false },
+  { slug: "kvareli",     type: "TOWN",       en: "Kvareli",              ka: "ყვარელი",    ru: "Кварели",    lat: 41.952, lon: 45.816, seo: false },
+  { slug: "tsinandali",  type: "ATTRACTION", en: "Tsinandali",           ka: "წინანდალი",  ru: "Цинандали",  lat: 41.897, lon: 45.577, seo: false },
 ];
 
 /**

@@ -8,6 +8,7 @@ import { Badge, Card } from "@/components/ui";
 import { PlaceImage } from "@/components/place-image";
 import { sitePhoto, listTravellerPhotos } from "@/lib/site-photos";
 import { GeorgiaMap } from "@/components/georgia-map";
+import { DESTINATIONS } from "@/lib/destinations";
 import { listTours } from "@/lib/tours";
 import { formatApproxDuration, formatDistance } from "@/lib/format";
 import { SearchTabs } from "@/components/search-tabs";
@@ -214,7 +215,16 @@ export default async function Home({ params }: { params: Promise<{ locale: strin
         <div className="mt-8">
           <GeorgiaMap
             locale={locale}
-            places={locations.map((l) => ({ slug: l.slug, name: l.name_en, lat: Number(l.lat), lon: Number(l.lon), type: l.type }))}
+            places={DESTINATIONS.flatMap((d) => {
+              const loc = locations.find((l) => l.slug === d.slug);
+              if (!loc) return [];
+              return [{
+                slug: d.slug, name: loc.name_en, lat: Number(loc.lat), lon: Number(loc.lon),
+                categories: d.categories, seasons: d.seasons, icon: d.icon,
+                descKey: d.descKey, labelDy: d.labelDy,
+                photo: sitePhoto(`destinations/${d.slug}.jpg`),
+              }];
+            })}
           />
         </div>
       </section>

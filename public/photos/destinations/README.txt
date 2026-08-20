@@ -1,0 +1,3 @@
+Destination photos for the Explore Georgia map cards.
+Name files by location slug: bakhmaro.jpg, ureki.jpg, martvili.jpg, …
+Cards fall back to the illustration until a real photo exists.

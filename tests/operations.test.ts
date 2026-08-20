@@ -89,3 +89,37 @@ describe("round-trip reassignment", () => {
     }
   });
 });
+
+describe("child seat fee", () => {
+  t()("adds the flat fee to gross and passes it to the driver in full", async () => {
+    const travelAt = new Date(Date.now() + 45 * 86_400_000);
+    travelAt.setUTCHours(6, 0, 0, 0);
+    const result = await searchOffers({
+      originSlug: "tbilisi", destinationSlug: "mtskheta",
+      travelAt, passengers: 2, luggage: 1,
+    });
+    expect(result.offers.length).toBeGreaterThan(0);
+    const offer = result.offers[0]!;
+
+    const booking = await createBooking(offer.quoteId, {
+      customerName: "Seat Test", customerEmail: "seats@example.com", customerPhone: "+995500000002",
+      contactLocale: "en", pickupAddress: "A", dropoffAddress: "B",
+      passengers: 2, children: 2, luggage: 1, childSeats: 2, pets: false,
+      paymentMode: "CASH", acceptedTerms: true,
+    });
+
+    const [row] = await sql<{ gross: string; commission: string; net: string; id: string }[]>`
+      SELECT gross_minor::text AS gross, commission_minor::text AS commission,
+             driver_net_minor::text AS net, id
+      FROM bookings WHERE code = ${booking.code}`;
+    try {
+      // 2 seats x 20 GEL = 4000 tetri on top of the quote, all to the driver.
+      expect(BigInt(row!.gross)).toBe(offer.grossMinor + 4000n);
+      expect(BigInt(row!.commission)).toBe(BigInt(offer.breakdown.commissionMinor));
+      expect(BigInt(row!.commission) + BigInt(row!.net)).toBe(BigInt(row!.gross));
+    } finally {
+      await sql`DELETE FROM availability_blocks WHERE booking_id = ${row!.id}::uuid`;
+      await sql`UPDATE bookings SET status = 'CANCELLED', updated_at = now() WHERE id = ${row!.id}::uuid`;
+    }
+  });
+});

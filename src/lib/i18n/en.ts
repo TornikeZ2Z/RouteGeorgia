@@ -649,4 +649,35 @@ export const en = {
 
   "checkout.childSeatFee": "Child seat: {amount} each, installed and fitted by the driver.",
 
+
+  // --- Explore Georgia map ---------------------------------------------
+  "map.all": "All",
+  "map.catNature": "Nature",
+  "map.explore": "Book a trip here",
+  "map.seeTours": "See tours",
+  "map.seasonHint": "Pick a season to see where it shines.",
+  "map.d.tbilisi": "The capital: old balconies, sulphur baths, and most trips start here.",
+  "map.d.mtskheta": "Georgia's ancient capital — Svetitskhoveli cathedral and the Jvari viewpoint.",
+  "map.d.kazbegi": "The Gergeti Trinity Church under 5,054 m Mount Kazbek, up the Military Highway.",
+  "map.d.gudauri": "Georgia's biggest ski resort, two hours from Tbilisi on the Military Highway.",
+  "map.d.mestia": "Upper Svaneti: medieval towers, glacier valleys and Ushguli — Europe's highest villages.",
+  "map.d.batumi": "The Black Sea city: boulevard, botanical garden and subtropical evenings.",
+  "map.d.kutaisi": "Gelati monastery, the Colchis fountain, and the gateway to canyons and caves.",
+  "map.d.telavi": "The heart of Kakheti wine country, under the Tsivgombori range.",
+  "map.d.sighnaghi": "The hilltop 'city of love' above the Alazani valley, ringed by walls.",
+  "map.d.borjomi": "Mineral-water spa town in a forest gorge — the classic fresh-air escape.",
+  "map.d.vardzia": "A twelfth-century cave city carved hundreds of rooms deep into a cliff.",
+  "map.d.bakhmaro": "Guria's high mountain resort at 1,900 m — alpine meadows above a sea of clouds.",
+  "map.d.shekvetili": "Quiet magnetic-sand coast beside the Dendrological Park's giant transplanted trees.",
+  "map.d.ureki": "Black magnetic sand and shallow warm water — with Grigoleti's pine coast next door.",
+  "map.d.ambrolauri": "The centre of Racha wine country — Khvanchkara, Nikortsminda cathedral and Shaori lake.",
+  "map.d.oni": "Upper Racha's quiet old town: mountain roads, mineral springs and slow villages.",
+  "map.d.martvili": "Emerald water in a limestone canyon — boat rides between mossy cliffs.",
+  "map.d.zugdidi": "Samegrelo's capital and the Dadiani Palace, on the road to Svaneti.",
+  "map.d.bakuriani": "The family ski resort in a pine forest, gentler and lower than Gudauri.",
+  "map.d.akhaltsikhe": "The restored Rabati fortress quarter — mosque, castle and museum in one hilltop.",
+  "map.d.abastumani": "A forest health resort under Georgia's national observatory and its dark skies.",
+  "map.d.kvareli": "Wine tunnels in the rock and the Lopota lake valley — Kakheti at its greenest.",
+  "map.d.tsinandali": "The Chavchavadze estate: a historic winery, gardens and Kakheti's noble past.",
+
 } as const;
