@@ -110,14 +110,14 @@ export default async function Home({
           ) : (
             <PlaceImage imageKey={null} alt="" seedText="stepantsminda-gergeti" className="size-full" />
           )}
-          <div className="pointer-events-none absolute inset-0 z-[1] bg-gradient-to-r from-pine-900/90 via-pine-900/55 to-pine-900/20" />
+          <div className="pointer-events-none absolute inset-0 z-[1] bg-gradient-to-r from-pine-900/95 via-pine-900/60 to-pine-900/15" />
           <div className="pointer-events-none absolute inset-x-0 bottom-0 z-[1] h-32 bg-gradient-to-t from-pine-900/80 to-transparent" />
         </div>
 
-        <div className="relative z-[2] mx-auto max-w-[1400px] 2xl:max-w-[1680px] px-4 pb-28 pt-12 sm:px-6 sm:pb-36 sm:pt-16 lg:px-10">
+        <div className="relative z-[2] mx-auto max-w-[1400px] 2xl:max-w-[1680px] px-4 pb-32 pt-14 sm:px-6 sm:pb-44 sm:pt-20 lg:px-10">
           <div className="flex flex-wrap items-start justify-between gap-8">
             <div className="max-w-2xl">
-              <h1 className="font-display max-w-3xl text-[2.4rem] leading-[1.08] sm:text-5xl xl:text-6xl">
+              <h1 className="font-display max-w-3xl text-[2.6rem] leading-[1.07] sm:text-6xl xl:text-7xl">
                 {t("home.heroTitle")}
                 <span className="block text-gold-400">{t("home.heroTitle2")}</span>
               </h1>
@@ -125,17 +125,17 @@ export default async function Home({
                 {t("home.heroSubtitle")}
               </p>
 
-              <ul className="mt-7 grid max-w-2xl grid-cols-2 gap-x-6 gap-y-4 sm:grid-cols-4">
+              <ul className="mt-10 grid max-w-2xl grid-cols-2 gap-x-8 gap-y-7 sm:grid-cols-4">
                 {HERO_CHIPS.map(([key, icon], i) => (
                   <li key={key}>
-                    <span className="grid size-10 place-items-center rounded-lg border border-gold-400/60 text-gold-400">
-                      <svg viewBox="0 0 24 24" className="size-5" fill="none" stroke="currentColor"
-                           strokeWidth="1.7" strokeLinecap="round" strokeLinejoin="round" aria-hidden>
+                    <span className="grid size-12 place-items-center rounded-full border border-gold-400/70 text-gold-400">
+                      <svg viewBox="0 0 24 24" className="size-5.5" fill="none" stroke="currentColor"
+                           strokeWidth="1.6" strokeLinecap="round" strokeLinejoin="round" aria-hidden>
                         <path d={icon} />
                       </svg>
                     </span>
-                    <p className="mt-2 text-sm font-semibold leading-tight">{t(key)}</p>
-                    <p className="mt-0.5 text-xs leading-tight text-pine-200">{t(`home.chip${i + 1}s` as never)}</p>
+                    <p className="mt-2.5 text-sm font-bold tracking-[-0.01em] leading-tight">{t(key)}</p>
+                    <p className="mt-1 text-xs leading-snug text-pine-200">{t(`home.chip${i + 1}s` as never)}</p>
                   </li>
                 ))}
               </ul>
@@ -144,7 +144,7 @@ export default async function Home({
             {tours.length > 0 && (
               <Link
                 href={`/${locale}/tours`}
-                className="group hidden w-80 shrink-0 rounded-lg bg-pine-900/75 p-5 backdrop-blur-md transition-colors hover:bg-pine-900/90 lg:block"
+                className="group hidden w-80 shrink-0 rounded-2xl bg-pine-900/75 p-5 backdrop-blur-md transition-colors hover:bg-pine-900/90 lg:block"
               >
                 <p className="eyebrow text-pine-300">{t("home.promoEyebrow")}</p>
                 <p className="font-display mt-2 text-xl">{t("home.promoTitle")}</p>
@@ -160,8 +160,8 @@ export default async function Home({
       </section>
 
       {/* -------------------------------------------- booking widget ------ */}
-      <div id="book" className="relative z-10 -mt-24 scroll-mt-24 sm:-mt-32">
-        <Card className="p-6 shadow-[0_24px_60px_-28px_rgba(12,31,24,.5)] sm:p-8">
+      <div id="book" className="relative z-10 -mt-24 scroll-mt-24 sm:-mt-36">
+        <Card className="p-6 shadow-[var(--shadow-float)] sm:p-8">
           <SearchTabs locale={locale} locations={locations} />
           <ul className="mt-6 flex flex-wrap gap-x-6 gap-y-2 border-t border-ink-100 pt-4">
             {(["home.check1", "home.check2", "home.check3", "home.check4"] as const).map((key) => (
@@ -196,7 +196,7 @@ export default async function Home({
             };
             return (
               <li key={cat}>
-                <Link href={`/${locale}?cat=${cat}#explore`} className="group relative block h-44 overflow-hidden rounded-lg">
+                <Link href={`/${locale}?cat=${cat}#explore`} className="group relative block h-56 overflow-hidden rounded-2xl shadow-[0_1px_3px_rgba(11,29,51,.08)] transition-all duration-300 hover:-translate-y-1 hover:shadow-[var(--shadow-soft)] lg:h-64">
                   {photo ? (
                     // eslint-disable-next-line @next/next/no-img-element
                     <img src={photo} alt="" loading="lazy"
@@ -207,11 +207,13 @@ export default async function Home({
                   )}
                   <span className="absolute inset-0 bg-gradient-to-t from-pine-900/90 via-pine-900/35 to-pine-900/10" />
                   <span className="absolute inset-x-0 bottom-0 p-4 text-white">
-                    <svg viewBox="0 0 24 24" className="size-6 text-gold-400" fill="none" stroke="currentColor"
-                         strokeWidth="1.7" strokeLinecap="round" strokeLinejoin="round" aria-hidden>
-                      <path d={CATEGORY_ICONS[cat]} />
-                    </svg>
-                    <span className="mt-1.5 block font-bold tracking-[-0.01em]">{t(KEY[cat] as never)}</span>
+                    <span className="grid size-10 place-items-center rounded-full border border-gold-400/70 text-gold-400">
+                      <svg viewBox="0 0 24 24" className="size-5" fill="none" stroke="currentColor"
+                           strokeWidth="1.7" strokeLinecap="round" strokeLinejoin="round" aria-hidden>
+                        <path d={CATEGORY_ICONS[cat]} />
+                      </svg>
+                    </span>
+                    <span className="mt-2 block text-lg font-bold tracking-[-0.01em]">{t(KEY[cat] as never)}</span>
                     <span className="mt-0.5 block truncate text-xs text-pine-200">{names.join(", ")}</span>
                   </span>
                 </Link>
@@ -256,7 +258,7 @@ export default async function Home({
             <li key={d}>
               <Link
                 href={`/${locale}/plan?d=${d}&i=nature&p=0`}
-                className="flex h-full flex-col rounded-lg border border-ink-300 bg-white p-6 transition-colors hover:border-ink-500"
+                className="flex h-full flex-col rounded-2xl border border-ink-200 bg-white p-6 shadow-[0_1px_3px_rgba(11,29,51,.06)] transition-all duration-300 hover:-translate-y-1 hover:shadow-[var(--shadow-soft)]"
               >
                 <span className="font-display text-3xl text-ink-900">{t(title)}</span>
                 <span className="mt-2 flex-1 text-sm leading-relaxed text-ink-500">{t(body)}</span>
@@ -270,7 +272,7 @@ export default async function Home({
       </section>
 
       {/* ------------------------------------------------ build my route -- */}
-      <section className="rounded-lg bg-pine-800 px-6 py-14 text-white sm:px-12">
+      <section className="rounded-2xl bg-pine-800 px-6 py-14 text-white sm:px-12">
         <div className="flex flex-wrap items-center justify-between gap-8">
           <div className="max-w-2xl">
             <p className="eyebrow text-pine-300">{t("home.planTeaserEyebrow")}</p>
@@ -303,7 +305,7 @@ export default async function Home({
               <li key={tour.slug}>
                 <Link
                   href={`/${locale}/tours/${tour.slug}`}
-                  className="group flex h-full flex-col overflow-hidden rounded-lg border border-ink-300 bg-white transition-colors hover:border-ink-500"
+                  className="group flex h-full flex-col overflow-hidden rounded-2xl border border-ink-200 bg-white shadow-[0_1px_3px_rgba(11,29,51,.06)] transition-all duration-300 hover:-translate-y-1 hover:shadow-[var(--shadow-soft)]"
                 >
                   <div className="relative overflow-hidden">
                     <PlaceImage
@@ -337,7 +339,7 @@ export default async function Home({
         <ul className="mt-8 grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
           {([["home.season1t", "home.season1b"], ["home.season2t", "home.season2b"],
              ["home.season3t", "home.season3b"], ["home.season4t", "home.season4b"]] as const).map(([title, body]) => (
-            <li key={title} className="rounded-lg border border-ink-300 bg-white p-6">
+            <li key={title} className="rounded-2xl border border-ink-200 bg-white p-6 shadow-[0_1px_3px_rgba(11,29,51,.06)]">
               <p className="font-display text-2xl text-ink-900">{t(title)}</p>
               <p className="mt-2 text-sm leading-relaxed text-ink-500">{t(body)}</p>
             </li>
@@ -346,7 +348,7 @@ export default async function Home({
       </section>
 
       {/* ------------------------------------------------ organisations --- */}
-      <section className="rounded-lg border border-ink-300 bg-white p-6 sm:p-10">
+      <section className="rounded-2xl border border-ink-200 bg-white p-6 shadow-[0_1px_3px_rgba(11,29,51,.06)] sm:p-10">
         <div className="flex flex-wrap items-center justify-between gap-6">
           <div className="max-w-2xl">
             <p className="eyebrow">{t("home.b2bEyebrow")}</p>
@@ -384,7 +386,7 @@ export default async function Home({
 
       {/* -------------------------------------------- why + contact ------- */}
       <section className="grid gap-4 lg:grid-cols-[1fr_20rem]">
-        <div className="rounded-lg bg-pine-50 p-6 sm:p-10">
+        <div className="rounded-2xl bg-pine-50 p-6 sm:p-10">
           <h2 className="font-display text-2xl text-ink-900 sm:text-3xl">{t("home.whyRG")}</h2>
           <dl className="mt-6 grid grid-cols-2 gap-x-8 gap-y-6 sm:grid-cols-4">
             {([[stats[0]?.drivers ?? 0, t("home.statDrivers")],
@@ -401,7 +403,7 @@ export default async function Home({
           </dl>
         </div>
         {config.contact.phone && (
-          <div className="rounded-lg bg-pine-800 p-6 text-white">
+          <div className="rounded-2xl bg-pine-800 p-6 text-white">
             <h2 className="font-display text-xl">{t("home.helpTitle")}</h2>
             <p className="mt-2 text-sm leading-relaxed text-pine-200">{t("home.helpBody")}</p>
             <div className="mt-5 flex flex-col gap-2.5">
@@ -419,7 +421,7 @@ export default async function Home({
       </section>
 
       {/* ------------------------------------------------ closing CTA ----- */}
-      <section className="rounded-lg bg-pine-800 px-6 py-14 text-center text-white sm:px-12">
+      <section className="rounded-2xl bg-pine-800 px-6 py-14 text-center text-white sm:px-12">
         <h2 className="font-display text-3xl sm:text-4xl">{t("home.closingTitle")}</h2>
         <p className="mx-auto mt-4 max-w-xl leading-relaxed text-pine-100">{t("home.closingBody")}</p>
         <a

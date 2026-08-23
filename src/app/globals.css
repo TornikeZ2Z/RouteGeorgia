@@ -71,9 +71,11 @@
 
   --font-sans: "Montserrat", "Noto Sans Georgian", "Segoe UI", Arial, sans-serif;
 
-  --radius-card: 0.5rem;
+  --radius-card: 1rem;
 
   --shadow-subtle: 0 0 2px 0 rgba(0, 0, 0, 0.16);
+  --shadow-soft: 0 10px 30px -12px rgba(11, 29, 51, 0.25);
+  --shadow-float: 0 24px 60px -24px rgba(11, 29, 51, 0.35);
 }
 
 html { -webkit-text-size-adjust: 100%; }
@@ -123,8 +125,8 @@ body {
 }
 
 ::selection {
-  background: var(--color-ink-200);
-  color: var(--color-ink-900);
+  background: var(--color-gold-100);
+  color: var(--color-brand-600);
 }
 
 @media (prefers-reduced-motion: reduce) {

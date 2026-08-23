@@ -19,7 +19,7 @@ if(matchMedia("(prefers-reduced-motion: reduce)").matches)
   slides.forEach(function(s){s.classList.remove("transition-opacity","duration-1000")});
 function show(n){i=n;
   slides.forEach(function(s,j){s.classList.toggle("opacity-100",j===n);s.classList.toggle("opacity-0",j!==n)});
-  dots.forEach(function(d,j){d.classList.toggle("bg-white",j===n);d.classList.toggle("bg-white/40",j!==n)});}
+  dots.forEach(function(d,j){d.classList.toggle("bg-gold-400",j===n);d.classList.toggle("bg-white/40",j!==n)});}
 function tick(){show((i+1)%slides.length)}
 t=setInterval(tick,6000);
 dots.forEach(function(d,j){d.addEventListener("click",function(){clearInterval(t);show(j);t=setInterval(tick,6000)})});
@@ -54,7 +54,7 @@ export function HeroCarousel({ images }: { images: string[] }) {
                 tabIndex={-1}
                 aria-label={`${i + 1} / ${images.length}`}
                 className={`size-2.5 rounded-full transition-colors hover:bg-white/70 ${
-                  i === 0 ? "bg-white" : "bg-white/40"
+                  i === 0 ? "bg-gold-400" : "bg-white/40"
                 }`}
               />
             ))}

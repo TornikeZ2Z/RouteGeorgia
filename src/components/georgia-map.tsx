@@ -97,7 +97,7 @@ export function GeorgiaMap({ locale, places, initialCat = "all" }: { locale: str
     }`;
 
   return (
-    <div id="explore" className="scroll-mt-24 overflow-hidden rounded-lg border border-ink-300 bg-white">
+    <div id="explore" className="scroll-mt-24 overflow-hidden rounded-2xl border border-ink-200 bg-white shadow-[0_1px_3px_rgba(11,29,51,.06)]">
       <div className="flex flex-wrap items-center gap-2 border-b border-ink-200 p-4">
         {CATS.map((c) => (
           <button key={c} type="button" onClick={() => setCat(c)} className={chip(cat === c)} aria-pressed={cat === c}>
@@ -155,7 +155,7 @@ export function GeorgiaMap({ locale, places, initialCat = "all" }: { locale: str
 
         {selected && (
           <div
-            className="absolute z-10 w-72 rounded-lg border border-ink-300 bg-white shadow-[0_0_2px_0_rgba(0,0,0,.16)]"
+            className="absolute z-10 w-72 rounded-2xl border border-ink-200 bg-white shadow-[var(--shadow-soft)]"
             style={{
               left: `min(max(${(px(selected.lon) / W) * 100}%, 10rem), calc(100% - 10rem))`,
               top: `${(py(selected.lat) / H) * 100}%`,
@@ -169,7 +169,7 @@ export function GeorgiaMap({ locale, places, initialCat = "all" }: { locale: str
               photoSrc={selected.photo}
               alt={selected.name}
               seedText={selected.slug}
-              className="h-28 w-full rounded-t-lg"
+              className="h-28 w-full rounded-t-2xl"
             />
             <div className="p-4">
               <div className="flex items-start justify-between gap-2">
