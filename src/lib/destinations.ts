@@ -18,33 +18,36 @@ export interface Destination {
   descKey: string;
   /** Which category's icon marks the pin. */
   icon: MapCategory;
-  /** Nudge the label when neighbours crowd (SVG px). */
-  labelDy?: number;
+  /** Where the label sits relative to the pin when neighbours crowd. */
+  labelPos?: "top" | "bottom" | "left" | "right";
+  /** Small pixel nudge for the whole pin when two pins collide. */
+  dx?: number;
+  dy?: number;
 }
 
 export const DESTINATIONS: Destination[] = [
-  { slug: "tbilisi",     categories: ["culture"],                       seasons: ["spring", "summer", "autumn", "winter"], descKey: "map.d.tbilisi",     icon: "culture" },
-  { slug: "mtskheta",    categories: ["culture"],                       seasons: ["spring", "summer", "autumn"],           descKey: "map.d.mtskheta",    icon: "culture", labelDy: 10 },
+  { slug: "tbilisi",     categories: ["culture"],                       seasons: ["spring", "summer", "autumn", "winter"], descKey: "map.d.tbilisi",     icon: "culture", labelPos: "right" },
+  { slug: "mtskheta",    categories: ["culture"],                       seasons: ["spring", "summer", "autumn"],           descKey: "map.d.mtskheta",    icon: "culture", labelPos: "left" },
   { slug: "kazbegi",     categories: ["mountains", "nature"],           seasons: ["spring", "summer", "autumn"],           descKey: "map.d.kazbegi",     icon: "mountains" },
-  { slug: "gudauri",     categories: ["mountains", "winter"],           seasons: ["winter"],                               descKey: "map.d.gudauri",     icon: "winter", labelDy: 10 },
+  { slug: "gudauri",     categories: ["mountains", "winter"],           seasons: ["winter"],                               descKey: "map.d.gudauri",     icon: "winter", labelPos: "bottom" },
   { slug: "mestia",      categories: ["mountains", "nature", "winter"], seasons: ["summer", "winter"],                     descKey: "map.d.mestia",      icon: "mountains" },
-  { slug: "batumi",      categories: ["sea", "culture"],                seasons: ["summer"],                               descKey: "map.d.batumi",      icon: "sea" },
+  { slug: "batumi",      categories: ["sea", "culture"],                seasons: ["summer"],                               descKey: "map.d.batumi",      icon: "sea", labelPos: "left" },
   { slug: "kutaisi",     categories: ["culture", "nature"],             seasons: ["spring", "summer", "autumn"],           descKey: "map.d.kutaisi",     icon: "culture" },
-  { slug: "telavi",      categories: ["wine", "culture"],               seasons: ["autumn", "spring", "summer"],           descKey: "map.d.telavi",      icon: "wine" },
-  { slug: "sighnaghi",   categories: ["wine", "culture"],               seasons: ["autumn", "spring", "summer"],           descKey: "map.d.sighnaghi",   icon: "wine", labelDy: 10 },
-  { slug: "borjomi",     categories: ["nature", "culture"],             seasons: ["spring", "summer", "autumn"],           descKey: "map.d.borjomi",     icon: "nature" },
-  { slug: "vardzia",     categories: ["culture"],                       seasons: ["spring", "summer", "autumn"],           descKey: "map.d.vardzia",     icon: "culture", labelDy: 10 },
+  { slug: "telavi",      categories: ["wine", "culture"],               seasons: ["autumn", "spring", "summer"],           descKey: "map.d.telavi",      icon: "wine", labelPos: "left" },
+  { slug: "sighnaghi",   categories: ["wine", "culture"],               seasons: ["autumn", "spring", "summer"],           descKey: "map.d.sighnaghi",   icon: "wine", labelPos: "bottom" },
+  { slug: "borjomi",     categories: ["nature", "culture"],             seasons: ["spring", "summer", "autumn"],           descKey: "map.d.borjomi",     icon: "nature", labelPos: "left" },
+  { slug: "vardzia",     categories: ["culture"],                       seasons: ["spring", "summer", "autumn"],           descKey: "map.d.vardzia",     icon: "culture", labelPos: "bottom" },
   // --- the founder's additions -------------------------------------------
   { slug: "bakhmaro",    categories: ["mountains", "nature"],           seasons: ["summer", "winter"],                     descKey: "map.d.bakhmaro",    icon: "mountains" },
-  { slug: "shekvetili",  categories: ["sea", "nature"],                 seasons: ["summer"],                               descKey: "map.d.shekvetili",  icon: "sea", labelDy: 10 },
-  { slug: "ureki",       categories: ["sea"],                           seasons: ["summer"],                               descKey: "map.d.ureki",       icon: "sea", labelDy: -34 },
+  { slug: "shekvetili",  categories: ["sea", "nature"],                 seasons: ["summer"],                               descKey: "map.d.shekvetili",  icon: "sea", labelPos: "left" },
+  { slug: "ureki",       categories: ["sea"],                           seasons: ["summer"],                               descKey: "map.d.ureki",       icon: "sea", labelPos: "left", dy: -8 },
   { slug: "ambrolauri",  categories: ["wine", "nature", "culture"],     seasons: ["spring", "summer", "autumn"],           descKey: "map.d.ambrolauri",  icon: "wine" },
   { slug: "oni",         categories: ["nature", "culture"],             seasons: ["summer", "autumn"],                     descKey: "map.d.oni",         icon: "nature" },
   { slug: "martvili",    categories: ["nature"],                        seasons: ["spring", "summer", "autumn"],           descKey: "map.d.martvili",    icon: "nature" },
   { slug: "zugdidi",     categories: ["culture"],                       seasons: ["spring", "summer", "autumn"],           descKey: "map.d.zugdidi",     icon: "culture" },
-  { slug: "bakuriani",   categories: ["winter", "mountains", "nature"], seasons: ["winter", "summer"],                     descKey: "map.d.bakuriani",   icon: "winter" },
-  { slug: "akhaltsikhe", categories: ["culture"],                       seasons: ["spring", "summer", "autumn"],           descKey: "map.d.akhaltsikhe", icon: "culture", labelDy: 10 },
-  { slug: "abastumani",  categories: ["nature"],                        seasons: ["summer", "autumn"],                     descKey: "map.d.abastumani",  icon: "nature", labelDy: 10 },
-  { slug: "kvareli",     categories: ["wine"],                          seasons: ["autumn", "spring", "summer"],           descKey: "map.d.kvareli",     icon: "wine", labelDy: 10 },
-  { slug: "tsinandali",  categories: ["wine", "culture"],               seasons: ["autumn", "spring", "summer"],           descKey: "map.d.tsinandali",  icon: "wine", labelDy: -34 },
+  { slug: "bakuriani",   categories: ["winter", "mountains", "nature"], seasons: ["winter", "summer"],                     descKey: "map.d.bakuriani",   icon: "winter", labelPos: "right", dx: 6, dy: 6 },
+  { slug: "akhaltsikhe", categories: ["culture"],                       seasons: ["spring", "summer", "autumn"],           descKey: "map.d.akhaltsikhe", icon: "culture", labelPos: "bottom", dx: 8, dy: 8 },
+  { slug: "abastumani",  categories: ["nature"],                        seasons: ["summer", "autumn"],                     descKey: "map.d.abastumani",  icon: "nature", labelPos: "bottom", dx: -4, dy: -14 },
+  { slug: "kvareli",     categories: ["wine"],                          seasons: ["autumn", "spring", "summer"],           descKey: "map.d.kvareli",     icon: "wine", labelPos: "right" },
+  { slug: "tsinandali",  categories: ["wine", "culture"],               seasons: ["autumn", "spring", "summer"],           descKey: "map.d.tsinandali",  icon: "wine", labelPos: "top", dy: -6 },
 ];

@@ -6,6 +6,7 @@ import { getTranslator, isLocale, type Locale } from "@/lib/i18n";
 import { PlaceImage } from "@/components/place-image";
 import type { MapCategory, Season } from "@/lib/destinations";
 import { CATEGORY_ICONS as ICONS } from "@/lib/map-icons";
+import { GEORGIA_PATH, MAP_W as W, MAP_H as H, project } from "@/lib/georgia-outline";
 
 /**
  * Explore Georgia — the interactive map.
@@ -26,20 +27,13 @@ export interface MapPlace {
   icon: MapCategory;
   descKey: string;
   photo: string | null;
-  labelDy?: number;
+  labelPos?: "top" | "bottom" | "left" | "right";
+  dx?: number;
+  dy?: number;
 }
 
-const OUTLINE = [
-  [40.0, 43.55], [41.05, 43.38], [41.55, 43.23], [42.4, 43.22], [43.0, 42.9],
-  [43.8, 42.6], [44.5, 42.75], [45.2, 42.7], [45.75, 42.5], [46.45, 41.9],
-  [46.72, 41.3], [46.5, 41.05], [45.7, 41.25], [45.0, 41.05], [44.2, 41.2],
-  [43.45, 41.1], [42.8, 41.55], [41.8, 41.43], [41.55, 41.55], [41.72, 41.95],
-  [41.48, 42.42], [40.85, 42.8], [40.35, 43.15],
-] as const;
-
-const W = 860, H = 380;
-const px = (lon: number) => ((lon - 39.75) / 7.2) * W;
-const py = (lat: number) => ((43.72 - lat) / 3.0) * H;
+const px = (lon: number) => project(lon, 0)[0];
+const py = (lat: number) => project(0, lat)[1];
 
 
 const CATS: (MapCategory | "all")[] = ["all", "sea", "mountains", "winter", "wine", "culture", "nature"];
@@ -47,6 +41,13 @@ const CAT_KEY: Record<string, string> = {
   all: "map.all", sea: "tours.catSea", mountains: "tours.catMountains", winter: "tours.catWinter",
   wine: "tours.catWine", culture: "tours.catCulture", nature: "map.catNature",
 };
+const LABEL_POS = {
+  bottom: "left-1/2 top-full mt-1 -translate-x-1/2",
+  top: "bottom-full left-1/2 mb-1 -translate-x-1/2",
+  left: "right-full top-1/2 mr-1.5 -translate-y-1/2",
+  right: "left-full top-1/2 ml-1.5 -translate-y-1/2",
+} as const;
+
 const SEASONS: Season[] = ["spring", "summer", "autumn", "winter"];
 const SEASON_KEY: Record<Season, string> = {
   spring: "home.season1t", summer: "home.season2t", autumn: "home.season3t", winter: "home.season4t",
@@ -116,17 +117,35 @@ export function GeorgiaMap({ locale, places, initialCat = "all" }: { locale: str
         ))}
       </div>
 
-      <div ref={boxRef} className="relative p-4 pt-8 sm:p-6 sm:pt-10">
+      <div
+        ref={boxRef}
+        className="relative bg-[radial-gradient(120%_140%_at_50%_-20%,#123055_0%,#0b1d33_55%,#071527_100%)] p-4 pt-8 sm:p-6 sm:pt-10"
+      >
         <svg viewBox={`0 0 ${W} ${H}`} className="w-full" role="img" aria-label="Map of Georgia">
-          <path
-            d={OUTLINE.map(([lon, lat], i) => `${i === 0 ? "M" : "L"}${px(lon).toFixed(1)},${py(lat).toFixed(1)}`).join(" ") + " Z"}
-            fill="var(--color-ink-50)" stroke="var(--color-ink-400)" strokeWidth="1.5" strokeLinejoin="round"
-          />
+          <defs>
+            <linearGradient id="geo-land" x1="0" y1="0" x2="0" y2="1">
+              <stop offset="0" stopColor="#1b3d63" />
+              <stop offset="1" stopColor="#122c4b" />
+            </linearGradient>
+            <filter id="geo-lift" x="-6%" y="-8%" width="112%" height="120%">
+              <feDropShadow dx="0" dy="7" stdDeviation="11" floodColor="#020a14" floodOpacity="0.55" />
+            </filter>
+          </defs>
+          <text x={54} y={py(42.55)} className="fill-white/25" fontSize="13" letterSpacing="0.35em"
+                fontWeight="600" transform={`rotate(-74 54 ${py(42.55)})`}>
+            BLACK&#160;&#160;SEA
+          </text>
+          <text x={px(43.1)} y={38} className="fill-white/20" fontSize="10.5" letterSpacing="0.3em" fontWeight="600" textAnchor="middle">RUSSIA</text>
+          <text x={px(42.35)} y={H - 14} className="fill-white/20" fontSize="10.5" letterSpacing="0.3em" fontWeight="600" textAnchor="middle">TURKEY</text>
+          <text x={px(44.65)} y={H - 14} className="fill-white/20" fontSize="10.5" letterSpacing="0.3em" fontWeight="600" textAnchor="middle">ARMENIA</text>
+          <text x={px(45.75)} y={H - 14} className="fill-white/20" fontSize="10.5" letterSpacing="0.3em" fontWeight="600" textAnchor="middle">AZERBAIJAN</text>
+          <path d={GEORGIA_PATH} fill="url(#geo-land)" stroke="var(--color-gold-400)" strokeOpacity="0.55"
+                strokeWidth="1.3" strokeLinejoin="round" filter="url(#geo-lift)" />
         </svg>
 
         {places.map((p) => {
           const on = matches(p);
-          const x = (px(p.lon) / W) * 100, y = (py(p.lat) / H) * 100;
+          const x = ((px(p.lon) + (p.dx ?? 0)) / W) * 100, y = ((py(p.lat) + (p.dy ?? 0)) / H) * 100;
           return (
             <button
               key={p.slug}
@@ -135,17 +154,24 @@ export function GeorgiaMap({ locale, places, initialCat = "all" }: { locale: str
               disabled={!on}
               aria-expanded={open === p.slug}
               className={`group absolute -translate-x-1/2 -translate-y-1/2 transition-opacity duration-300 ${
-                on ? "opacity-100" : "pointer-events-none opacity-15"
+                on ? "opacity-100" : "pointer-events-none opacity-20"
               }`}
               style={{ left: `${x}%`, top: `${y}%` }}
             >
-              <svg viewBox="0 0 24 24" className={`size-4 ${open === p.slug ? "text-brand-600" : "text-ink-900"}`}
-                   fill="none" stroke="currentColor" strokeWidth="1.7" strokeLinecap="round" strokeLinejoin="round" aria-hidden>
-                <path d={ICONS[p.icon]} />
-              </svg>
               <span
-                className="absolute left-1/2 top-full -translate-x-1/2 whitespace-nowrap text-[10px] font-bold tracking-[-0.01em] text-ink-700 group-hover:underline sm:text-[11px]"
-                style={p.labelDy ? { marginTop: p.labelDy - 4 } : undefined}
+                className={`flex size-6 items-center justify-center rounded-full shadow-[0_2px_8px_rgba(2,10,20,.55)] ring-1 transition-transform duration-200 group-hover:scale-110 sm:size-7 ${
+                  open === p.slug
+                    ? "bg-gold-400 text-pine-900 ring-white/50"
+                    : "bg-pine-800 text-white ring-gold-400/70"
+                }`}
+              >
+                <svg viewBox="0 0 24 24" className="size-3.5 sm:size-4" fill="none" stroke="currentColor"
+                     strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round" aria-hidden>
+                  <path d={ICONS[p.icon]} />
+                </svg>
+              </span>
+              <span
+                className={`absolute whitespace-nowrap text-[10px] font-semibold tracking-[0.01em] text-white/85 [text-shadow:0_1px_4px_rgba(2,10,20,.9)] group-hover:text-gold-400 sm:text-[11px] ${LABEL_POS[p.labelPos ?? "bottom"]}`}
               >
                 {p.name}
               </span>

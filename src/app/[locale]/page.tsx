@@ -240,7 +240,7 @@ export default async function Home({
               return [{
                 slug: d.slug, name: loc.name_en, lat: Number(loc.lat), lon: Number(loc.lon),
                 categories: d.categories, seasons: d.seasons, icon: d.icon,
-                descKey: d.descKey, labelDy: d.labelDy,
+                descKey: d.descKey, labelPos: d.labelPos, dx: d.dx, dy: d.dy,
                 photo: sitePhoto(`destinations/${d.slug}.jpg`),
               }];
             })}
