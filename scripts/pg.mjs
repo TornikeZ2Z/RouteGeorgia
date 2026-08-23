@@ -22,7 +22,7 @@ const LOG_FILE = resolve(ROOT, ".pgdata", "server.log");
 const PORT = 55432;
 const USER = "app";
 const PASSWORD = "app";
-const DB = "gotrip";
+const DB = "routegeorgia";
 
 const isWindows = process.platform === "win32";
 const exe = (name) => (isWindows ? `${name}.exe` : name);

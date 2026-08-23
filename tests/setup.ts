@@ -7,6 +7,6 @@ import { config as loadEnv } from "dotenv";
 loadEnv();
 
 // NODE_ENV is read-only in Next.js type definitions; vitest already sets it.
-process.env.DATABASE_URL ??= "postgres://app:app@127.0.0.1:55432/gotrip";
+process.env.DATABASE_URL ??= "postgres://app:app@127.0.0.1:55432/routegeorgia";
 process.env.SESSION_SECRET ??= "test-secret-value-not-used-for-anything-real";
 process.env.APP_URL ??= "http://localhost:3000";
