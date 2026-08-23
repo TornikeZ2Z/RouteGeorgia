@@ -1,4 +1,5 @@
 import type { Metadata } from "next";
+import { config } from "@/lib/config";
 import "@fontsource/montserrat/400.css";
 import "@fontsource/montserrat/500.css";
 import "@fontsource/montserrat/600.css";
@@ -21,6 +22,9 @@ import "./globals.css";
  */
 
 export const metadata: Metadata = {
+  // Without this, Next resolves relative OG/twitter image URLs against the
+  // server's internal host (localhost:10000 on Render) instead of the site.
+  metadataBase: new URL(config.appUrl),
   title: {
     default: "RouteGeorgia — private drivers and tours across Georgia",
     template: "%s · RouteGeorgia",
