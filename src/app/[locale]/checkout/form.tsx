@@ -17,10 +17,32 @@ export function CheckoutForm({
   childSeatFeeLabel: string;
 }) {
   const [payment, setPayment] = useState<"CASH" | "CARD">(cashAvailable ? "CASH" : "CARD");
+  const [submitting, setSubmitting] = useState(false);
+
+  /**
+   * Explicit submission. React 19 intercepts client-component form posts and
+   * silently swallows the server's redirect — the booking succeeds and the
+   * traveller sees nothing happen. We post ourselves, follow the redirect
+   * chain, and land the browser where the server said to go. If JavaScript
+   * never runs, the native form still posts the old way.
+   */
+  async function submit(e: React.FormEvent<HTMLFormElement>) {
+    e.preventDefault();
+    if (submitting) return;
+    const form = e.currentTarget;
+    if (!form.reportValidity()) return;
+    setSubmitting(true);
+    try {
+      const res = await fetch("/api/bookings", { method: "POST", body: new FormData(form) });
+      window.location.assign(res.url || `/${locale}`);
+    } catch {
+      setSubmitting(false);
+    }
+  }
   const t = getTranslator(locale);
 
   return (
-    <form action="/api/bookings" method="post" className="space-y-6">
+    <form action="/api/bookings" method="post" onSubmit={submit} className="space-y-6">
       <input type="hidden" name="quoteId" value={quoteId} />
       <input type="hidden" name="locale" value={locale} />
 

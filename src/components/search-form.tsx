@@ -75,9 +75,13 @@ export function SearchForm({
     if (!from || !to) return setError(t("search.errBoth"));
     if (!tourSlug && from === to) return setError(t("search.errSame"));
     if (stops.some((s) => !s)) return setError(t("search.errStopEmpty"));
+    // A tour legitimately starts and ends in the same city, so the adjacency
+    // rule only applies between consecutive *stops* on a tour route.
     const sequence = [from, ...stops, to];
     for (let i = 1; i < sequence.length; i++) {
-      if (sequence[i] === sequence[i - 1]) return setError(t("search.errAdjacent"));
+      if (sequence[i] !== sequence[i - 1]) continue;
+      const isTourEndpoints = tourSlug && stops.length === 0;
+      if (!isTourEndpoints) return setError(t("search.errAdjacent"));
     }
     if (new Date(when).getTime() < Date.now()) return setError(t("search.errPast"));
     if (roundTrip && new Date(returnWhen).getTime() <= new Date(when).getTime()) {

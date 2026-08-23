@@ -2,7 +2,7 @@ import { NextResponse, type NextRequest } from "next/server";
 import { cookies } from "next/headers";
 import { sql } from "@db/client";
 import { getSessionUser } from "@/lib/auth/session";
-import { assertSameOrigin, CrossOriginError } from "@/lib/security";
+import { assertSameOrigin, CrossOriginError, seeOther } from "@/lib/security";
 import { config } from "@/lib/config";
 
 /**
@@ -43,5 +43,5 @@ export async function POST(request: NextRequest) {
 
   const back = String(form.get("returnTo") ?? "/");
   const safe = back.startsWith("/") && !back.startsWith("//") ? back : "/";
-  return NextResponse.redirect(new URL(safe, config.appUrl), { status: 303 });
+  return seeOther(safe);
 }

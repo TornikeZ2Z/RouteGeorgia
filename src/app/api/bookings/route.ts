@@ -8,7 +8,7 @@ import { getPaymentProvider } from "@/lib/payments";
 import { dispatchPending } from "@/lib/notifications";
 import { config } from "@/lib/config";
 import type { Locale } from "@/lib/i18n";
-import { assertSameOrigin, rateLimit, clientKey, CrossOriginError } from "@/lib/security";
+import { assertSameOrigin, rateLimit, clientKey, CrossOriginError, seeOther } from "@/lib/security";
 
 /**
  * Checkout submission.
@@ -57,13 +57,7 @@ export async function POST(request: NextRequest) {
   const locale = (["en", "ka", "ru"].includes(raw.locale ?? "") ? raw.locale : "en") as Locale;
 
   const back = (message: string, quoteId?: string) =>
-    NextResponse.redirect(
-      new URL(
-        `/${locale}/checkout?quote=${quoteId ?? raw.quoteId ?? ""}&error=${encodeURIComponent(message)}`,
-        config.appUrl,
-      ),
-      { status: 303 },
-    );
+    seeOther(`/${locale}/checkout?quote=${quoteId ?? raw.quoteId ?? ""}&error=${encodeURIComponent(message)}`);
 
   const parsed = Schema.safeParse(raw);
   if (!parsed.success) return back(parsed.error.issues.map((i) => i.message).join(" "));
@@ -110,14 +104,17 @@ export async function POST(request: NextRequest) {
                 ${booking.currency}, ${`checkout:${booking.id}`})
         ON CONFLICT (idempotency_key) DO NOTHING`;
 
-      return NextResponse.redirect(new URL(session.redirectUrl, config.appUrl), { status: 303 });
+      // Payment-provider URLs stay absolute; our own URLs re-base onto the
+      // incoming request so redirects work on any host (localhost, previews, prod).
+      const target = new URL(session.redirectUrl, request.url);
+      const ownHost = new URL(config.appUrl).host;
+      return target.host === ownHost
+        ? seeOther(target.pathname + target.search)
+        : NextResponse.redirect(target, { status: 303 });
     }
 
     await dispatchPending().catch(() => {});
-    return NextResponse.redirect(
-      new URL(`/${locale}/booking/${booking.code}?t=${booking.manageToken}`, config.appUrl),
-      { status: 303 },
-    );
+    return seeOther(`/${locale}/booking/${booking.code}?t=${booking.manageToken}`);
   } catch (err) {
     if (err instanceof BookingConflictError || err instanceof QuoteExpiredError || err instanceof CashUnavailableError) {
       return back(err.message, v.quoteId);

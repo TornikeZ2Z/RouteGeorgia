@@ -2,7 +2,7 @@ import { NextResponse, type NextRequest } from "next/server";
 import { z } from "zod";
 import { requestPasswordReset } from "@/lib/auth/reset";
 import { dispatchPending } from "@/lib/notifications";
-import { assertSameOrigin, rateLimit, clientKey, CrossOriginError } from "@/lib/security";
+import { assertSameOrigin, rateLimit, clientKey, CrossOriginError, seeOther } from "@/lib/security";
 import { config } from "@/lib/config";
 
 export async function POST(request: NextRequest) {
@@ -26,5 +26,5 @@ export async function POST(request: NextRequest) {
     await dispatchPending(5).catch(() => {});
   }
 
-  return NextResponse.redirect(new URL("/forgot-password?sent=1", config.appUrl), { status: 303 });
+  return seeOther("/forgot-password?sent=1");
 }

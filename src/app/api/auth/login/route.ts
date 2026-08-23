@@ -7,7 +7,7 @@ import { createSession, findUserByEmail, getUserRoles } from "@/lib/auth/session
 import { verifyPassword } from "@/lib/auth/password";
 import { writeAudit } from "@/lib/audit";
 import { config } from "@/lib/config";
-import { assertSameOrigin, rateLimit, clientKey, CrossOriginError } from "@/lib/security";
+import { assertSameOrigin, rateLimit, clientKey, CrossOriginError, seeOther } from "@/lib/security";
 
 /**
  * Plain form POST rather than a server action, so sign-in works without
@@ -37,9 +37,8 @@ export async function POST(request: NextRequest) {
   // a word list.
   const limit = rateLimit(await clientKey("login"), 10, 900);
   if (!limit.allowed) {
-    return NextResponse.redirect(new URL("/login?error=throttled", config.appUrl), {
-      status: 303,
-      headers: { "Retry-After": String(limit.retryAfterSeconds) },
+    return seeOther("/login?error=throttled", {
+      "Retry-After": String(limit.retryAfterSeconds),
     });
   }
 
@@ -50,8 +49,7 @@ export async function POST(request: NextRequest) {
     next: form.get("next") || undefined,
   });
 
-  const fail = (reason: string) =>
-    NextResponse.redirect(new URL(`/login?error=${reason}`, config.appUrl), { status: 303 });
+  const fail = (reason: string) => seeOther(`/login?error=${reason}`);
 
   if (!parsed.success) return fail("invalid");
   const { email, password, next } = parsed.data;
@@ -82,5 +80,5 @@ export async function POST(request: NextRequest) {
         ? "/admin"
         : "/driver";
 
-  return NextResponse.redirect(new URL(destination, config.appUrl), { status: 303 });
+  return seeOther(destination);
 }

@@ -65,7 +65,11 @@ const config: NextConfig = {
       "frame-ancestors 'none'",
       "base-uri 'self'",
       "object-src 'none'",
-      "upgrade-insecure-requests",
+      // Only meaningful when the site itself is served over https; on a local
+      // http server it upgrades our own redirects to unreachable https URLs.
+      ...(String(process.env.APP_URL ?? "").startsWith("https")
+        ? ["upgrade-insecure-requests"]
+        : []),
     ].join("; ");
 
     return [

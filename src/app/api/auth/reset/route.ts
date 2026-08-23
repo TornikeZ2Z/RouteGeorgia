@@ -1,6 +1,6 @@
 import { NextResponse, type NextRequest } from "next/server";
 import { completePasswordReset } from "@/lib/auth/reset";
-import { assertSameOrigin, rateLimit, clientKey, CrossOriginError } from "@/lib/security";
+import { assertSameOrigin, rateLimit, clientKey, CrossOriginError, seeOther } from "@/lib/security";
 import { config } from "@/lib/config";
 
 export async function POST(request: NextRequest) {
@@ -13,7 +13,7 @@ export async function POST(request: NextRequest) {
 
   const limit = rateLimit(await clientKey("reset"), 10, 900);
   if (!limit.allowed) {
-    return NextResponse.redirect(new URL("/reset-password?error=throttled", config.appUrl), { status: 303 });
+    return seeOther("/reset-password?error=throttled");
   }
 
   const form = await request.formData();
@@ -22,10 +22,7 @@ export async function POST(request: NextRequest) {
   const confirm = String(form.get("confirm") ?? "");
 
   if (password !== confirm) {
-    return NextResponse.redirect(
-      new URL(`/reset-password?token=${encodeURIComponent(token)}&error=mismatch`, config.appUrl),
-      { status: 303 },
-    );
+    return seeOther(`/reset-password?token=${encodeURIComponent(token)}&error=mismatch`);
   }
 
   const outcome = await completePasswordReset(token, password);
@@ -33,5 +30,5 @@ export async function POST(request: NextRequest) {
     ? "/login?reset=1"
     : `/reset-password?token=${encodeURIComponent(token)}&error=${encodeURIComponent(outcome.message)}`;
 
-  return NextResponse.redirect(new URL(target, config.appUrl), { status: 303 });
+  return seeOther(target);
 }

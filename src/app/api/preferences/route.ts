@@ -3,7 +3,7 @@ import { cookies } from "next/headers";
 import { isDisplayCurrency } from "@/lib/currency";
 import { isLocale } from "@/lib/i18n";
 import { config } from "@/lib/config";
-import { assertSameOrigin, CrossOriginError } from "@/lib/security";
+import { assertSameOrigin, CrossOriginError, seeOther } from "@/lib/security";
 
 /**
  * Locale and currency switches. A plain form POST so they work without
@@ -36,5 +36,5 @@ export async function POST(request: NextRequest) {
     ? safePath.replace(/^\/(en|ka|ru)(?=\/|$)/, `/${locale}`)
     : safePath;
 
-  return NextResponse.redirect(new URL(destination, config.appUrl), { status: 303 });
+  return seeOther(destination);
 }

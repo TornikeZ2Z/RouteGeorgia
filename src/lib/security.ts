@@ -93,3 +93,20 @@ export async function clientKey(scope: string): Promise<string> {
     "unknown";
   return `${scope}:${ip}`;
 }
+
+/**
+ * 303 See Other with a *relative* Location (valid per RFC 9110 §10.2.2).
+ * The browser resolves it against the URL it actually requested, so redirects
+ * work identically on localhost, 127.0.0.1, previews and production without
+ * the server ever guessing its own host. (`request.url` in route handlers
+ * reports the internal hostname, not the one the visitor used.)
+ */
+export function seeOther(
+  pathAndQuery: string,
+  headers?: Record<string, string>,
+): Response {
+  return new Response(null, {
+    status: 303,
+    headers: { Location: pathAndQuery, ...headers },
+  });
+}

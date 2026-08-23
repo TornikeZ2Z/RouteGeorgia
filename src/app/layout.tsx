@@ -30,7 +30,13 @@ export const metadata: Metadata = {
     "Airport transfers, intercity routes and curated day trips.",
   applicationName: "RouteGeorgia",
   authors: [{ name: "RouteGeorgia" }],
-  openGraph: { siteName: "RouteGeorgia", locale: "en_GE", type: "website" },
+  openGraph: {
+    siteName: "RouteGeorgia",
+    locale: "en_GE",
+    type: "website",
+    images: [{ url: "/og.jpg", width: 1200, height: 630, alt: "RouteGeorgia — private drivers across Georgia" }],
+  },
+  twitter: { card: "summary_large_image", images: ["/og.jpg"] },
   robots: { index: true, follow: true },
 };
 
