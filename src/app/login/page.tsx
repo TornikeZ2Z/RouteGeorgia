@@ -3,6 +3,7 @@ import { redirect } from "next/navigation";
 import { getSessionUser } from "@/lib/auth/session";
 import { Alert, Button, Card, Field, Input } from "@/components/ui";
 import { ContourField } from "@/components/contour-field";
+import { Logo } from "@/components/logo";
 
 export const dynamic = "force-dynamic";
 export const metadata = { title: "Sign in", robots: { index: false } };
@@ -18,15 +19,8 @@ export default async function LoginPage({
     <div className="relative flex min-h-dvh flex-col justify-center overflow-hidden bg-pine-800 px-4 py-12 text-pine-100">
       <ContourField className="text-pine-300" opacity={0.13} seed={5} />
       <div className="relative mx-auto w-full max-w-md">
-        <div className="mb-8 flex items-center gap-3">
-          <span aria-hidden className="grid size-10 place-items-center rounded-full bg-brand-600 text-white">
-            <svg viewBox="0 0 24 24" className="size-5" fill="none" stroke="currentColor" aria-hidden>
-              <ellipse cx="12" cy="14" rx="9" ry="5.5" strokeWidth="1.3" opacity=".45" />
-              <ellipse cx="12" cy="14" rx="5.5" ry="3.2" strokeWidth="1.3" opacity=".7" />
-              <path d="M4 18 C9 10, 15 16, 20 7" strokeWidth="2" strokeLinecap="round" />
-            </svg>
-          </span>
-          <span className="font-display text-xl text-white">Route Georgia</span>
+        <div className="mb-8">
+          <Logo dark />
         </div>
 
       <Card className="p-7">

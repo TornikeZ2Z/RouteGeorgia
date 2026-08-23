@@ -1,4 +1,5 @@
 import Link from "next/link";
+import { formatDuration } from "@/lib/format";
 import { notFound } from "next/navigation";
 import { sql } from "@db/client";
 import { isLocale, getTranslator, type Locale, type MessageKey } from "@/lib/i18n";
@@ -133,7 +134,7 @@ export default async function BookingPage({ params, searchParams }: Props) {
               <div><dt className="text-ink-500">{t("booking.departure")}</dt>
                 <dd className="font-medium">{startsAt.toLocaleString(locale, { dateStyle: "full", timeStyle: "short" })}</dd></div>
               <div><dt className="text-ink-500">{t("booking.drivingTime")}</dt>
-                <dd>{Math.floor(booking.drive_minutes / 60)} h {booking.drive_minutes % 60} min {t("booking.excludesStops")}</dd></div>
+                <dd>{formatDuration(booking.drive_minutes)} {t("booking.excludesStops")}</dd></div>
               <div><dt className="text-ink-500">{t("booking.pickup")}</dt><dd>{booking.pickup_address}</dd></div>
               <div><dt className="text-ink-500">{t("booking.dropoff")}</dt><dd>{booking.dropoff_address}</dd></div>
               {booking.flight_number && (

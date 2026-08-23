@@ -116,7 +116,7 @@ export function GeorgiaMap({ locale, places, initialCat = "all" }: { locale: str
         ))}
       </div>
 
-      <div ref={boxRef} className="relative p-4 sm:p-6">
+      <div ref={boxRef} className="relative p-4 pt-8 sm:p-6 sm:pt-10">
         <svg viewBox={`0 0 ${W} ${H}`} className="w-full" role="img" aria-label="Map of Georgia">
           <path
             d={OUTLINE.map(([lon, lat], i) => `${i === 0 ? "M" : "L"}${px(lon).toFixed(1)},${py(lat).toFixed(1)}`).join(" ") + " Z"}

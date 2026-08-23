@@ -385,7 +385,7 @@ export default async function Home({
       )}
 
       {/* -------------------------------------------- why + contact ------- */}
-      <section className="grid gap-4 lg:grid-cols-[1fr_20rem]">
+      <section className={config.contact.phone ? "grid gap-4 lg:grid-cols-[1fr_20rem]" : "grid gap-4"}>
         <div className="rounded-2xl bg-pine-50 p-6 sm:p-10">
           <h2 className="font-display text-2xl text-ink-900 sm:text-3xl">{t("home.whyRG")}</h2>
           <dl className="mt-6 grid grid-cols-2 gap-x-8 gap-y-6 sm:grid-cols-4">
@@ -426,7 +426,7 @@ export default async function Home({
         <p className="mx-auto mt-4 max-w-xl leading-relaxed text-pine-100">{t("home.closingBody")}</p>
         <a
           href="#book"
-          className="mt-8 inline-flex min-h-12 items-center rounded-lg bg-brand-600 px-8 py-3 text-white shadow-[0_0_2px_0_rgba(0,0,0,.16)] transition-colors hover:bg-brand-700"
+          className="mt-8 inline-flex min-h-12 items-center rounded-xl bg-gold-400 px-8 py-3 font-bold tracking-[-0.01em] text-pine-900 shadow-[0_0_2px_0_rgba(0,0,0,.16)] transition-colors hover:bg-gold-300"
         >
           {t("home.closingCta")}
         </a>
