@@ -24,7 +24,7 @@ export const en = {
 
   // ---- homepage ----------------------------------------------------------
   "home.heroEyebrow": "Georgia · private drivers",
-  "home.heroTitle": "Travel Georgia your way",
+  "home.heroTitle": "Your journey.",
   "home.heroSubtitle": "Reliable, comfortable and safe transfers, tours and group transportation across Georgia — with a named local driver and a fixed price.",
   "home.searchCta": "Find a driver",
   "home.statDrivers": "verified drivers",
@@ -73,7 +73,7 @@ export const en = {
   "search.stop": "Stop {n}",
   "search.removeStop": "Remove",
   "search.choosePlace": "Choose a place…",
-  "search.submit": "Find a driver",
+  "search.submit": "See prices",
   "search.stopsNote": "Stops are included in the price. Waiting time at each stop is included — the driver will not start a meter on you.",
   "search.errBoth": "Choose both a pickup and a destination.",
   "search.errSame": "Pickup and destination must be different.",
@@ -457,9 +457,9 @@ export const en = {
   "nav.hourly": "Hourly hire",
   "footer.company": "Company",
 
-  "home.chip1": "Local drivers",
-  "home.chip2": "Fixed prices",
-  "home.chip3": "Safe & reliable",
+  "home.chip1": "Fixed prices",
+  "home.chip2": "Safe & reliable",
+  "home.chip3": "Flexible booking",
   "home.chip4": "Support every day",
   "home.promoEyebrow": "Multi-day tours",
   "home.promoTitle": "See the whole country",
@@ -679,5 +679,21 @@ export const en = {
   "map.d.abastumani": "A forest health resort under Georgia's national observatory and its dark skies.",
   "map.d.kvareli": "Wine tunnels in the rock and the Lopota lake valley — Kakheti at its greenest.",
   "map.d.tsinandali": "The Chavchavadze estate: a historic winery, gardens and Kakheti's noble past.",
+
+
+  // --- Navy & gold identity ------------------------------------------------
+  "home.heroTitle2": "Our route.",
+  "home.chip1s": "agreed before you travel",
+  "home.chip2s": "vetted drivers and cars",
+  "home.chip3s": "free cancellation 24h before",
+  "home.chip4s": "a real person answers",
+  "nav.plan": "Build my route",
+  "home.catsTitle": "Travel by what you love",
+  "home.catsAll": "All destinations",
+  "home.whyRG": "Why RouteGeorgia?",
+  "home.helpTitle": "Need help?",
+  "home.helpBody": "Write or call us — a real person answers.",
+  "home.helpWhatsApp": "WhatsApp",
+  "home.helpCall": "Call us",
 
 } as const;

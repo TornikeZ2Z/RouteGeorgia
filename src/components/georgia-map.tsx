@@ -5,6 +5,7 @@ import Link from "next/link";
 import { getTranslator, isLocale, type Locale } from "@/lib/i18n";
 import { PlaceImage } from "@/components/place-image";
 import type { MapCategory, Season } from "@/lib/destinations";
+import { CATEGORY_ICONS as ICONS } from "@/lib/map-icons";
 
 /**
  * Explore Georgia — the interactive map.
@@ -40,15 +41,6 @@ const W = 860, H = 380;
 const px = (lon: number) => ((lon - 39.75) / 7.2) * W;
 const py = (lat: number) => ((43.72 - lat) / 3.0) * H;
 
-/** Minimalist 24-box stroke icons per category. */
-const ICONS: Record<MapCategory, string> = {
-  mountains: "M3 19 L9.5 7 L13 13.5 L15.5 9.5 L21 19 Z",
-  sea: "M3 10 q2.2 -2.6 4.5 0 t4.5 0 t4.5 0 t4.5 0 M3 15 q2.2 -2.6 4.5 0 t4.5 0 t4.5 0 t4.5 0",
-  winter: "M12 3v18 M4.2 7.5l15.6 9 M4.2 16.5l15.6 -9 M12 3l-2.5 2.5 M12 3l2.5 2.5 M12 21l-2.5 -2.5 M12 21l2.5 -2.5",
-  wine: "M8 3h8c0 5-2.6 7.5-4 7.5S8 8 8 3Zm4 7.5V19m-4 2h8",
-  culture: "M4 20h16 M6 20v-9m4 9v-9m4 9v-9m4 9v-9 M4 11h16 L12 4Z",
-  nature: "M12 21C5.5 16.5 5.5 8.5 12 3.5c6.5 5 6.5 13 0 17.5Zm0 0V9",
-};
 
 const CATS: (MapCategory | "all")[] = ["all", "sea", "mountains", "winter", "wine", "culture", "nature"];
 const CAT_KEY: Record<string, string> = {
@@ -64,9 +56,9 @@ const TOUR_CAT: Partial<Record<MapCategory, string>> = {
   sea: "sea", mountains: "mountains", winter: "winter", wine: "wine", culture: "culture",
 };
 
-export function GeorgiaMap({ locale, places }: { locale: string; places: MapPlace[] }) {
+export function GeorgiaMap({ locale, places, initialCat = "all" }: { locale: string; places: MapPlace[]; initialCat?: MapCategory | "all" }) {
   const t = getTranslator(isLocale(locale) ? (locale as Locale) : "en");
-  const [cat, setCat] = useState<MapCategory | "all">("all");
+  const [cat, setCat] = useState<MapCategory | "all">(initialCat);
   const [season, setSeason] = useState<Season | null>(null);
   const [open, setOpen] = useState<string | null>(null);
   const [weather, setWeather] = useState<Record<string, { temperatureC: number; bucket: string } | null>>({});
@@ -105,7 +97,7 @@ export function GeorgiaMap({ locale, places }: { locale: string; places: MapPlac
     }`;
 
   return (
-    <div className="overflow-hidden rounded-lg border border-ink-300 bg-white">
+    <div id="explore" className="scroll-mt-24 overflow-hidden rounded-lg border border-ink-300 bg-white">
       <div className="flex flex-wrap items-center gap-2 border-b border-ink-200 p-4">
         {CATS.map((c) => (
           <button key={c} type="button" onClick={() => setCat(c)} className={chip(cat === c)} aria-pressed={cat === c}>

@@ -3,12 +3,13 @@ import { notFound } from "next/navigation";
 import type { Metadata } from "next";
 import { sql } from "@db/client";
 import { isLocale, getTranslator, LOCALES } from "@/lib/i18n";
-import { config } from "@/lib/config";
 import { Badge, Card } from "@/components/ui";
 import { PlaceImage } from "@/components/place-image";
 import { sitePhoto, listTravellerPhotos } from "@/lib/site-photos";
 import { GeorgiaMap } from "@/components/georgia-map";
-import { DESTINATIONS } from "@/lib/destinations";
+import { DESTINATIONS, type MapCategory } from "@/lib/destinations";
+import { CATEGORY_ICONS } from "@/lib/map-icons";
+import { config } from "@/lib/config";
 import { listTours } from "@/lib/tours";
 import { formatApproxDuration, formatDistance } from "@/lib/format";
 import { SearchTabs } from "@/components/search-tabs";
@@ -66,12 +67,21 @@ const SERVICES = [
   { t: "home.svc5t", b: "home.svc5b", photo: "school.jpg", seed: "school-run", href: "/schools", icon: "M12 3 2 8l10 5 8-4v5m-14-2.5V16c0 1.7 2.7 3 6 3s6-1.3 6-3v-4.5" },
 ] as const;
 
-export default async function Home({ params }: { params: Promise<{ locale: string }> }) {
+export default async function Home({
+  params, searchParams,
+}: {
+  params: Promise<{ locale: string }>;
+  searchParams: Promise<Record<string, string | string[] | undefined>>;
+}) {
   const { locale } = await params;
+  const sp = await searchParams;
+  const rawCat = Array.isArray(sp.cat) ? sp.cat[0] : sp.cat;
+  const CAT_LIST = ["sea", "mountains", "winter", "wine", "culture", "nature"] as const;
+  const initialCat = CAT_LIST.includes(rawCat as (typeof CAT_LIST)[number]) ? (rawCat as MapCategory) : "all";
   if (!isLocale(locale)) notFound();
   const t = getTranslator(locale);
 
-  const [locations, tours] = await Promise.all([
+  const [locations, tours, stats] = await Promise.all([
     sql<{ slug: string; name_en: string; type: string; lat: number; lon: number }[]>`
       SELECT slug,
              coalesce(CASE WHEN ${locale} = 'ka' THEN name_ka
@@ -79,6 +89,9 @@ export default async function Home({ params }: { params: Promise<{ locale: strin
              type::text AS type, lat, lon
       FROM locations WHERE in_service_area ORDER BY type, 2`,
     listTours(locale),
+    sql<{ drivers: number; trips: number }[]>`
+      SELECT (SELECT count(*) FROM driver_profiles WHERE published)::int AS drivers,
+             (SELECT count(*) FROM bookings WHERE status = 'COMPLETED')::int AS trips`,
   ]);
 
   const heroSlides = ["hero.jpg", "hero-2.jpg", "hero-3.jpg", "hero-4.jpg", "hero-5.jpg"]
@@ -104,23 +117,25 @@ export default async function Home({ params }: { params: Promise<{ locale: strin
         <div className="relative z-[2] mx-auto max-w-[1400px] 2xl:max-w-[1680px] px-4 pb-28 pt-12 sm:px-6 sm:pb-36 sm:pt-16 lg:px-10">
           <div className="flex flex-wrap items-start justify-between gap-8">
             <div className="max-w-2xl">
-              <h1 className="font-display max-w-3xl text-balance text-[2.4rem] leading-[1.06] sm:text-5xl xl:text-6xl">
+              <h1 className="font-display max-w-3xl text-[2.4rem] leading-[1.08] sm:text-5xl xl:text-6xl">
                 {t("home.heroTitle")}
+                <span className="block text-gold-400">{t("home.heroTitle2")}</span>
               </h1>
               <p className="mt-4 max-w-xl text-base leading-relaxed text-pine-100 sm:text-lg">
                 {t("home.heroSubtitle")}
               </p>
 
-              <ul className="mt-7 flex flex-wrap gap-x-7 gap-y-4">
-                {HERO_CHIPS.map(([key, icon]) => (
-                  <li key={key} className="flex items-center gap-2.5">
-                    <span className="grid size-10 place-items-center rounded-lg bg-white/12 backdrop-blur-sm">
+              <ul className="mt-7 grid max-w-2xl grid-cols-2 gap-x-6 gap-y-4 sm:grid-cols-4">
+                {HERO_CHIPS.map(([key, icon], i) => (
+                  <li key={key}>
+                    <span className="grid size-10 place-items-center rounded-lg border border-gold-400/60 text-gold-400">
                       <svg viewBox="0 0 24 24" className="size-5" fill="none" stroke="currentColor"
                            strokeWidth="1.7" strokeLinecap="round" strokeLinejoin="round" aria-hidden>
                         <path d={icon} />
                       </svg>
                     </span>
-                    <span className="text-sm font-semibold">{t(key)}</span>
+                    <p className="mt-2 text-sm font-semibold leading-tight">{t(key)}</p>
+                    <p className="mt-0.5 text-xs leading-tight text-pine-200">{t(`home.chip${i + 1}s` as never)}</p>
                   </li>
                 ))}
               </ul>
@@ -162,42 +177,43 @@ export default async function Home({ params }: { params: Promise<{ locale: strin
         </Card>
       </div>
 
-      {/* ------------------------------------------------ services -------- */}
+      {/* ------------------------------------------------ categories ------ */}
       <section>
-        <div className="text-center">
-          <p className="eyebrow">{t("home.servicesEyebrow")}</p>
-          <h2 className="font-display mt-2 text-3xl text-ink-900 sm:text-4xl">{t("home.servicesTitle")}</h2>
+        <div className="flex flex-wrap items-end justify-between gap-3">
+          <h2 className="font-display text-3xl text-ink-900 sm:text-4xl">{t("home.catsTitle")}</h2>
+          <a href="#explore" className="text-sm font-semibold text-ink-900 underline underline-offset-4">
+            {t("home.catsAll")} →
+          </a>
         </div>
-        <ul className="mt-10 grid gap-4 sm:grid-cols-2 lg:grid-cols-5">
-          {SERVICES.map((svc) => {
-            const photo = sitePhoto(svc.photo);
+        <ul className="mt-8 grid grid-cols-2 gap-4 lg:grid-cols-3 xl:grid-cols-6">
+          {(["mountains", "nature", "sea", "wine", "culture", "winter"] as const).map((cat) => {
+            const names = DESTINATIONS.filter((d) => d.categories.includes(cat)).slice(0, 3)
+              .map((d) => locations.find((l) => l.slug === d.slug)?.name_en).filter(Boolean);
+            const photo = sitePhoto(`categories/${cat}.jpg`);
+            const KEY: Record<string, string> = {
+              sea: "tours.catSea", mountains: "tours.catMountains", winter: "tours.catWinter",
+              wine: "tours.catWine", culture: "tours.catCulture", nature: "map.catNature",
+            };
             return (
-              <li key={svc.t}>
-                <Link
-                  href={`/${locale}${svc.href}`}
-                  className="group flex h-full flex-col overflow-hidden rounded-lg border border-ink-300 bg-white transition-colors hover:border-ink-500"
-                >
-                  <div className="p-5 pb-4">
-                    <span className="grid size-11 place-items-center rounded-xl text-ink-900 font-bold tracking-[-0.02em]">
-                      <svg viewBox="0 0 24 24" className="size-5.5" fill="none" stroke="currentColor"
-                           strokeWidth="1.6" strokeLinecap="round" strokeLinejoin="round" aria-hidden>
-                        <path d={svc.icon} />
-                      </svg>
-                    </span>
-                    <p className="mt-3.5 font-semibold text-ink-900 group-hover:text-ink-900">{t(svc.t)}</p>
-                    <p className="mt-1.5 text-sm leading-relaxed text-ink-600">{t(svc.b)}</p>
-                  </div>
-                  <div className="mt-auto px-5 pb-5">
-                    <div className="overflow-hidden rounded-2xl">
-                      {photo ? (
-                        // eslint-disable-next-line @next/next/no-img-element
-                        <img src={photo} alt="" loading="lazy"
-                             className="h-32 w-full object-cover transition-transform duration-500 group-hover:scale-105" />
-                      ) : (
-                        <PlaceImage imageKey={null} alt="" seedText={svc.seed} className="h-32 w-full" />
-                      )}
-                    </div>
-                  </div>
+              <li key={cat}>
+                <Link href={`/${locale}?cat=${cat}#explore`} className="group relative block h-44 overflow-hidden rounded-lg">
+                  {photo ? (
+                    // eslint-disable-next-line @next/next/no-img-element
+                    <img src={photo} alt="" loading="lazy"
+                         className="absolute inset-0 size-full object-cover transition-transform duration-500 group-hover:scale-105" />
+                  ) : (
+                    <PlaceImage imageKey={null} alt="" seedText={`cat-${cat}`}
+                                className="absolute inset-0 size-full transition-transform duration-500 group-hover:scale-105" />
+                  )}
+                  <span className="absolute inset-0 bg-gradient-to-t from-pine-900/90 via-pine-900/35 to-pine-900/10" />
+                  <span className="absolute inset-x-0 bottom-0 p-4 text-white">
+                    <svg viewBox="0 0 24 24" className="size-6 text-gold-400" fill="none" stroke="currentColor"
+                         strokeWidth="1.7" strokeLinecap="round" strokeLinejoin="round" aria-hidden>
+                      <path d={CATEGORY_ICONS[cat]} />
+                    </svg>
+                    <span className="mt-1.5 block font-bold tracking-[-0.01em]">{t(KEY[cat] as never)}</span>
+                    <span className="mt-0.5 block truncate text-xs text-pine-200">{names.join(", ")}</span>
+                  </span>
                 </Link>
               </li>
             );
@@ -215,6 +231,7 @@ export default async function Home({ params }: { params: Promise<{ locale: strin
         <div className="mt-8">
           <GeorgiaMap
             locale={locale}
+            initialCat={initialCat}
             places={DESTINATIONS.flatMap((d) => {
               const loc = locations.find((l) => l.slug === d.slug);
               if (!loc) return [];
@@ -364,6 +381,42 @@ export default async function Home({ params }: { params: Promise<{ locale: strin
           </ul>
         </section>
       )}
+
+      {/* -------------------------------------------- why + contact ------- */}
+      <section className="grid gap-4 lg:grid-cols-[1fr_20rem]">
+        <div className="rounded-lg bg-pine-50 p-6 sm:p-10">
+          <h2 className="font-display text-2xl text-ink-900 sm:text-3xl">{t("home.whyRG")}</h2>
+          <dl className="mt-6 grid grid-cols-2 gap-x-8 gap-y-6 sm:grid-cols-4">
+            {([[stats[0]?.drivers ?? 0, t("home.statDrivers")],
+               [locations.length, t("home.statLocations")],
+               [tours.length, t("home.statTours")],
+               [stats[0]?.trips ?? 0, t("home.statTrips")]] as const)
+              .filter(([v]) => (v as number) > 0)
+              .map(([value, label]) => (
+              <div key={label as string}>
+                <dt className="font-display text-3xl text-brand-600">{value as number}</dt>
+                <dd className="mt-0.5 text-sm text-ink-500">{label as string}</dd>
+              </div>
+            ))}
+          </dl>
+        </div>
+        {config.contact.phone && (
+          <div className="rounded-lg bg-pine-800 p-6 text-white">
+            <h2 className="font-display text-xl">{t("home.helpTitle")}</h2>
+            <p className="mt-2 text-sm leading-relaxed text-pine-200">{t("home.helpBody")}</p>
+            <div className="mt-5 flex flex-col gap-2.5">
+              <a href={`https://wa.me/${config.contact.phone.replace(/[^0-9]/g, "")}`}
+                 className="rounded-lg bg-white px-4 py-2.5 text-center text-sm font-bold tracking-[-0.01em] text-pine-800 hover:bg-pine-100">
+                {t("home.helpWhatsApp")}
+              </a>
+              <a href={`tel:${config.contact.phone.replace(/\s+/g, "")}`}
+                 className="rounded-lg border border-gold-400 px-4 py-2.5 text-center text-sm font-bold tracking-[-0.01em] text-gold-400 hover:bg-white/5">
+                {t("home.helpCall")} · {config.contact.phone}
+              </a>
+            </div>
+          </div>
+        )}
+      </section>
 
       {/* ------------------------------------------------ closing CTA ----- */}
       <section className="rounded-lg bg-pine-800 px-6 py-14 text-center text-white sm:px-12">

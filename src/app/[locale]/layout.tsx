@@ -37,6 +37,7 @@ export default async function LocaleLayout({
   const nav = [
     { href: `/${locale}/transfers`, label: t("nav.transfers") },
     { href: `/${locale}/tours`, label: t("nav.tours") },
+    { href: `/${locale}/plan`, label: t("nav.plan") },
     { href: `/${locale}/business`, label: t("nav.business") },
     { href: `/${locale}/schools`, label: t("nav.schools") },
     { href: `/${locale}/about`, label: t("nav.about") },

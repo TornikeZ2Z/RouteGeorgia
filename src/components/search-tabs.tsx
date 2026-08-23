@@ -33,8 +33,8 @@ export function SearchTabs({ locale, locations }: { locale: string; locations: L
             key={id} role="tab" type="button"
             aria-selected={tab === id}
             onClick={() => setTab(id)}
-            className={`inline-flex items-center gap-2 px-1 py-2.5 text-sm transition-colors sm:px-2 ${
-              tab === id ? "font-bold tracking-[-0.02em] text-ink-900" : "text-ink-500 hover:text-ink-900"
+            className={`inline-flex items-center gap-2 rounded-lg px-4 py-2.5 text-sm transition-colors ${
+              tab === id ? "bg-brand-600 font-semibold text-white" : "text-ink-500 hover:text-ink-900"
             }`}
           >
             <svg viewBox="0 0 24 24" className="size-4.5" fill="none" stroke="currentColor"
