@@ -41,7 +41,7 @@
   --color-brand-400: #56779f;
   --color-brand-500: #2b4a74;
   --color-brand-600: #0b1d33;
-  --color-brand-700: #142e4e;
+  --color-brand-700: #183a5b; /* Route Blue — hover depth */
   --color-brand-800: #081524;
   --color-brand-900: #050e19;
 
@@ -66,10 +66,23 @@
   --color-gold-600: #a8871f;
   --color-gold-700: #7d6417;
 
+  /* Feedback (design system semantics) */
+  --color-success: #157a55;
+  --color-warning: #a56610;
+  --color-danger:  #b43b42;
+  --color-info:    #2e6e9e;
+
+  /* Motion (design system: small / component / spatial) */
+  --duration-fast: 120ms;
+  --duration-normal: 220ms;
+  --duration-slow: 420ms;
+  --ease-standard: cubic-bezier(.2, .8, .2, 1);
+
   --color-danger: #b3261e;
   --color-danger-bg: #fbeceb;
 
-  --font-sans: "Montserrat", "Noto Sans Georgian", "Segoe UI", Arial, sans-serif;
+  --font-sans: "Inter", "Noto Sans Georgian", "Segoe UI", Arial, sans-serif;
+  --font-display: "Montserrat", "Noto Sans Georgian", "Segoe UI", Arial, sans-serif;
 
   --radius-card: 1rem;
 
@@ -99,6 +112,11 @@ body {
 /* Bold labels carry the -0.02em tracking — a deliberate typographic tic. */
 .font-semibold, .font-bold, strong { letter-spacing: -0.02em; }
 
+/* Brand face for the display voice; Inter carries reading text. */
+h1, h2, h3, h4, h5, nav, button, .font-display {
+  font-family: var(--font-display);
+}
+
 /* Micro caps annotation above sections — steel, quiet. */
 .eyebrow {
   font-size: 0.6875rem;
@@ -119,7 +137,7 @@ body {
 }
 
 :focus-visible {
-  outline: 2px solid var(--color-brand-600);
+  outline: 3px solid var(--color-gold-500);
   outline-offset: 2px;
   border-radius: 4px;
 }

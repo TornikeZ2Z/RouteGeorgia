@@ -25,6 +25,7 @@
     "db:seed:launch": "tsx db/seed-launch-entry.mjs"
   },
   "dependencies": {
+    "@fontsource/inter": "^5.3.0",
     "@fontsource/montserrat": "^5.3.0",
     "bcryptjs": "^3.0.3",
     "drizzle-orm": "^0.45.2",
