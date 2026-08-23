@@ -164,6 +164,7 @@ export default async function LocaleLayout({
               <li><Link className="hover:text-white" href={`/${locale}/legal/terms`}>{t("footer.terms")}</Link></li>
               <li><Link className="hover:text-white" href={`/${locale}/legal/privacy`}>{t("footer.privacy")}</Link></li>
               <li><Link className="hover:text-white" href={`/${locale}/legal/cancellation`}>{t("footer.cancellation")}</Link></li>
+              <li><Link className="hover:text-white" href={`/${locale}/credits`}>{t("footer.credits")}</Link></li>
             </ul>
           </nav>
 

@@ -677,4 +677,10 @@ export const ka: Partial<Dictionary> = {
   "home.helpWhatsApp": "WhatsApp",
   "home.helpCall": "დაგვირეკეთ",
 
+
+  "credits.title": "ფოტოების ავტორები",
+  "credits.lead": "მიმართულებების ფოტოები ამ საიტზე Wikimedia Commons-ის ფოტოგრაფებს ეკუთვნით და გამოყენებულია ქვემოთ მითითებული ლიცენზიებით, ჩვენი მადლიერებით.",
+  "credits.ours": "გერგეტის, უშგულის, ძველი თბილისისა და მთის გზების ფოტოები RouteGeorgia-ს საკუთარია.",
+  "footer.credits": "ფოტოების ავტორები",
+
 };

@@ -677,4 +677,10 @@ export const ru: Partial<Dictionary> = {
   "home.helpWhatsApp": "WhatsApp",
   "home.helpCall": "Позвонить",
 
+
+  "credits.title": "Авторы фотографий",
+  "credits.lead": "Фотографии направлений на этом сайте принадлежат фотографам Wikimedia Commons и используются по указанным ниже лицензиям — с нашей благодарностью.",
+  "credits.ours": "Фотографии Гергети, Ушгули, старого Тбилиси и горных дорог — собственные снимки RouteGeorgia.",
+  "footer.credits": "Авторы фотографий",
+
 };

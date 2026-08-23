@@ -696,4 +696,10 @@ export const en = {
   "home.helpWhatsApp": "WhatsApp",
   "home.helpCall": "Call us",
 
+
+  "credits.title": "Photo credits",
+  "credits.lead": "Destination photography on this site comes from Wikimedia Commons photographers, used under the licenses listed below with our thanks.",
+  "credits.ours": "Photographs of Gergeti, Ushguli, Old Tbilisi and the mountain roads are RouteGeorgia's own.",
+  "footer.credits": "Photo credits",
+
 } as const;

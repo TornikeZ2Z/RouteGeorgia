@@ -10,3 +10,6 @@ coverage
 
 # Original photo drops stay local; only the web crops in public/photos ship.
 /Photoes/
+
+# Photo import bundles — processed crops live in public/photos
+routegeorgia-photos*.zip
