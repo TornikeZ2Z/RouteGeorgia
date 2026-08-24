@@ -18,7 +18,13 @@ services:
     plan: free
     branch: main
     autoDeploy: true
-    buildCommand: npm ci && npm run db:migrate && npm run build
+    # --include=optional is load-bearing, not decoration. Every native binary
+    # (lightningcss, esbuild, swc) is an optional dependency, and `npm ci` on
+    # Linux installs none of them from a lock file resolved on Windows — the
+    # build then dies in next build with "Cannot find module
+    # '../lightningcss.linux-x64-gnu.node'". A warm build cache hid this for
+    # weeks; it surfaced the moment a dependency changed and invalidated it.
+    buildCommand: npm ci --include=optional && npm run db:migrate && npm run build
     startCommand: npm run start
     # Not currently configured on the live service. /api/health returns 503
     # when Postgres is unreachable, so it is worth switching on: a process that
