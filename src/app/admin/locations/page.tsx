@@ -1,4 +1,5 @@
 import { requirePermission } from "@/lib/auth/session";
+import { adminT } from "@/lib/i18n/admin";
 import { sql } from "@db/client";
 import { Card, Field, Input, PageHeader, Select, Table } from "@/components/ui";
 import { ActionForm } from "@/components/form-state";
@@ -8,7 +9,8 @@ import { RouteFamilyForm } from "./forms";
 export const dynamic = "force-dynamic";
 
 export default async function LocationsPage() {
-  await requirePermission("admin.locations.write");
+  const staffUser = await requirePermission("admin.locations.write");
+  const t = adminT(staffUser.locale);
 
   const [locs, routes] = await Promise.all([
     sql<LocRow[]>`
@@ -26,7 +28,7 @@ export default async function LocationsPage() {
 
   return (
     <div className="space-y-6">
-      <PageHeader title="Locations and route families" />
+      <PageHeader title={t("page.locations")} />
 
       <section>
         <h2 className="mb-1 font-semibold text-ink-900">Route families</h2>

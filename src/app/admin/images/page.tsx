@@ -1,4 +1,5 @@
 import { requirePermission } from "@/lib/auth/session";
+import { adminT } from "@/lib/i18n/admin";
 import { sql } from "@db/client";
 import { Alert, PageHeader } from "@/components/ui";
 import { ImageRow } from "./row";
@@ -13,7 +14,8 @@ export const dynamic = "force-dynamic";
  * sell a trip better than a drawing.
  */
 export default async function Images() {
-  await requirePermission("admin.content.write");
+  const staffUser = await requirePermission("admin.content.write");
+  const t = adminT(staffUser.locale);
 
   const [tours, routes, locations] = await Promise.all([
     sql<{ id: string; slug: string; title: string; hero_image_key: string | null; hero_image_alt: string | null }[]>`
@@ -40,8 +42,8 @@ export default async function Images() {
   return (
     <div className="space-y-8">
       <PageHeader
-        title="Photography"
-        description="Replace the generated illustrations with real photographs."
+        title={t("page.images")}
+        description={t("page.imagesSub")}
       />
 
       <Alert tone="warning" title="Only upload photographs you own or have cleared">

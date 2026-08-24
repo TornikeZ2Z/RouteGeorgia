@@ -1,4 +1,5 @@
 import { requirePermission } from "@/lib/auth/session";
+import { adminT } from "@/lib/i18n/admin";
 import { sql } from "@db/client";
 import { Alert, Badge, PageHeader, Table } from "@/components/ui";
 import { ContentForm } from "./form";
@@ -6,7 +7,8 @@ import { ContentForm } from "./form";
 export const dynamic = "force-dynamic";
 
 export default async function Content() {
-  await requirePermission("admin.content.write");
+  const staffUser = await requirePermission("admin.content.write");
+  const t = adminT(staffUser.locale);
 
   const pages = await sql<{
     id: string; slug: string; locale: string; kind: string; title: string;
@@ -18,8 +20,8 @@ export default async function Content() {
   return (
     <div className="space-y-6">
       <PageHeader
-        title="Content"
-        description="Editorial copy shown on the public site, per language."
+        title={t("page.content")}
+        description={t("page.contentSub")}
       />
 
       <Alert tone="info" title="Translations fall back to English">

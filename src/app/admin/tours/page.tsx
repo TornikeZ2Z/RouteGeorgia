@@ -1,6 +1,7 @@
 import { requirePermission } from "@/lib/auth/session";
 import { sql } from "@db/client";
 import { Alert, Badge, Card, PageHeader } from "@/components/ui";
+import { adminT } from "@/lib/i18n/admin";
 import { LocaleTabs, TourVisibilityForm, TourCategoryForm, type TourTranslationValue } from "./forms";
 
 export const dynamic = "force-dynamic";
@@ -15,7 +16,8 @@ const LOCALES = ["en", "ka", "ru"] as const;
  * change what customers are charged, so they live with pricing review.
  */
 export default async function ToursAdmin() {
-  await requirePermission("admin.content.write");
+  const staffUser = await requirePermission("admin.content.write");
+  const t = adminT(staffUser.locale);
 
   const [tours, translations] = await Promise.all([
     sql<{ id: string; slug: string; active: boolean; category: string; duration_days: number; distance_km: string }[]>`
@@ -27,8 +29,8 @@ export default async function ToursAdmin() {
   return (
     <div className="space-y-8">
       <PageHeader
-        title="Tours"
-        description="Titles, summaries and descriptions in every language. Photography lives under Photography; pricing inputs are changed with pricing review."
+        title={t("page.tours")}
+        description={t("page.toursSub")}
       />
 
       {tours.length === 0 && <Alert tone="info">No tours exist yet.</Alert>}

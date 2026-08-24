@@ -1,11 +1,13 @@
 import { requirePermission } from "@/lib/auth/session";
+import { adminT } from "@/lib/i18n/admin";
 import { sql } from "@db/client";
 import { PageHeader, Table } from "@/components/ui";
 
 export const dynamic = "force-dynamic";
 
 export default async function AuditPage() {
-  await requirePermission("admin.audit.read");
+  const staffUser = await requirePermission("admin.audit.read");
+  const t = adminT(staffUser.locale);
 
   const rows = await sql<Row[]>`
     SELECT a.id, a.at, a.action, a.object_type, a.object_id, a.reason, a.correlation_id, u.email
@@ -15,8 +17,8 @@ export default async function AuditPage() {
   return (
     <div className="space-y-4">
       <PageHeader
-        title="Audit log"
-        description="Append-only. The database rejects updates and deletes on this table."
+        title={t("page.audit")}
+        description={t("page.auditSub")}
       />
       <Table head={["When", "Actor", "Action", "Object", "Reason", "Correlation"]}>
         {rows.map((r) => (

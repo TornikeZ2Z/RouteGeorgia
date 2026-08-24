@@ -2,6 +2,7 @@ import Link from "next/link";
 import { requirePermission } from "@/lib/auth/session";
 import { sql } from "@db/client";
 import { Alert, Badge, Card, EmptyState, PageHeader } from "@/components/ui";
+import { adminT } from "@/lib/i18n/admin";
 import { ModerateReview } from "./moderate";
 
 export const dynamic = "force-dynamic";
@@ -15,7 +16,8 @@ const PII = [
 ];
 
 export default async function ReviewQueue() {
-  await requirePermission("admin.drivers.decide");
+  const staffUser = await requirePermission("admin.drivers.decide");
+  const t = adminT(staffUser.locale);
 
   const rows = await sql<Row[]>`
     SELECT r.id, r.rating_overall, r.rating_safety, r.rating_punctuality,
@@ -32,8 +34,8 @@ export default async function ReviewQueue() {
   return (
     <div className="space-y-6">
       <PageHeader
-        title="Review moderation"
-        description="Publish or reject for personal data, threats and spam — never for being critical."
+        title={t("page.reviews")}
+        description={t("page.reviewsSub")}
       />
 
       <Alert tone="info" title="What to reject">

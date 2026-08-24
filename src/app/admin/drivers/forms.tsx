@@ -8,6 +8,7 @@ import {
   adminUpdateDriverProfileAction, adminResetDriverPasswordAction,
 } from "@/app/admin/actions";
 import { Textarea } from "@/components/ui";
+import { adminT } from "@/lib/i18n/admin";
 
 const INITIAL = { ok: false } as const;
 
@@ -26,63 +27,61 @@ function Result({ state }: { state: { ok: boolean; message?: string; errors?: st
 }
 
 /** Onboarding a driver who walked into the office rather than found the website. */
-export function CreateDriverForm({ locations }: { locations: { id: string; name_en: string }[] }) {
+export function CreateDriverForm({ locations, locale = "ka" }: { locations: { id: string; name_en: string }[]; locale?: string }) {
   const [state, action] = useActionState(createDriverAction, INITIAL);
   const [open, setOpen] = useState(false);
+  const t = adminT(locale);
 
   if (!open) {
     return (
       <button onClick={() => setOpen(true)}
               className="rounded-lg bg-brand-600 px-4 py-2.5 text-sm font-medium text-white hover:bg-brand-700">
-        Add a driver
+        {t("create.title")}
       </button>
     );
   }
 
   return (
     <Card className="p-5">
-      <h2 className="font-semibold text-ink-900">Add a driver</h2>
-      <p className="mt-1 text-sm text-ink-600">
-        Creates their account and starts an application. They still upload their own documents and go
-        through the same verification — this does not skip any check.
-      </p>
+      <h2 className="font-semibold text-ink-900">{t("create.title")}</h2>
+      <p className="mt-1 text-sm text-ink-600">{t("create.body")}</p>
 
       <form action={action} className="mt-4 space-y-3">
         <div className="grid gap-3 sm:grid-cols-2">
-          <Field label="Display name" htmlFor="publicName" hint="Shown publicly, e.g. “Giorgi K.”" required>
+          <Field label={t("create.displayName")} htmlFor="publicName" hint={t("create.displayNameHint")} required>
             <Input id="publicName" name="publicName" required />
           </Field>
-          <Field label="Email" htmlFor="driverEmail" hint="They sign in with this." required>
+          <Field label={t("create.email")} htmlFor="driverEmail" hint={t("create.emailHint")} required>
             <Input id="driverEmail" name="email" type="email" required />
           </Field>
-          <Field label="Legal first name" htmlFor="legalFirstName" required>
+          <Field label={t("editProfile.firstName")} htmlFor="legalFirstName" required>
             <Input id="legalFirstName" name="legalFirstName" required />
           </Field>
-          <Field label="Legal last name" htmlFor="legalLastName" required>
+          <Field label={t("editProfile.lastName")} htmlFor="legalLastName" required>
             <Input id="legalLastName" name="legalLastName" required />
           </Field>
-          <Field label="Phone" htmlFor="driverPhone" required>
+          <Field label={t("editProfile.phone")} htmlFor="driverPhone" required>
             <Input id="driverPhone" name="phone" placeholder="+995 …" required />
           </Field>
-          <Field label="Base location" htmlFor="baseLocationId">
+          <Field label={t("editProfile.baseLocation")} htmlFor="baseLocationId">
             <Select id="baseLocationId" name="baseLocationId" defaultValue="">
-              <option value="">Not set</option>
+              <option value="">{t("driver.notSet")}</option>
               {locations.map((l) => <option key={l.id} value={l.id}>{l.name_en}</option>)}
             </Select>
           </Field>
-          <Field label="Their language" htmlFor="driverLocale">
+          <Field label={t("create.language")} htmlFor="driverLocale">
             <Select id="driverLocale" name="locale" defaultValue="ka">
-              <option value="ka">Georgian</option>
+              <option value="ka">ქართული</option>
               <option value="en">English</option>
-              <option value="ru">Russian</option>
+              <option value="ru">Русский</option>
             </Select>
           </Field>
         </div>
 
         <div className="flex gap-2">
-          <SubmitButton>Create driver</SubmitButton>
+          <SubmitButton>{t("create.submit")}</SubmitButton>
           <button type="button" onClick={() => setOpen(false)}
-                  className="rounded-lg border border-ink-200 px-3 py-2 text-sm">Cancel</button>
+                  className="rounded-lg border border-ink-200 px-3 py-2 text-sm">{t("create.cancel")}</button>
         </div>
       </form>
       <Result state={state} />

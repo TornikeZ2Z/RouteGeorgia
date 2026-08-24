@@ -138,10 +138,118 @@ const D = {
   "bstatus.CLOSED": { ka: "დახურული", en: "Closed" },
   "bstatus.EXPIRED": { ka: "ვადაგასული", en: "Expired" },
 
+  // ------------------------------------------------------ decision panels --
+  "decision.title": { ka: "გადაწყვეტილება", en: "Decision" },
+  "decision.current": { ka: "მიმდინარე", en: "Current" },
+  "decision.setStatus": { ka: "სტატუსის შეცვლა", en: "Set status" },
+  "decision.reasonHint": { ka: "ინახება სამუდამოდ აუდიტის ჟურნალში.", en: "Stored permanently in the audit log." },
+  "decision.record": { ka: "გადაწყვეტილების ჩაწერა", en: "Record decision" },
+  "publish.title": { ka: "გამოქვეყნება", en: "Publication" },
+  "publish.visible": { ka: "ჩანს ძებნის შედეგებში.", en: "Visible in search results." },
+  "publish.hidden": { ka: "მგზავრებს არ უჩანთ.", en: "Not visible to travellers." },
+  "publish.remove": { ka: "ძებნიდან მოხსნა", en: "Remove from search" },
+  "publish.publish": { ka: "გამოქვეყნება ძებნაში", en: "Publish to search" },
+  "common.reason": { ka: "მიზეზი", en: "Reason" },
+  "common.save": { ka: "შენახვა", en: "Save" },
+  "common.set": { ka: "დაყენება", en: "Set" },
+  "common.yes": { ka: "დიახ", en: "yes" },
+  "common.no": { ka: "არა", en: "no" },
+  "common.expired": { ka: "ვადაგასული", en: "expired" },
+  "common.unverified": { ka: "დაუდასტურებელი", en: "unverified" },
+  "common.approve": { ka: "დამტკიცება", en: "Approve" },
+  "common.requestChanges": { ka: "ცვლილებების მოთხოვნა", en: "Request changes" },
+  "common.reject": { ka: "უარყოფა", en: "Reject" },
+  "common.suspend": { ka: "შეჩერება", en: "Suspend" },
+  "common.retire": { ka: "ჩამოწერა", en: "Retire" },
+  "common.publishWord": { ka: "გამოქვეყნება", en: "publish" },
+  "common.inReview": { ka: "განხილვაში", en: "In review" },
+
+  "lvl.BASIC": { ka: "საბაზისო", en: "basic" },
+  "lvl.CONVERSATIONAL": { ka: "სასაუბრო", en: "conversational" },
+  "lvl.FLUENT": { ka: "თავისუფლად", en: "fluent" },
+  "lvl.NATIVE": { ka: "მშობლიური", en: "native" },
+
+  "doc.IDENTITY": { ka: "პირადობა", en: "identity" },
+  "doc.DRIVING_LICENSE": { ka: "მართვის მოწმობა", en: "driving licence" },
+  "doc.VEHICLE_REGISTRATION": { ka: "ავტომობილის რეგისტრაცია", en: "vehicle registration" },
+  "doc.INSURANCE": { ka: "დაზღვევა", en: "insurance" },
+  "doc.INSPECTION": { ka: "ტექდათვალიერება", en: "technical inspection" },
+  "doc.TRAINING": { ka: "ტრენინგი", en: "training" },
+  "doc.OTHER": { ka: "სხვა", en: "other" },
+  "dstate.PENDING": { ka: "მოლოდინში", en: "Pending" },
+  "dstate.EXPIRED": { ka: "ვადაგასული", en: "Expired" },
+  "vstate.RETIRED": { ka: "ჩამოწერილი", en: "Retired" },
+  "vstate.PUBLISHED": { ka: "გამოქვეყნებული", en: "Published" },
+
+  "col.type": { ka: "ტიპი", en: "Type" },
+  "col.expires": { ka: "ვადა", en: "Expires" },
+  "col.state": { ka: "სტატუსი", en: "State" },
+  "col.note": { ka: "შენიშვნა", en: "Note" },
+  "col.decision": { ka: "გადაწყვეტილება", en: "Decision" },
+  "col.vehicle": { ka: "ავტომობილი", en: "Vehicle" },
+  "col.plate": { ka: "ნომერი", en: "Plate" },
+  "col.class": { ka: "კლასი", en: "Class" },
+  "col.capacity": { ka: "ადგილები/ბარგი", en: "Seats/luggage" },
+  "col.language": { ka: "ენა", en: "Language" },
+  "col.declared": { ka: "დეკლარირებული", en: "Declared" },
+  "col.verified": { ka: "დადასტურებული", en: "Verified" },
+  "col.interview": { ka: "გასაუბრების ჩაწერა", en: "Record interview" },
+
+  "upload.title": { ka: "დოკუმენტის ატვირთვა ამ მძღოლისთვის", en: "Upload a document for this driver" },
+  "upload.body": { ka: "ოფისში ონბორდინგისთვის. ფაილი ჩვეულებრივ შესამოწმებლად ხვდება და ქვემოთ დამტკიცება მაინც სჭირდება.", en: "For office onboarding. It arrives as pending and still needs an approval below." },
+  "upload.vehicle": { ka: "ავტომობილი (ავტომობილის დოკუმენტებისთვის)", en: "Vehicle (for vehicle documents)" },
+  "upload.notVehicleSpecific": { ka: "ზოგადი — ავტომობილს არ ეხება", en: "Not vehicle-specific" },
+  "upload.expiry": { ka: "ვადის გასვლის თარიღი", en: "Expiry date" },
+  "upload.expiryHint": { ka: "სავალდებულოა მოწმობისა და დაზღვევისთვის.", en: "Required for licence and insurance." },
+  "upload.number": { ka: "დოკუმენტის ნომერი", en: "Document number" },
+  "upload.numberHint": { ka: "ინახება მხოლოდ ჰეშის სახით.", en: "Stored as a hash only." },
+  "upload.file": { ka: "სკანი ან ფოტო", en: "Scan or photo" },
+  "upload.submit": { ka: "ატვირთვა შესამოწმებლად", en: "Upload as pending" },
+
+  "create.title": { ka: "მძღოლის დამატება", en: "Add a driver" },
+  "create.body": { ka: "ქმნის ანგარიშს და იწყებს განაცხადს. დოკუმენტებს თავად ატვირთავენ და იმავე შემოწმებას გადიან — არცერთი ეტაპი არ იპარება.", en: "Creates their account and starts an application. They still upload their own documents and go through the same verification — this does not skip any check." },
+  "create.displayName": { ka: "საჯარო სახელი", en: "Display name" },
+  "create.displayNameHint": { ka: "მგზავრებს უჩანთ, მაგ. „გიორგი კ.“", en: "Shown publicly, e.g. “Giorgi K.”" },
+  "create.email": { ka: "ელფოსტა", en: "Email" },
+  "create.emailHint": { ka: "ამით შედიან სისტემაში.", en: "They sign in with this." },
+  "create.language": { ka: "მათი ენა", en: "Their language" },
+  "create.submit": { ka: "მძღოლის შექმნა", en: "Create driver" },
+  "create.cancel": { ka: "გაუქმება", en: "Cancel" },
+
+  // -------------------------------------------------- driver detail extra --
+  "driver.suspendedTitle": { ka: "შეჩერებულია", en: "Suspended" },
+  "driver.supportReadOnly": { ka: "თქვენი როლი ამ ჩანაწერს მხოლოდ კითხულობს — გადაწყვეტილებას ოპერაციების მენეჯერი იღებს.", en: "Your role can read this record but not decide on it. Decisions require an operations manager." },
+  "driver.kycNote": { ka: "ფაილები შეზღუდული საცავიდან ნაკადურად მიეწოდება და პირდაპირი ბმულით არასდროს ქვეყნდება. ყოველი გახსნა აუდიტის ჟურნალში იწერება.", en: "Files are streamed from restricted storage, never linked directly. Every time a reviewer opens one it is written to the audit log." },
+  "driver.srcPublic": { ka: "საჯარო ფორმით", en: "Public form" },
+  "driver.srcStaff": { ka: "თანამშრომელმა შეიყვანა", en: "Entered by staff" },
+  "driver.srcImport": { ka: "იმპორტი", en: "Imported" },
+  "driver.source": { ka: "წყარო", en: "Source" },
+  "driver.submittedAt": { ka: "გაგზავნილია", en: "Submitted" },
+  "driver.born": { ka: "დაბადებული", en: "Born" },
+  "driver.declaredExp": { ka: "დეკლარირებული გამოცდილება", en: "Declared experience" },
+  "driver.heard": { ka: "საიდან შეიტყო", en: "Heard about us" },
+  "driver.years": { ka: "წ.", en: "yr" },
+
+  "agr.signed": { ka: "ხელმოწერილია", en: "Signed" },
+  "agr.notSigned": { ka: "ხელმოუწერელი", en: "Not signed" },
+  "agr.status": { ka: "სტატუსი", en: "Status" },
+  "agr.version": { ka: "ვერსია", en: "Version" },
+  "agr.signedAt": { ka: "ხელმოწერის დრო", en: "Signed" },
+  "agr.nameTyped": { ka: "აკრეფილი სახელი", en: "Name typed" },
+  "agr.language": { ka: "ენა", en: "Language" },
+  "agr.fingerprint": { ka: "დოკუმენტის ანაბეჭდი", en: "Document fingerprint" },
+  "agr.noCompany": { ka: "ხელშეკრულების შეთავაზება ჯერ შეუძლებელია: კომპანიის რეკვიზიტები ({fields}) შევსებული არ არის, ხელშეკრულება კი არარსებულ მხარეს ვერ დაასახელებს. შეავსეთ გარემოს ცვლადები და გამოაქვეყნეთ ვერსია.", en: "No agreement can be offered yet: {fields} not set, so the contract would name a counterparty that does not exist. Set them in the environment, then publish a contract version." },
+  "agr.noVersion": { ka: "ხელშეკრულების ვერსია გამოქვეყნებული არ არის — ხელს ვერავინ მოაწერს და ლაივში ვერავინ გავა.", en: "No contract version is published, so nobody can sign one and nobody can go live." },
+  "agr.waiting": { ka: "ვერსია {version} ელოდება ამ მძღოლს. დამტკიცებისას ეცნობა ელფოსტითა და SMS-ით. პროფილი ხელმოწერამდე ვერ გამოქვეყნდება.", en: "Version {version} is waiting for this driver. They were told by email and SMS when they were approved. This profile cannot be published until they sign." },
+
   // ---------------------------------------------------------- page titles --
   "page.bookings": { ka: "ჯავშნები", en: "Bookings" },
   "page.bookingsSub": { ka: "ჯერ ის, ვინც ყველაზე ადრე მიემგზავრება.", en: "Soonest departure first." },
   "page.support": { ka: "მხარდაჭერის მიმართვები", en: "Support tickets" },
+  "page.supportSub": { ka: "სიმძიმე წყვეტს რეაგირებას — და არა ზარის ტონი.", en: "Severity decides the response, not the mood of the caller." },
+  "page.financeSub": { ka: "წიგნი, ანგარიშსწორებები და ლიმიტები.", en: "The ledger, settlements and credit limits." },
+  "page.pricingSub": { ka: "ზღვრები, რომლებშიც მძღოლის ფასი უნდა ჯდებოდეს.", en: "Guardrails that constrain what drivers may charge." },
+  "page.auditSub": { ka: "დაუმატებელი და წაუშლელი — მხოლოდ წასაკითხი.", en: "Append-only and immutable — read it, never edit it." },
   "page.finance": { ka: "ფინანსები", en: "Finance" },
   "page.reviews": { ka: "შეფასებები", en: "Reviews" },
   "page.media": { ka: "ავტომობილის ფოტოები", en: "Vehicle photos" },
@@ -152,6 +260,15 @@ const D = {
   "page.images": { ka: "საიტის ფოტოები", en: "Photography" },
   "page.staff": { ka: "თანამშრომლები", en: "Staff" },
   "page.audit": { ka: "აუდიტის ჟურნალი", en: "Audit log" },
+  "page.reviewsSub": { ka: "გამოაქვეყნეთ ან უარყავით პირადი მონაცემების, მუქარისა და სპამის გამო — არასდროს კრიტიკის გამო.", en: "Publish or reject for personal data, threats and spam — never for being critical." },
+  "page.mediaSub": { ka: "უარყავით ყველაფერი, რაც რეგისტრირებული ავტომობილი არ არის, ან სახეებს, სხვის ნომრებს ან საკონტაქტო მონაცემებს აჩვენებს.", en: "Reject anything that is not the registered vehicle, or that shows faces, other plates or contact details." },
+  "page.toursSub": { ka: "სათაურები და აღწერები ყველა ენაზე.", en: "Titles, summaries and descriptions in every language." },
+  "page.contentSub": { ka: "საჯარო საიტის ტექსტები, ენების მიხედვით.", en: "Editorial copy shown on the public site, per language." },
+  "page.imagesSub": { ka: "ილუსტრაციების ჩანაცვლება ნამდვილი ფოტოებით.", en: "Replace the generated illustrations with real photographs." },
+  "page.staffTitle": { ka: "თანამშრომლები და წვდომა", en: "Staff and access" },
+  "page.staffSub": { ka: "ვინ შედის ოპერაციებში და რისი უფლება აქვს.", en: "Who can sign in to operations, and what they may do." },
+  "page.financeDetail": { ka: "ჯამები წიგნიდან ითვლება და არა ჯავშნის სტრიქონებიდან.", en: "Summed from the ledger, not from booking rows." },
+
 } satisfies Record<string, Entry>;
 
 export type AdminKey = keyof typeof D;
@@ -174,4 +291,27 @@ export function driverStatusLabel(status: string, locale: string): string {
 export function bookingStatusLabel(status: string, locale: string): string {
   const key = `bstatus.${status}` as AdminKey;
   return key in D ? adminT(locale)(key) : status;
+}
+
+export function docTypeLabel(type: string, locale: string): string {
+  const key = `doc.${type}` as AdminKey;
+  return key in D ? adminT(locale)(key) : type.replaceAll("_", " ").toLowerCase();
+}
+
+/** Review states are shared by documents; driver statuses cover the rest. */
+export function reviewStateLabel(state: string, locale: string): string {
+  const own = `dstate.${state}` as AdminKey;
+  if (own in D) return adminT(locale)(own);
+  return driverStatusLabel(state, locale);
+}
+
+export function vehicleStateLabel(state: string, locale: string): string {
+  const own = `vstate.${state}` as AdminKey;
+  if (own in D) return adminT(locale)(own);
+  return driverStatusLabel(state, locale);
+}
+
+export function proficiencyLabel(level: string, locale: string): string {
+  const key = `lvl.${level}` as AdminKey;
+  return key in D ? adminT(locale)(key) : level.toLowerCase();
 }

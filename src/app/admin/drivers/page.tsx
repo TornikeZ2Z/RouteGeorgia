@@ -59,7 +59,7 @@ export default async function DriversList({
       <PageHeader
         title={t("drivers.title")}
         description={`${rows.length} ${t("drivers.records")}`}
-        actions={<CreateDriverForm locations={locations} />}
+        actions={<CreateDriverForm locations={locations} locale={user.locale} />}
       />
 
       <div className="flex flex-wrap items-center gap-2">

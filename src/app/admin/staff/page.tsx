@@ -1,4 +1,5 @@
 import { requirePermission } from "@/lib/auth/session";
+import { adminT } from "@/lib/i18n/admin";
 import { sql } from "@db/client";
 import { Alert, Badge, Card, PageHeader, Table } from "@/components/ui";
 import { StaffForm, RevokeButton } from "./forms";
@@ -19,6 +20,7 @@ const DESCRIPTION: Record<string, string> = {
 
 export default async function Staff() {
   const actor = await requirePermission("admin.rbac.write");
+  const t = adminT(actor.locale);
 
   const rows = await sql<{ id: string; email: string; roles: string[]; last_auth_at: Date | null; status: string }[]>`
     SELECT u.id, u.email, u.status::text AS status, u.last_auth_at,
@@ -30,8 +32,8 @@ export default async function Staff() {
   return (
     <div className="space-y-6">
       <PageHeader
-        title="Staff and access"
-        description="Who can sign in to operations, and what they may do."
+        title={t("page.staffTitle")}
+        description={t("page.staffSub")}
       />
 
       <Alert tone="warning" title="This is the permission that grants every other permission">

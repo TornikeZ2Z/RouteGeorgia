@@ -2,6 +2,7 @@ import Link from "next/link";
 import { requirePermission } from "@/lib/auth/session";
 import { sql } from "@db/client";
 import { Alert, Badge, Card, EmptyState, PageHeader } from "@/components/ui";
+import { adminT } from "@/lib/i18n/admin";
 import { OpenTicketForm, TicketActions } from "./forms";
 
 export const dynamic = "force-dynamic";
@@ -21,7 +22,8 @@ const SEVERITY: Record<string, { tone: "danger" | "warning" | "info" | "neutral"
  * it happened to remember.
  */
 export default async function Support() {
-  await requirePermission("admin.bookings.read");
+  const staffUser = await requirePermission("admin.bookings.read");
+  const t = adminT(staffUser.locale);
 
   const [tickets, notes, bookings] = await Promise.all([
     sql<Row[]>`
@@ -52,8 +54,8 @@ export default async function Support() {
   return (
     <div className="space-y-6">
       <PageHeader
-        title="Support"
-        description={`${open.length} open · ${tickets.length} total`}
+        title={t("page.support")}
+        description={`${open.length} / ${tickets.length} · ${t("page.supportSub")}`}
       />
 
       <Alert tone="info" title="Severity decides the response, not the mood of the caller">

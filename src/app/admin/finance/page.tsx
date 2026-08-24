@@ -4,6 +4,7 @@ import { sql } from "@db/client";
 import { formatMoney } from "@/lib/money";
 import { ledgerIsBalanced } from "@/lib/ledger";
 import { Alert, Badge, Card, EmptyState, PageHeader, Table } from "@/components/ui";
+import { adminT } from "@/lib/i18n/admin";
 
 export const dynamic = "force-dynamic";
 
@@ -15,7 +16,8 @@ export const dynamic = "force-dynamic";
  * keeping one.
  */
 export default async function Finance() {
-  await requirePermission("admin.finance.read");
+  const staffUser = await requirePermission("admin.finance.read");
+  const t = adminT(staffUser.locale);
 
   const [balances, owing, recent, integrity, refunds] = await Promise.all([
     sql<{ kind: string; net: string }[]>`
@@ -55,8 +57,8 @@ export default async function Finance() {
   return (
     <div className="space-y-6">
       <PageHeader
-        title="Finance"
-        description="Summed from the ledger, not from booking rows."
+        title={t("page.finance")}
+        description={t("page.financeDetail")}
       />
 
       {integrity.balanced ? (

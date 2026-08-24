@@ -6,7 +6,9 @@ import { Alert, Badge, Card, PageHeader, Table } from "@/components/ui";
 import { DecisionPanel, DocumentDecision, VehicleDecision, LanguageVerification, PublishPanel, UploadDocumentPanel } from "./panels";
 import { AdminDriverProfileForm, ResetPasswordPanel, WalletPanel } from "../forms";
 import { impersonateDriverAction } from "@/app/admin/actions";
-import { adminT } from "@/lib/i18n/admin";
+import {
+  adminT, driverStatusLabel, docTypeLabel, reviewStateLabel, vehicleStateLabel, proficiencyLabel,
+} from "@/lib/i18n/admin";
 import { driverBalance } from "@/lib/ledger";
 import { getActiveContract, getSignature, missingCompanyDetails } from "@/lib/contract";
 import { can as canDo } from "@/lib/rbac";
@@ -65,52 +67,50 @@ export default async function DriverDetail({ params }: { params: Promise<{ id: s
         description={`${driver.legal_first_name ?? ""} ${driver.legal_last_name ?? ""} · ${driver.email}`}
         actions={
           <>
-            <Badge tone={driver.status === "APPROVED" ? "success" : "info"}>{driver.status}</Badge>
-            {driver.published && <Badge tone="success">Live</Badge>}
+            <Badge tone={driver.status === "APPROVED" ? "success" : "info"}>{driverStatusLabel(driver.status, actor.locale)}</Badge>
+            {driver.published && <Badge tone="success">{t("drivers.live")}</Badge>}
           </>
         }
       />
 
       {driver.suspended_reason && (
-        <Alert tone="danger" title="Suspended">{driver.suspended_reason}</Alert>
+        <Alert tone="danger" title={t("driver.suspendedTitle")}>{driver.suspended_reason}</Alert>
       )}
 
       {!mayDecide && (
-        <Alert tone="info">
-          Your role can read this record but not decide on it. Decisions require an operations manager.
-        </Alert>
+        <Alert tone="info">{t("driver.supportReadOnly")}</Alert>
       )}
 
       <div className="grid gap-6 lg:grid-cols-3">
         <div className="space-y-6 lg:col-span-2">
           <section>
-            <h2 className="mb-2 font-semibold text-ink-900">Documents</h2>
-            <Table head={["Type", "Expires", "State", "Note", ...(mayDecideDocs ? ["Decision"] : [])]}>
+            <h2 className="mb-2 font-semibold text-ink-900">{t("driver.documentsTitle")}</h2>
+            <Table head={[t("col.type"), t("col.expires"), t("col.state"), t("col.note"), ...(mayDecideDocs ? [t("col.decision")] : [])]}>
               {docs.map((d) => (
                 <tr key={d.id}>
                   <td className="px-4 py-2.5">
                     {canDo(actor.roles, "admin.documents.read") ? (
                       <a href={`/api/admin/documents/${d.id}`} target="_blank" rel="noreferrer"
                          className="text-ink-900 underline">
-                        {d.type.replaceAll("_", " ").toLowerCase()}
+                        {docTypeLabel(d.type, actor.locale)}
                       </a>
-                    ) : d.type.replaceAll("_", " ").toLowerCase()}
+                    ) : docTypeLabel(d.type, actor.locale)}
                   </td>
                   <td className="px-4 py-2.5 tabular-nums">
                     {d.expires_on ?? "—"}
                     {d.expires_on && new Date(d.expires_on) < new Date() && (
-                      <span className="ml-2 text-xs text-[--color-danger]">expired</span>
+                      <span className="ml-2 text-xs text-[--color-danger]">{t("common.expired")}</span>
                     )}
                   </td>
                   <td className="px-4 py-2.5">
                     <Badge tone={d.state === "APPROVED" ? "success" : d.state === "PENDING" ? "info" : "warning"}>
-                      {d.state}
+                      {reviewStateLabel(d.state, actor.locale)}
                     </Badge>
                   </td>
                   <td className="px-4 py-2.5 text-xs text-ink-600">{d.review_reason ?? "—"}</td>
                   {mayDecideDocs && (
                     <td className="px-4 py-2.5">
-                      <DocumentDecision documentId={d.id} driverId={driver.id} />
+                      <DocumentDecision documentId={d.id} driverId={driver.id} locale={actor.locale} />
                     </td>
                   )}
                 </tr>
@@ -120,19 +120,17 @@ export default async function DriverDetail({ params }: { params: Promise<{ id: s
               <div className="mt-4">
                 <UploadDocumentPanel
                   driverId={driver.id}
+                  locale={actor.locale}
                   vehicles={vehicleRows.map((v) => ({ id: v.id, label: `${v.make} ${v.model} (${v.plate ?? v.year})` }))}
                 />
               </div>
             )}
-            <p className="mt-2 text-xs text-ink-500">
-              Files are streamed from restricted storage, never linked directly. Every time a reviewer
-              opens one it is written to the audit log.
-            </p>
+            <p className="mt-2 text-xs text-ink-500">{t("driver.kycNote")}</p>
           </section>
 
           <section>
-            <h2 className="mb-2 font-semibold text-ink-900">Vehicles</h2>
-            <Table head={["Vehicle", "Plate", "Class", "Capacity", "4x4", "State", ...(mayDecide ? ["Decision"] : [])]}>
+            <h2 className="mb-2 font-semibold text-ink-900">{t("driver.vehiclesTitle")}</h2>
+            <Table head={[t("col.vehicle"), t("col.plate"), t("col.class"), t("col.capacity"), "4x4", t("col.state"), ...(mayDecide ? [t("col.decision")] : [])]}>
               {vehicleRows.map((v) => (
                 <tr key={v.id}>
                   <td className="px-4 py-2.5">{v.make} {v.model} · {v.year}</td>
@@ -140,14 +138,16 @@ export default async function DriverDetail({ params }: { params: Promise<{ id: s
                   <td className="px-4 py-2.5">{v.class.replaceAll("_", " ").toLowerCase()}</td>
                   <td className="px-4 py-2.5">{v.seats}/{v.luggage}</td>
                   <td className="px-4 py-2.5">
-                    {(v.capabilities as Record<string, boolean>)?.four_wheel_drive ? "yes" : "no"}
+                    {(v.capabilities as Record<string, boolean>)?.four_wheel_drive ? t("common.yes") : t("common.no")}
                   </td>
                   <td className="px-4 py-2.5">
-                    <Badge tone={v.published ? "success" : "neutral"}>{v.published ? "Published" : v.status}</Badge>
+                    <Badge tone={v.published ? "success" : "neutral"}>
+                      {v.published ? vehicleStateLabel("PUBLISHED", actor.locale) : vehicleStateLabel(v.status, actor.locale)}
+                    </Badge>
                   </td>
                   {mayDecide && (
                     <td className="px-4 py-2.5">
-                      <VehicleDecision vehicleId={v.id} driverId={driver.id} />
+                      <VehicleDecision vehicleId={v.id} driverId={driver.id} locale={actor.locale} />
                     </td>
                   )}
                 </tr>
@@ -156,20 +156,20 @@ export default async function DriverDetail({ params }: { params: Promise<{ id: s
           </section>
 
           <section>
-            <h2 className="mb-2 font-semibold text-ink-900">Languages</h2>
-            <Table head={["Language", "Declared", "Verified", ...(mayDecide ? ["Record interview"] : [])]}>
+            <h2 className="mb-2 font-semibold text-ink-900">{t("driver.languagesTitle")}</h2>
+            <Table head={[t("col.language"), t("col.declared"), t("col.verified"), ...(mayDecide ? [t("col.interview")] : [])]}>
               {languages.map((l) => (
                 <tr key={l.language}>
                   <td className="px-4 py-2.5">{l.language}</td>
-                  <td className="px-4 py-2.5">{l.declared_level.toLowerCase()}</td>
+                  <td className="px-4 py-2.5">{proficiencyLabel(l.declared_level, actor.locale)}</td>
                   <td className="px-4 py-2.5">
                     {l.verified_level
-                      ? <Badge tone="success">{l.verified_level.toLowerCase()}</Badge>
-                      : <Badge tone="warning">unverified</Badge>}
+                      ? <Badge tone="success">{proficiencyLabel(l.verified_level, actor.locale)}</Badge>
+                      : <Badge tone="warning">{t("common.unverified")}</Badge>}
                   </td>
                   {mayDecide && (
                     <td className="px-4 py-2.5">
-                      <LanguageVerification driverId={driver.id} language={l.language} />
+                      <LanguageVerification driverId={driver.id} language={l.language} locale={actor.locale} />
                     </td>
                   )}
                 </tr>
@@ -178,9 +178,9 @@ export default async function DriverDetail({ params }: { params: Promise<{ id: s
           </section>
 
           <section>
-            <h2 className="mb-2 font-semibold text-ink-900">Decision history</h2>
+            <h2 className="mb-2 font-semibold text-ink-900">{t("driver.historyTitle")}</h2>
             {decisions.length === 0 ? (
-              <p className="text-sm text-ink-500">No decisions recorded yet.</p>
+              <p className="text-sm text-ink-500">{t("driver.historyEmpty")}</p>
             ) : (
               <ul className="space-y-2">
                 {decisions.map((d, i) => (
@@ -214,33 +214,33 @@ export default async function DriverDetail({ params }: { params: Promise<{ id: s
               a trigger on driver_profiles. Say where the file stands before a
               reviewer tries and gets refused. */}
           <Card className="p-4 text-sm">
-            <h3 className="font-semibold text-ink-900">Driver agreement</h3>
+            <h3 className="font-semibold text-ink-900">{t("driver.agreementTitle")}</h3>
             {signature ? (
               <dl className="mt-2 space-y-1.5 text-ink-600">
                 <div className="flex justify-between gap-3">
-                  <dt className="text-ink-500">Status</dt>
-                  <dd><Badge tone="success">Signed</Badge></dd>
+                  <dt className="text-ink-500">{t("agr.status")}</dt>
+                  <dd><Badge tone="success">{t("agr.signed")}</Badge></dd>
                 </div>
                 <div className="flex justify-between gap-3">
-                  <dt className="text-ink-500">Version</dt>
+                  <dt className="text-ink-500">{t("agr.version")}</dt>
                   <dd className="text-right">{signature.contractVersion}</dd>
                 </div>
                 <div className="flex justify-between gap-3">
-                  <dt className="text-ink-500">Signed</dt>
+                  <dt className="text-ink-500">{t("agr.signedAt")}</dt>
                   <dd className="text-right tabular-nums">
                     {new Date(signature.signedAt).toLocaleString()}
                   </dd>
                 </div>
                 <div className="flex justify-between gap-3">
-                  <dt className="text-ink-500">Name typed</dt>
+                  <dt className="text-ink-500">{t("agr.nameTyped")}</dt>
                   <dd className="text-right">{signature.signedName}</dd>
                 </div>
                 <div className="flex justify-between gap-3">
-                  <dt className="text-ink-500">Language</dt>
+                  <dt className="text-ink-500">{t("agr.language")}</dt>
                   <dd className="text-right uppercase">{signature.locale}</dd>
                 </div>
                 <div className="mt-1 border-t border-ink-100 pt-2">
-                  <dt className="text-ink-500">Document fingerprint</dt>
+                  <dt className="text-ink-500">{t("agr.fingerprint")}</dt>
                   <dd className="mt-1 break-all font-mono text-[11px] text-ink-600">
                     {signature.bodyHash}
                   </dd>
@@ -248,22 +248,14 @@ export default async function DriverDetail({ params }: { params: Promise<{ id: s
               </dl>
             ) : missingCompany.length > 0 ? (
               <p className="mt-2 leading-relaxed text-ink-600">
-                No agreement can be offered yet: {missingCompany.join(", ")}{" "}
-                {missingCompany.length === 1 ? "is" : "are"} not set, so the contract would name a
-                counterparty that does not exist. Set them in the environment, then publish a
-                contract version.
+                {t("agr.noCompany", { fields: missingCompany.join(", ") })}
               </p>
             ) : !contract ? (
-              <p className="mt-2 leading-relaxed text-ink-600">
-                No contract version is published, so nobody can sign one and nobody can go live.
-              </p>
+              <p className="mt-2 leading-relaxed text-ink-600">{t("agr.noVersion")}</p>
             ) : (
               <p className="mt-2 leading-relaxed text-ink-600">
-                <Badge tone="warning">Not signed</Badge>{" "}
-                <span className="mt-2 block">
-                  Version {contract.version} is waiting for this driver. They were told by email and
-                  SMS when they were approved. This profile cannot be published until they sign.
-                </span>
+                <Badge tone="warning">{t("agr.notSigned")}</Badge>{" "}
+                <span className="mt-2 block">{t("agr.waiting", { version: contract.version })}</span>
               </p>
             )}
           </Card>
@@ -303,15 +295,15 @@ export default async function DriverDetail({ params }: { params: Promise<{ id: s
             />
           )}
 
-          {mayDecide && <DecisionPanel driverId={driver.id} currentStatus={driver.status} />}
-          {mayPublish && <PublishPanel driverId={driver.id} published={driver.published} />}
+          {mayDecide && <DecisionPanel driverId={driver.id} currentStatus={driver.status} locale={actor.locale} />}
+          {mayPublish && <PublishPanel driverId={driver.id} published={driver.published} locale={actor.locale} />}
 
           <Card className="p-4 text-sm">
-            <h3 className="font-semibold text-ink-900">Contact</h3>
+            <h3 className="font-semibold text-ink-900">{t("driver.contactTitle")}</h3>
             <p className="mt-2 text-ink-600">{driver.email}</p>
             {driver.phone && <p className="text-ink-600">{driver.phone}</p>}
             <p className="mt-2 text-xs text-ink-500">
-              Base: {driver.base_location ?? "not set"}
+              {t("driver.base")}: {driver.base_location ?? t("driver.notSet")}
             </p>
           </Card>
 
@@ -320,18 +312,18 @@ export default async function DriverDetail({ params }: { params: Promise<{ id: s
               than one typed in the office, but a reviewer should know which
               one they are reading. */}
           <Card className="p-4 text-sm">
-            <h3 className="font-semibold text-ink-900">Application</h3>
+            <h3 className="font-semibold text-ink-900">{t("driver.applicationTitle")}</h3>
             <dl className="mt-2 space-y-1.5 text-ink-600">
               <div className="flex justify-between gap-3">
-                <dt className="text-ink-500">Source</dt>
+                <dt className="text-ink-500">{t("driver.source")}</dt>
                 <dd className="text-right">
-                  {driver.applied_via === "public_form" ? "Public form" :
-                   driver.applied_via === "import" ? "Imported" : "Entered by staff"}
+                  {driver.applied_via === "public_form" ? t("driver.srcPublic") :
+                   driver.applied_via === "import" ? t("driver.srcImport") : t("driver.srcStaff")}
                 </dd>
               </div>
               {driver.submitted_at && (
                 <div className="flex justify-between gap-3">
-                  <dt className="text-ink-500">Submitted</dt>
+                  <dt className="text-ink-500">{t("driver.submittedAt")}</dt>
                   <dd className="text-right tabular-nums">
                     {new Date(driver.submitted_at).toLocaleDateString()}
                   </dd>
@@ -339,19 +331,19 @@ export default async function DriverDetail({ params }: { params: Promise<{ id: s
               )}
               {driver.date_of_birth && (
                 <div className="flex justify-between gap-3">
-                  <dt className="text-ink-500">Born</dt>
+                  <dt className="text-ink-500">{t("driver.born")}</dt>
                   <dd className="text-right tabular-nums">{driver.date_of_birth}</dd>
                 </div>
               )}
               {driver.experience_years !== null && (
                 <div className="flex justify-between gap-3">
-                  <dt className="text-ink-500">Declared experience</dt>
-                  <dd className="text-right tabular-nums">{driver.experience_years} yr</dd>
+                  <dt className="text-ink-500">{t("driver.declaredExp")}</dt>
+                  <dd className="text-right tabular-nums">{driver.experience_years} {t("driver.years")}</dd>
                 </div>
               )}
               {driver.referral_source && (
                 <div className="flex justify-between gap-3">
-                  <dt className="text-ink-500">Heard about us</dt>
+                  <dt className="text-ink-500">{t("driver.heard")}</dt>
                   <dd className="text-right">{driver.referral_source}</dd>
                 </div>
               )}

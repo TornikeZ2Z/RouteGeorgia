@@ -2,6 +2,7 @@ import Link from "next/link";
 import { requirePermission } from "@/lib/auth/session";
 import { sql } from "@db/client";
 import { EmptyState, PageHeader } from "@/components/ui";
+import { adminT } from "@/lib/i18n/admin";
 import { VehiclePhoto } from "@/components/vehicle-photo";
 import { MediaDecision } from "./decision";
 
@@ -13,7 +14,8 @@ export const dynamic = "force-dynamic";
  * without a human looking at it.
  */
 export default async function MediaQueue() {
-  await requirePermission("admin.drivers.decide");
+  const staffUser = await requirePermission("admin.drivers.decide");
+  const t = adminT(staffUser.locale);
 
   const rows = await sql<Row[]>`
     SELECT vm.id, vm.storage_key, vm.alt_text, vm.view_type, vm.created_at,
@@ -29,8 +31,8 @@ export default async function MediaQueue() {
   return (
     <div className="space-y-6">
       <PageHeader
-        title="Photo moderation"
-        description={`${rows.length} photo(s) waiting. Reject anything that is not the registered vehicle, or that shows faces, other cars' plates, or contact details.`}
+        title={t("page.media")}
+        description={`${rows.length} · ${t("page.mediaSub")}`}
       />
 
       {rows.length === 0 ? (

@@ -1,4 +1,5 @@
 import { requirePermission } from "@/lib/auth/session";
+import { adminT } from "@/lib/i18n/admin";
 import { sql } from "@db/client";
 import { config } from "@/lib/config";
 import { toMajorString } from "@/lib/money";
@@ -10,6 +11,7 @@ export const dynamic = "force-dynamic";
 
 export default async function PricingBandsPage() {
   const actor = await requirePermission("admin.pricing.approve");
+  const t = adminT(actor.locale);
 
   const bands = await sql<BandRow[]>`
     SELECT class::text AS class, currency, min_rate_per_km_minor, max_rate_per_km_minor,
@@ -23,7 +25,7 @@ export default async function PricingBandsPage() {
 
   return (
     <div className="space-y-6">
-      <PageHeader title="Price bands and policy" description="Guardrails that constrain what drivers may charge." />
+      <PageHeader title={t("page.pricing")} description={t("page.pricingSub")} />
 
       <div className="grid gap-4 sm:grid-cols-4">
         <Card className="p-4">
