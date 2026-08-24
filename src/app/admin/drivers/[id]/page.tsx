@@ -4,7 +4,9 @@ import { can } from "@/lib/rbac";
 import { sql } from "@db/client";
 import { Alert, Badge, Card, PageHeader, Table } from "@/components/ui";
 import { DecisionPanel, DocumentDecision, VehicleDecision, LanguageVerification, PublishPanel, UploadDocumentPanel } from "./panels";
-import { WalletPanel } from "../forms";
+import { AdminDriverProfileForm, ResetPasswordPanel, WalletPanel } from "../forms";
+import { impersonateDriverAction } from "@/app/admin/actions";
+import { adminT } from "@/lib/i18n/admin";
 import { driverBalance } from "@/lib/ledger";
 import { getActiveContract, getSignature, missingCompanyDetails } from "@/lib/contract";
 import { can as canDo } from "@/lib/rbac";
@@ -15,10 +17,13 @@ export default async function DriverDetail({ params }: { params: Promise<{ id: s
   const actor = await requirePermission("admin.drivers.read");
   const { id } = await params;
 
+  const t = adminT(actor.locale);
+
   const [driver] = await sql<DriverRow[]>`
     SELECT d.id, d.public_name, d.handle, d.legal_first_name, d.legal_last_name, d.bio,
            d.status::text AS status, d.published, d.submitted_at, d.suspended_reason,
            d.applied_via, d.experience_years, d.referral_source, d.date_of_birth,
+           d.base_location_id,
            u.email, u.phone, l.name_en AS base_location
     FROM driver_profiles d
     JOIN users u ON u.id = d.user_id
@@ -44,6 +49,9 @@ export default async function DriverDetail({ params }: { params: Promise<{ id: s
 
   const [contract, signature] = await Promise.all([getActiveContract("en"), getSignature(id)]);
   const missingCompany = missingCompanyDetails();
+
+  const locations = await sql<{ id: string; name_en: string }[]>`
+    SELECT id, name_en FROM locations ORDER BY name_en`;
 
   const balance = canDo(actor.roles, "admin.finance.read") ? await driverBalance(id) : null;
   const mayDecide = can(actor.roles, "admin.drivers.decide");
@@ -260,6 +268,41 @@ export default async function DriverDetail({ params }: { params: Promise<{ id: s
             )}
           </Card>
 
+          {mayDecide && (
+            <Card className="p-5">
+              <h2 className="font-semibold text-ink-900">{t("impersonate.title")}</h2>
+              <p className="mt-1 text-sm leading-relaxed text-ink-600">{t("impersonate.body")}</p>
+              <form action={impersonateDriverAction} className="mt-3">
+                <input type="hidden" name="driverId" value={driver.id} />
+                <button className="min-h-11 rounded-xl bg-gold-400 px-4 text-sm font-bold text-pine-900 hover:bg-gold-300">
+                  {t("impersonate.cta")}
+                </button>
+              </form>
+            </Card>
+          )}
+
+          {mayDecide && (
+            <AdminDriverProfileForm
+              driver={driver}
+              locations={locations}
+              labels={{
+                title: t("editProfile.title"), body: t("editProfile.body"),
+                publicName: t("editProfile.publicName"), firstName: t("editProfile.firstName"),
+                lastName: t("editProfile.lastName"), phone: t("editProfile.phone"),
+                baseLocation: t("editProfile.baseLocation"), bio: t("editProfile.bio"),
+                reason: t("editProfile.reason"), save: t("editProfile.save"),
+                notSet: t("driver.notSet"),
+              }}
+            />
+          )}
+
+          {mayDecide && (
+            <ResetPasswordPanel
+              driverId={driver.id}
+              labels={{ title: t("resetPw.title"), body: t("resetPw.body"), cta: t("resetPw.cta") }}
+            />
+          )}
+
           {mayDecide && <DecisionPanel driverId={driver.id} currentStatus={driver.status} />}
           {mayPublish && <PublishPanel driverId={driver.id} published={driver.published} />}
 
@@ -327,6 +370,7 @@ interface DriverRow {
   applied_via: string; experience_years: number | null; referral_source: string | null;
   date_of_birth: string | null;
   email: string; phone: string | null; base_location: string | null;
+  base_location_id: string | null;
 }
 interface DocRow { id: string; type: string; state: string; expires_on: string | null; review_reason: string | null; created_at: Date }
 interface VehicleRow {

@@ -3,7 +3,11 @@
 import { useActionState, useState } from "react";
 import { Alert, Card, Field, Input, Select } from "@/components/ui";
 import { SubmitButton } from "@/components/form-state";
-import { createDriverAction, updateWalletAction, recordSettlementAction } from "@/app/admin/actions";
+import {
+  createDriverAction, updateWalletAction, recordSettlementAction,
+  adminUpdateDriverProfileAction, adminResetDriverPasswordAction,
+} from "@/app/admin/actions";
+import { Textarea } from "@/components/ui";
 
 const INITIAL = { ok: false } as const;
 
@@ -141,3 +145,82 @@ export function WalletPanel({
     </Card>
   );
 }
+
+/**
+ * Direct edit of a driver's profile from the console. The reason is not
+ * decoration: it lands in the audit log next to the before/after snapshot,
+ * which is how "who changed this driver's phone number and why" gets an
+ * answer months later.
+ */
+export function AdminDriverProfileForm({
+  driver, locations, labels,
+}: {
+  driver: {
+    id: string; public_name: string; legal_first_name: string | null;
+    legal_last_name: string | null; phone: string | null;
+    base_location_id: string | null; bio: string | null;
+  };
+  locations: { id: string; name_en: string }[];
+  labels: Record<"title" | "body" | "publicName" | "firstName" | "lastName" | "phone" | "baseLocation" | "bio" | "reason" | "save" | "notSet", string>;
+}) {
+  const [state, action] = useActionState(adminUpdateDriverProfileAction, INITIAL);
+
+  return (
+    <Card className="p-5">
+      <h2 className="font-semibold text-ink-900">{labels.title}</h2>
+      <p className="mt-1 text-sm text-ink-600">{labels.body}</p>
+
+      <form action={action} className="mt-4 space-y-3">
+        <input type="hidden" name="driverId" value={driver.id} />
+        <div className="grid gap-3 sm:grid-cols-2">
+          <Field label={labels.publicName} htmlFor="ap-publicName" required>
+            <Input id="ap-publicName" name="publicName" defaultValue={driver.public_name} required />
+          </Field>
+          <Field label={labels.phone} htmlFor="ap-phone">
+            <Input id="ap-phone" name="phone" defaultValue={driver.phone ?? ""} />
+          </Field>
+          <Field label={labels.firstName} htmlFor="ap-first" required>
+            <Input id="ap-first" name="legalFirstName" defaultValue={driver.legal_first_name ?? ""} required />
+          </Field>
+          <Field label={labels.lastName} htmlFor="ap-last" required>
+            <Input id="ap-last" name="legalLastName" defaultValue={driver.legal_last_name ?? ""} required />
+          </Field>
+        </div>
+        <Field label={labels.baseLocation} htmlFor="ap-base">
+          <Select id="ap-base" name="baseLocationId" defaultValue={driver.base_location_id ?? ""}>
+            <option value="">{labels.notSet}</option>
+            {locations.map((l) => <option key={l.id} value={l.id}>{l.name_en}</option>)}
+          </Select>
+        </Field>
+        <Field label={labels.bio} htmlFor="ap-bio">
+          <Textarea id="ap-bio" name="bio" rows={3} defaultValue={driver.bio ?? ""} />
+        </Field>
+        <Field label={labels.reason} htmlFor="ap-reason" required>
+          <Input id="ap-reason" name="reason" required minLength={5} />
+        </Field>
+        <SubmitButton>{labels.save}</SubmitButton>
+      </form>
+      <Result state={state} />
+    </Card>
+  );
+}
+
+/** One-time password, shown exactly once. */
+export function ResetPasswordPanel({
+  driverId, labels,
+}: { driverId: string; labels: Record<"title" | "body" | "cta", string> }) {
+  const [state, action] = useActionState(adminResetDriverPasswordAction, INITIAL);
+
+  return (
+    <Card className="p-5">
+      <h2 className="font-semibold text-ink-900">{labels.title}</h2>
+      <p className="mt-1 text-sm text-ink-600">{labels.body}</p>
+      <form action={action} className="mt-3">
+        <input type="hidden" name="driverId" value={driverId} />
+        <SubmitButton variant="secondary">{labels.cta}</SubmitButton>
+      </form>
+      <Result state={state} />
+    </Card>
+  );
+}
+

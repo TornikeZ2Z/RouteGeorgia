@@ -1,0 +1,177 @@
+/**
+ * The operations console's own dictionary — Georgian and English.
+ *
+ * Deliberately separate from the public en/ka/ru dictionaries: the console
+ * is an internal tool for a Georgian team, Russian is not needed, and the
+ * public parity test must not force every operational label through three
+ * translations. Georgian is the default; English is what a staff account
+ * with locale "en" sees, and the header carries a toggle.
+ */
+export type AdminLocale = "ka" | "en";
+
+export const adminLocale = (locale: string): AdminLocale => (locale === "en" ? "en" : "ka");
+
+type Entry = { ka: string; en: string };
+
+const D = {
+  // ---------------------------------------------------------------- shell --
+  "shell.title": { ka: "ოპერაციები", en: "Operations" },
+  "shell.searchPlaceholder": { ka: "მძღოლის ძებნა: სახელი, ტელეფონი, ნომერი…", en: "Find a driver: name, phone, plate…" },
+  "shell.viewSite": { ka: "საიტის ნახვა", en: "View site" },
+  "shell.signOut": { ka: "გასვლა", en: "Sign out" },
+  "shell.groupOps": { ka: "ოპერაციები", en: "Operations" },
+  "shell.groupContent": { ka: "შიგთავსი", en: "Content" },
+  "shell.groupSystem": { ka: "სისტემა", en: "System" },
+  "nav.dashboard": { ka: "სამართავი პანელი", en: "Command centre" },
+  "nav.drivers": { ka: "მძღოლები", en: "Drivers" },
+  "nav.bookings": { ka: "ჯავშნები", en: "Bookings" },
+  "nav.support": { ka: "მხარდაჭერა", en: "Support" },
+  "nav.media": { ka: "ავტომობილის ფოტოები", en: "Vehicle photos" },
+  "nav.reviews": { ka: "შეფასებები", en: "Reviews" },
+  "nav.finance": { ka: "ფინანსები", en: "Finance" },
+  "nav.locations": { ka: "ლოკაციები და მარშრუტები", en: "Locations & routes" },
+  "nav.pricing": { ka: "ფასების ზღვრები", en: "Price bands" },
+  "nav.tours": { ka: "ტურები", en: "Tours" },
+  "nav.content": { ka: "ტექსტები", en: "Content" },
+  "nav.images": { ka: "საიტის ფოტოები", en: "Photography" },
+  "nav.staff": { ka: "თანამშრომლები", en: "Staff" },
+  "nav.audit": { ka: "აუდიტის ჟურნალი", en: "Audit log" },
+
+  // ------------------------------------------------------------ dashboard --
+  "dash.title": { ka: "სამართავი პანელი", en: "Command centre" },
+  "dash.subtitle": { ka: "რას სჭირდება ადამიანი დღეს — სასწრაფოობის მიხედვით.", en: "What needs a human today, ordered by urgency." },
+  "dash.statQueue": { ka: "განაცხადები რიგში", en: "Applications in queue" },
+  "dash.statDocs": { ka: "შესამოწმებელი დოკუმენტები", en: "Documents pending" },
+  "dash.statVehicles": { ka: "შესამოწმებელი ავტომობილები", en: "Vehicles pending" },
+  "dash.statPublished": { ka: "გამოქვეყნებული მძღოლები", en: "Published drivers" },
+  "dash.statUnsigned": { ka: "ხელმოუწერელი ხელშეკრულებები", en: "Contracts unsigned" },
+  "dash.statTickets": { ka: "ღია მიმართვები", en: "Open tickets" },
+  "dash.statUnacked": { ka: "დაუდასტურებელი ჯავშნები", en: "Awaiting driver confirmation" },
+  "dash.stat72h": { ka: "გასვლა 72 საათში", en: "Departing within 72h" },
+  "dash.queueTitle": { ka: "შემოწმების რიგი", en: "Verification queue" },
+  "dash.queueEmpty": { ka: "განსახილველი არაფერია.", en: "Nothing waiting for review." },
+  "dash.expiringTitle": { ka: "დოკუმენტები, რომლებსაც 30 დღეში ვადა გასდით", en: "Documents expiring within 30 days" },
+  "dash.expiringEmpty": { ka: "ვადის გასვლას არაფერი უახლოვდება.", en: "Nothing expiring soon." },
+  "dash.ticketsTitle": { ka: "ღია მიმართვები", en: "Open tickets" },
+  "dash.ticketsEmpty": { ka: "ღია მიმართვა არ არის.", en: "No open tickets." },
+  "dash.review": { ka: "განხილვა", en: "Review" },
+  "dash.open": { ka: "გახსნა", en: "Open" },
+  "dash.supplyWarning": { ka: "პილოტის მიზანია მინიმუმ 30 გამოქვეყნებული მძღოლი. ამჟამად:", en: "The pilot target is at least 30 published drivers. Currently:" },
+
+  // -------------------------------------------------------------- drivers --
+  "drivers.title": { ka: "მძღოლები", en: "Drivers" },
+  "drivers.records": { ka: "ჩანაწერი", en: "record(s)" },
+  "drivers.all": { ka: "ყველა", en: "All" },
+  "drivers.searchLabel": { ka: "ძებნა", en: "Search" },
+  "drivers.searchHint": { ka: "სახელი, ელფოსტა, ტელეფონი, ავტომობილის ნომერი", en: "Name, email, phone or number plate" },
+  "drivers.colDriver": { ka: "მძღოლი", en: "Driver" },
+  "drivers.colStatus": { ka: "სტატუსი", en: "Status" },
+  "drivers.colLive": { ka: "ლაივში", en: "Live" },
+  "drivers.colVehicles": { ka: "ავტომობილები", en: "Vehicles" },
+  "drivers.colTrips": { ka: "მგზავრობები", en: "Trips" },
+  "drivers.colRating": { ka: "შეფასება", en: "Rating" },
+  "drivers.colContact": { ka: "კონტაქტი", en: "Contact" },
+  "drivers.open": { ka: "გახსნა", en: "Open" },
+  "drivers.live": { ka: "ლაივი", en: "Live" },
+  "drivers.addDriver": { ka: "მძღოლის დამატება", en: "Add a driver" },
+  "drivers.noResults": { ka: "ამ ძებნით მძღოლი ვერ მოიძებნა.", en: "No driver matches this search." },
+
+  // -------------------------------------------------- driver detail panels --
+  "driver.contactTitle": { ka: "კონტაქტი", en: "Contact" },
+  "driver.base": { ka: "ბაზა", en: "Base" },
+  "driver.notSet": { ka: "მითითებული არ არის", en: "not set" },
+  "driver.applicationTitle": { ka: "განაცხადი", en: "Application" },
+  "driver.agreementTitle": { ka: "მძღოლის ხელშეკრულება", en: "Driver agreement" },
+  "driver.documentsTitle": { ka: "დოკუმენტები", en: "Documents" },
+  "driver.vehiclesTitle": { ka: "ავტომობილები", en: "Vehicles" },
+  "driver.languagesTitle": { ka: "ენები", en: "Languages" },
+  "driver.historyTitle": { ka: "გადაწყვეტილებების ისტორია", en: "Decision history" },
+  "driver.historyEmpty": { ka: "გადაწყვეტილება ჯერ არ ჩაწერილა.", en: "No decisions recorded yet." },
+
+  "impersonate.title": { ka: "ნახვა მძღოლის თვალით", en: "View as this driver" },
+  "impersonate.body": {
+    ka: "ხსნის მძღოლის კონსოლს ზუსტად ისე, როგორც ამ მძღოლს უჩანს — პროფილი, ავტომობილი, ფასები, კალენდარი — და ცვლილებებიც ნამდვილია. ყველა მოქმედება აუდიტში თქვენი სახელით აღირიცხება. სესია ერთ საათში თავისით იხურება.",
+    en: "Opens the driver console exactly as this driver sees it — profile, vehicle, pricing, calendar — and changes made there are real. Every action is audit-marked with your identity. The session ends itself after an hour.",
+  },
+  "impersonate.cta": { ka: "შესვლა როგორც ეს მძღოლი", en: "Open their console" },
+  "impersonate.bannerTitle": { ka: "თქვენ ხედავთ პლატფორმას როგორც", en: "You are viewing the platform as" },
+  "impersonate.bannerBody": { ka: "ყველა ცვლილება ნამდვილია და აუდიტში თქვენი სახელით ფიქსირდება.", en: "Every change here is real and is audit-marked with your identity." },
+  "impersonate.exit": { ka: "დაბრუნება ადმინში", en: "Back to admin" },
+
+  "editProfile.title": { ka: "პროფილის რედაქტირება", en: "Edit profile" },
+  "editProfile.body": { ka: "ცვლილება მაშინვე აისახება. მიზეზი სავალდებულოა — აუდიტის ჩანაწერის ნაწილია.", en: "Changes apply immediately. The reason is required — it becomes part of the audit record." },
+  "editProfile.publicName": { ka: "საჯარო სახელი", en: "Public name" },
+  "editProfile.firstName": { ka: "სახელი", en: "Legal first name" },
+  "editProfile.lastName": { ka: "გვარი", en: "Legal last name" },
+  "editProfile.phone": { ka: "ტელეფონი", en: "Phone" },
+  "editProfile.baseLocation": { ka: "საბაზო ლოკაცია", en: "Base location" },
+  "editProfile.bio": { ka: "აღწერა", en: "Bio" },
+  "editProfile.reason": { ka: "მიზეზი", en: "Reason" },
+  "editProfile.save": { ka: "შენახვა", en: "Save changes" },
+
+  "resetPw.title": { ka: "პაროლის განულება", en: "Reset password" },
+  "resetPw.body": {
+    ka: "ქმნის ერთჯერად პაროლს, ხურავს მძღოლის ყველა სესიას და პაროლს მხოლოდ ერთხელ აჩვენებს. გადაეცით მძღოლს პირადად ან ტელეფონით — ჩვენ პაროლებს არასდროს ვაგზავნით წერილით.",
+    en: "Generates a one-time password, ends every session the driver has, and shows the password once. Hand it to the driver directly — we never email passwords.",
+  },
+  "resetPw.cta": { ka: "ახალი ერთჯერადი პაროლი", en: "Generate one-time password" },
+
+  // ------------------------------------------------------------- statuses --
+  "status.DRAFT": { ka: "მონახაზი", en: "Draft" },
+  "status.SUBMITTED": { ka: "შემოსული", en: "Submitted" },
+  "status.IN_REVIEW": { ka: "განხილვაში", en: "In review" },
+  "status.CHANGES_REQUESTED": { ka: "ცვლილებები მოთხოვნილია", en: "Changes requested" },
+  "status.APPROVED": { ka: "დამტკიცებული", en: "Approved" },
+  "status.SUSPENDED": { ka: "შეჩერებული", en: "Suspended" },
+  "status.REJECTED": { ka: "უარყოფილი", en: "Rejected" },
+
+  "bstatus.PENDING_PAYMENT": { ka: "გადახდის მოლოდინში", en: "Pending payment" },
+  "bstatus.CONFIRMED": { ka: "დადასტურებული", en: "Confirmed" },
+  "bstatus.DRIVER_ACKNOWLEDGED": { ka: "მძღოლმა დაადასტურა", en: "Driver acknowledged" },
+  "bstatus.READY": { ka: "მზადაა", en: "Ready" },
+  "bstatus.DRIVER_ARRIVED": { ka: "მძღოლი ადგილზეა", en: "Driver arrived" },
+  "bstatus.IN_PROGRESS": { ka: "მიმდინარეობს", en: "In progress" },
+  "bstatus.COMPLETED": { ka: "დასრულებული", en: "Completed" },
+  "bstatus.CANCELLED": { ka: "გაუქმებული", en: "Cancelled" },
+  "bstatus.REASSIGNING": { ka: "გადანაწილება", en: "Reassigning" },
+  "bstatus.DISPUTED": { ka: "სადავო", en: "Disputed" },
+  "bstatus.CLOSED": { ka: "დახურული", en: "Closed" },
+  "bstatus.EXPIRED": { ka: "ვადაგასული", en: "Expired" },
+
+  // ---------------------------------------------------------- page titles --
+  "page.bookings": { ka: "ჯავშნები", en: "Bookings" },
+  "page.bookingsSub": { ka: "ჯერ ის, ვინც ყველაზე ადრე მიემგზავრება.", en: "Soonest departure first." },
+  "page.support": { ka: "მხარდაჭერის მიმართვები", en: "Support tickets" },
+  "page.finance": { ka: "ფინანსები", en: "Finance" },
+  "page.reviews": { ka: "შეფასებები", en: "Reviews" },
+  "page.media": { ka: "ავტომობილის ფოტოები", en: "Vehicle photos" },
+  "page.locations": { ka: "ლოკაციები და მარშრუტები", en: "Locations & routes" },
+  "page.pricing": { ka: "ფასების ზღვრები", en: "Price bands" },
+  "page.tours": { ka: "ტურები", en: "Tours" },
+  "page.content": { ka: "ტექსტები", en: "Content" },
+  "page.images": { ka: "საიტის ფოტოები", en: "Photography" },
+  "page.staff": { ka: "თანამშრომლები", en: "Staff" },
+  "page.audit": { ka: "აუდიტის ჟურნალი", en: "Audit log" },
+} satisfies Record<string, Entry>;
+
+export type AdminKey = keyof typeof D;
+
+export function adminT(locale: string) {
+  const l = adminLocale(locale);
+  return (key: AdminKey, vars?: Record<string, string | number>): string => {
+    let value: string = D[key][l];
+    if (vars) for (const [k, v] of Object.entries(vars)) value = value.replaceAll(`{${k}}`, String(v));
+    return value;
+  };
+}
+
+/** Driver status → label in the staff member's language. */
+export function driverStatusLabel(status: string, locale: string): string {
+  const key = `status.${status}` as AdminKey;
+  return key in D ? adminT(locale)(key) : status;
+}
+
+export function bookingStatusLabel(status: string, locale: string): string {
+  const key = `bstatus.${status}` as AdminKey;
+  return key in D ? adminT(locale)(key) : status;
+}

@@ -43,9 +43,7 @@ const LEVEL_KEY: Record<(typeof APPLICATION_LEVELS)[number], MessageKey> = {
 
 const ERROR_KEY: Record<ApplicationError, MessageKey> = {
   INVALID: "drive.errInvalid", AGE: "drive.errAge", DOB: "drive.errDob",
-  EXPERIENCE: "drive.errExperience",
-  IDENTITY_FILE: "drive.errIdentityFile", LICENCE_FILE: "drive.errLicenceFile",
-  FILE_REJECTED: "drive.errFileRejected", PLATE_TAKEN: "drive.errPlateTaken",
+  EXPERIENCE: "drive.errExperience", PLATE_TAKEN: "drive.errPlateTaken",
   THROTTLED: "drive.errThrottled",
 };
 
@@ -72,7 +70,6 @@ function isoYearsAgo(years: number): string {
   return d.toISOString().slice(0, 10);
 }
 
-const FILE_ACCEPT = "image/jpeg,image/png,image/webp,application/pdf";
 
 export default async function DrivePage({
   params, searchParams,
@@ -138,13 +135,6 @@ export default async function DrivePage({
         ))}
       </ol>
 
-      <Alert tone="info" title={t("drive.readyTitle")}>
-        <ul className="mt-1 list-inside list-disc space-y-1">
-          <li>{t("drive.ready1")}</li>
-          <li>{t("drive.ready3")}</li>
-        </ul>
-      </Alert>
-
       <Card className="p-6 sm:p-8">
         <h2 id="apply" className="font-display scroll-mt-24 text-2xl text-ink-900">
           {t("drive.formTitle")}
@@ -161,12 +151,7 @@ export default async function DrivePage({
           </div>
         )}
 
-        <form
-          method="post"
-          action="/api/driver-applications"
-          encType="multipart/form-data"
-          className="mt-8 space-y-10"
-        >
+        <form method="post" action="/api/driver-applications" className="mt-8 space-y-10">
           <input type="hidden" name="locale" value={locale} />
           <p className="hidden" aria-hidden>
             <label>
@@ -306,33 +291,6 @@ export default async function DrivePage({
               </div>
               <p className="mt-1 text-xs text-ink-500">{t("drive.capabilitiesHint")}</p>
             </fieldset>
-          </fieldset>
-
-          {/* ------------------------------------------------ documents --- */}
-          <fieldset className="space-y-4 border-t border-ink-100 pt-8">
-            <legend className="font-display text-lg text-ink-900">{t("drive.sec4")}</legend>
-            <p className="text-sm leading-relaxed text-ink-600">{t("drive.docLead")}</p>
-
-            <Field label={t("drive.identity")} htmlFor="identityFile" hint={t("drive.identityHint")} required>
-              <Input id="identityFile" name="identityFile" type="file" accept={FILE_ACCEPT} required
-                     className="file:mr-3 file:rounded-lg file:border-0 file:bg-ink-100 file:px-3 file:py-2 file:text-sm" />
-            </Field>
-
-            <Field label={t("drive.licence")} htmlFor="licenceFile" hint={t("drive.licenceHint")} required>
-              <Input id="licenceFile" name="licenceFile" type="file" accept={FILE_ACCEPT} required
-                     className="file:mr-3 file:rounded-lg file:border-0 file:bg-ink-100 file:px-3 file:py-2 file:text-sm" />
-            </Field>
-
-            <Field label={t("drive.licenceNumber")} htmlFor="licenceNumber" hint={t("drive.licenceNumberHint")}>
-              <Input id="licenceNumber" name="licenceNumber" maxLength={60} />
-            </Field>
-
-            <Field label={t("drive.registration")} htmlFor="registrationFile">
-              <Input id="registrationFile" name="registrationFile" type="file" accept={FILE_ACCEPT}
-                     className="file:mr-3 file:rounded-lg file:border-0 file:bg-ink-100 file:px-3 file:py-2 file:text-sm" />
-            </Field>
-
-            <p className="text-xs leading-relaxed text-ink-500">{t("drive.docPrivacy")}</p>
           </fieldset>
 
           {/* -------------------------------------------------- consent --- */}

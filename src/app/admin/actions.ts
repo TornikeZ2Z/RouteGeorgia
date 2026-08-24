@@ -1,11 +1,14 @@
 "use server";
 
 import { revalidatePath } from "next/cache";
+import { redirect } from "next/navigation";
+import { cookies } from "next/headers";
 import { z } from "zod";
 import { eq } from "drizzle-orm";
 import { db, sql } from "@db/client";
 import { driverProfiles, vehicles, locations } from "@db/schema";
-import { requirePermission } from "@/lib/auth/session";
+import { requirePermission, revokeAllSessions } from "@/lib/auth/session";
+import { createImpersonationToken, IMPERSONATION_COOKIE, IMPERSONATION_TTL_MINUTES } from "@/lib/auth/impersonation";
 import { writeAudit, redact } from "@/lib/audit";
 import { randomBytes } from "node:crypto";
 import { parseMajor } from "@/lib/money";
@@ -1305,4 +1308,147 @@ export async function saveTourCategoryAction(_prev: ActionState, formData: FormD
   for (const l of ["en", "ka", "ru"]) revalidatePath(`/${l}/tours`);
   revalidatePath("/admin/tours");
   return { ok: true, message: `${tour.slug} is now in "${parsed.data.category}".` };
+}
+
+// ---------------------------------------------------------- impersonation ---
+/**
+ * Open the driver console as this driver.
+ *
+ * Redirects into /driver carrying a signed, one-hour impersonation cookie.
+ * The staff session underneath is untouched; every audit entry written while
+ * the cookie lives is marked with the staff identity (see src/lib/audit.ts),
+ * and only plain driver accounts can be targeted — impersonating staff is
+ * refused outright, cookie or no cookie.
+ */
+export async function impersonateDriverAction(formData: FormData): Promise<void> {
+  const actor = await requirePermission("admin.drivers.decide");
+  const driverId = String(formData.get("driverId") ?? "");
+
+  const [target] = await sql<{ user_id: string; public_name: string; status: string; staff_roles: number }[]>`
+    SELECT d.user_id, d.public_name, u.status::text AS status,
+           (SELECT count(*) FROM user_roles r
+             WHERE r.user_id = d.user_id
+               AND r.role::text IN ('SUPPORT_AGENT','OPERATIONS_MANAGER','FINANCE_ADMIN','CONTENT_ADMIN','SUPER_ADMIN'))::int AS staff_roles
+    FROM driver_profiles d JOIN users u ON u.id = d.user_id
+    WHERE d.id = ${driverId}::uuid`;
+
+  if (!target || target.status !== "ACTIVE" || target.staff_roles > 0) return;
+
+  await writeAudit({
+    actorUserId: actor.id, action: "admin.impersonation_started",
+    objectType: "driver_profile", objectId: driverId,
+    after: { targetUserId: target.user_id, publicName: target.public_name },
+    reason: "staff opened the driver console as this driver",
+  });
+
+  const jar = await cookies();
+  jar.set(IMPERSONATION_COOKIE, createImpersonationToken(target.user_id, actor.id), {
+    httpOnly: true,
+    sameSite: "lax",
+    secure: config.appUrl.startsWith("https"),
+    path: "/",
+    maxAge: IMPERSONATION_TTL_MINUTES * 60,
+  });
+
+  redirect("/driver");
+}
+
+// -------------------------------------------------- direct driver control ---
+const AdminProfileSchema = z.object({
+  driverId: z.string().uuid(),
+  publicName: z.string().trim().min(2).max(80),
+  legalFirstName: z.string().trim().min(1).max(80),
+  legalLastName: z.string().trim().min(1).max(80),
+  phone: z.string().trim().max(40).optional(),
+  baseLocationId: z.string().uuid().optional().or(z.literal("")),
+  bio: z.string().trim().max(1200).optional(),
+  reason: z.string().trim().min(5, "A reason is required — it is part of the audit record."),
+});
+
+/**
+ * Edit a driver's profile from the console, without impersonation.
+ *
+ * Exists because half of "the driver needs X changed" arrives by phone while
+ * the driver is on the road. The reason is mandatory and lands in the audit
+ * log next to the before/after snapshot.
+ */
+export async function adminUpdateDriverProfileAction(_prev: ActionState, formData: FormData): Promise<ActionState> {
+  const actor = await requirePermission("admin.drivers.decide");
+  const parsed = AdminProfileSchema.safeParse(Object.fromEntries(formData));
+  if (!parsed.success) return { ok: false, errors: parsed.error.issues.map((i) => i.message) };
+  const v = parsed.data;
+
+  const [before] = await sql<{ user_id: string; public_name: string; legal_first_name: string | null;
+    legal_last_name: string | null; bio: string | null; base_location_id: string | null; phone: string | null }[]>`
+    SELECT d.user_id, d.public_name, d.legal_first_name, d.legal_last_name, d.bio, d.base_location_id, u.phone
+    FROM driver_profiles d JOIN users u ON u.id = d.user_id
+    WHERE d.id = ${v.driverId}::uuid`;
+  if (!before) return { ok: false, message: "Driver not found." };
+
+  await sql.begin(async (tx) => {
+    await tx`
+      UPDATE driver_profiles
+      SET public_name = ${v.publicName}, legal_first_name = ${v.legalFirstName},
+          legal_last_name = ${v.legalLastName}, bio = ${v.bio || null},
+          base_location_id = ${v.baseLocationId || null}::uuid, updated_at = now()
+      WHERE id = ${v.driverId}::uuid`;
+    await tx`UPDATE users SET phone = ${v.phone || null}, updated_at = now()
+             WHERE id = ${before.user_id}::uuid`;
+  });
+
+  await writeAudit({
+    actorUserId: actor.id, action: "driver.profile_edited_by_staff",
+    objectType: "driver_profile", objectId: v.driverId,
+    before: { publicName: before.public_name, legalFirstName: before.legal_first_name,
+              legalLastName: before.legal_last_name, phone: before.phone,
+              baseLocationId: before.base_location_id, bio: before.bio },
+    after: { publicName: v.publicName, legalFirstName: v.legalFirstName,
+             legalLastName: v.legalLastName, phone: v.phone ?? null,
+             baseLocationId: v.baseLocationId || null, bio: v.bio ?? null },
+    reason: v.reason,
+  });
+
+  revalidatePath(`/admin/drivers/${v.driverId}`);
+  revalidatePath("/admin/drivers");
+  return { ok: true, message: actor.locale === "en" ? "Saved." : "შენახულია." };
+}
+
+/**
+ * One-time password for a driver who is locked out.
+ *
+ * Shown once and never stored; every existing session the driver had is
+ * ended, so a phone that walked away stops being a way in.
+ */
+export async function adminResetDriverPasswordAction(_prev: ActionState, formData: FormData): Promise<ActionState> {
+  const actor = await requirePermission("admin.drivers.decide");
+  const driverId = String(formData.get("driverId") ?? "");
+
+  const [driver] = await sql<{ user_id: string; public_name: string }[]>`
+    SELECT user_id, public_name FROM driver_profiles WHERE id = ${driverId}::uuid`;
+  if (!driver) return { ok: false, message: "Driver not found." };
+
+  const oneTime = `RG-${randomBytes(6).toString("base64url")}`;
+  await sql`UPDATE users SET password_hash = ${await hashPassword(oneTime)}, updated_at = now()
+            WHERE id = ${driver.user_id}::uuid`;
+  await revokeAllSessions(driver.user_id);
+
+  await writeAudit({
+    actorUserId: actor.id, action: "driver.password_reset_by_staff",
+    objectType: "driver_profile", objectId: driverId,
+    reason: "one-time password issued; all driver sessions ended",
+  });
+
+  const label = actor.locale === "en"
+    ? "One-time password — it is not stored and cannot be shown again:"
+    : "ერთჯერადი პაროლი — არ ინახება და მეორედ ვერ გამოჩნდება:";
+  return { ok: true, message: `${label}  ${oneTime}` };
+}
+
+/** The console language toggle in the header. */
+export async function setStaffLocaleAction(formData: FormData): Promise<void> {
+  const actor = await requirePermission("admin.access");
+  const locale = String(formData.get("locale") ?? "");
+  if (locale !== "ka" && locale !== "en") return;
+  await sql`UPDATE users SET locale = ${locale}, updated_at = now() WHERE id = ${actor.id}::uuid`;
+  revalidatePath("/admin", "layout");
 }

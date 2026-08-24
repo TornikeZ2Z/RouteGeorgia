@@ -4,6 +4,7 @@ import { sql } from "@db/client";
 import { formatMoney } from "@/lib/money";
 import { config } from "@/lib/config";
 import { Alert, Badge, Card, EmptyState, PageHeader, Table } from "@/components/ui";
+import { adminT, bookingStatusLabel } from "@/lib/i18n/admin";
 
 export const dynamic = "force-dynamic";
 
@@ -20,7 +21,8 @@ const TONE: Record<string, "neutral" | "info" | "success" | "warning" | "danger"
 export default async function AdminBookings({
   searchParams,
 }: { searchParams: Promise<{ status?: string }> }) {
-  await requirePermission("admin.bookings.read");
+  const user = await requirePermission("admin.bookings.read");
+  const t = adminT(user.locale);
   const { status } = await searchParams;
 
   const [rows, risk] = await Promise.all([
@@ -51,11 +53,11 @@ export default async function AdminBookings({
 
   return (
     <div className="space-y-6">
-      <PageHeader title="Bookings" description="Soonest departure first." />
+      <PageHeader title={t("page.bookings")} description={t("page.bookingsSub")} />
 
       <div className="grid gap-4 sm:grid-cols-4">
-        {[["Awaiting driver confirmation", r?.unacknowledged ?? 0],
-          ["Departing within 72 hours", r?.next72h ?? 0],
+        {[[t("dash.statUnacked"), r?.unacknowledged ?? 0],
+          [t("dash.stat72h"), r?.next72h ?? 0],
           ["Failed payments", r?.failed_payments ?? 0],
           ["Cancelled in last 24h", r?.cancelled_today ?? 0]].map(([label, value]) => (
           <Card key={label as string} className="p-4">
@@ -73,11 +75,11 @@ export default async function AdminBookings({
       )}
 
       <nav className="flex flex-wrap gap-2 text-sm" aria-label="Filter by status">
-        <Link href="/admin/bookings" className="rounded-lg border border-ink-200 bg-white px-3 py-1.5">All</Link>
+        <Link href="/admin/bookings" className="rounded-lg border border-ink-200 bg-white px-3 py-1.5">{t("drivers.all")}</Link>
         {Object.keys(TONE).map((s) => (
           <Link key={s} href={`/admin/bookings?status=${s}`}
                 className="rounded-lg border border-ink-200 bg-white px-3 py-1.5 hover:bg-ink-50">
-            {s.replaceAll("_", " ").toLowerCase()}
+            {bookingStatusLabel(s, user.locale)}
           </Link>
         ))}
       </nav>
@@ -104,7 +106,7 @@ export default async function AdminBookings({
                 <span className="ml-1 text-ink-400">{b.payment_mode.toLowerCase()}</span>
               </td>
               <td className="px-4 py-2.5">
-                <Badge tone={TONE[b.status] ?? "neutral"}>{b.status.replaceAll("_", " ").toLowerCase()}</Badge>
+                <Badge tone={TONE[b.status] ?? "neutral"}>{bookingStatusLabel(b.status, user.locale)}</Badge>
               </td>
             </tr>
           ))}

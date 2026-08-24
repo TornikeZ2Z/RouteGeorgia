@@ -5,12 +5,17 @@
  * thing between a stranger on the internet and a record in the verification
  * queue. Each test here is a rule an operator would otherwise have to catch by
  * reading, on a file that should never have been created.
+ *
+ * Documents are deliberately absent: the application collects none. They are
+ * uploaded from the driver portal after the password is set, and the publish
+ * gate still refuses to make anyone live without approved identity and
+ * licence documents.
  */
 import { describe, it, expect } from "vitest";
 import {
   ApplicationSchema, validateApplication, APPLICATION_ERRORS, isApplicationError,
-  DOCUMENT_SLOTS, displayName, inferVehicleClass, transliterate,
-  type ApplicationFiles, type ApplicationLanguage,
+  displayName, inferVehicleClass, transliterate,
+  type ApplicationLanguage,
 } from "@/lib/driver-application";
 import { en } from "@/lib/i18n/en";
 import { ka } from "@/lib/i18n/ka";
@@ -22,9 +27,6 @@ const iso = (offsetYears: number, offsetDays = 0) => {
   d.setUTCDate(d.getUTCDate() + offsetDays);
   return d.toISOString().slice(0, 10);
 };
-
-const photo = (name = "id.jpg") =>
-  new File([new Uint8Array([0xff, 0xd8, 0xff, 0xe0])], name, { type: "image/jpeg" });
 
 const FIELDS = {
   locale: "en",
@@ -50,22 +52,15 @@ const parse = (overrides: Record<string, string> = {}) => {
   return result.data;
 };
 
-const files = (over: ApplicationFiles = {}): ApplicationFiles => ({
-  identityFile: photo("id.jpg"),
-  licenceFile: photo("licence.jpg"),
-  ...over,
-});
-
 const SPEAKS: ApplicationLanguage[] = [{ language: "en", level: "FLUENT" }];
 
 describe("application schema", () => {
   it("accepts a complete application", () => {
-    expect(validateApplication(parse(), files(), SPEAKS)).toEqual([]);
+    expect(validateApplication(parse(), SPEAKS)).toEqual([]);
   });
 
   it("refuses an unticked consent box rather than assuming it", () => {
-    const result = ApplicationSchema.safeParse({ ...FIELDS, consent: "" });
-    expect(result.success).toBe(false);
+    expect(ApplicationSchema.safeParse({ ...FIELDS, consent: "" }).success).toBe(false);
   });
 
   it("refuses a submission with no consent field at all", () => {
@@ -81,6 +76,12 @@ describe("application schema", () => {
     expect(parse({ legalFirstName: "  Giorgi  " }).legalFirstName).toBe("Giorgi");
   });
 
+  /** The form collects no files; a crafted multipart body must not smuggle one in. */
+  it("has no file field to accept", () => {
+    const keys = Object.keys(ApplicationSchema.shape);
+    expect(keys.filter((k) => /file|document/i.test(k))).toEqual([]);
+  });
+
   /**
    * The honeypot must PARSE, not fail validation. A filled trap that produced
    * an error page would tell a bot which field it fell into; the route answers
@@ -93,62 +94,26 @@ describe("application schema", () => {
 
 describe("application rules", () => {
   it("turns away anyone under 21", () => {
-    expect(validateApplication(parse({ dateOfBirth: iso(-19) }), files(), SPEAKS)).toContain("AGE");
+    expect(validateApplication(parse({ dateOfBirth: iso(-19) }), SPEAKS)).toContain("AGE");
   });
 
   it("accepts someone who turned 21 today", () => {
     const application = parse({ dateOfBirth: iso(-21), experienceYears: "3" });
-    expect(validateApplication(application, files(), SPEAKS)).toEqual([]);
+    expect(validateApplication(application, SPEAKS)).toEqual([]);
   });
 
   it("rejects more driving experience than the applicant has had years to acquire", () => {
-    const errors = validateApplication(
-      parse({ dateOfBirth: iso(-25), experienceYears: "20" }), files(), SPEAKS,
-    );
+    const errors = validateApplication(parse({ dateOfBirth: iso(-25), experienceYears: "20" }), SPEAKS);
     expect(errors).toContain("EXPERIENCE");
-  });
-
-  it("demands identity and licence images", () => {
-    const errors = validateApplication(parse(), {}, SPEAKS);
-    expect(errors).toContain("IDENTITY_FILE");
-    expect(errors).toContain("LICENCE_FILE");
-  });
-
-  it("treats an empty file as no file", () => {
-    const empty = new File([], "blank.jpg", { type: "image/jpeg" });
-    const errors = validateApplication(parse(), files({ identityFile: empty }), SPEAKS);
-    expect(errors).toContain("IDENTITY_FILE");
   });
 
   /**
    * Georgian is recorded for every applicant without being asked, so someone
    * who speaks neither English nor Russian is a normal applicant, not an
-   * incomplete one. This used to be a blocking error.
+   * incomplete one.
    */
   it("accepts an applicant who ticked no language at all", () => {
-    expect(validateApplication(parse(), files(), [])).toEqual([]);
-  });
-
-  it("rejects a file type storage would refuse, once, not per file", () => {
-    const bad = new File([new Uint8Array([1])], "scan.tiff", { type: "image/tiff" });
-    const errors = validateApplication(parse(), files({ identityFile: bad, licenceFile: bad }), SPEAKS);
-    expect(errors.filter((e) => e === "FILE_REJECTED")).toHaveLength(1);
-  });
-
-  it("asks for identity and licence, and nothing else, to apply", () => {
-    expect(DOCUMENT_SLOTS.filter((s) => s.required).map((s) => s.type))
-      .toEqual(["IDENTITY", "DRIVING_LICENSE"]);
-    expect(DOCUMENT_SLOTS.filter((s) => !s.required).map((s) => s.type))
-      .toEqual(["VEHICLE_REGISTRATION"]);
-  });
-
-  /**
-   * Insurance is still required before a driver can be published and the
-   * signed agreement obliges them to hold it — it is simply collected from
-   * their documents page rather than blocking the application.
-   */
-  it("does not ask for insurance at application time", () => {
-    expect(DOCUMENT_SLOTS.map((s) => s.type)).not.toContain("INSURANCE");
+    expect(validateApplication(parse(), [])).toEqual([]);
   });
 });
 
@@ -199,6 +164,7 @@ describe("error reporting", () => {
   it("recognises its own codes and nothing else", () => {
     for (const code of APPLICATION_ERRORS) expect(isApplicationError(code)).toBe(true);
     expect(isApplicationError("DROP TABLE users")).toBe(false);
+    expect(isApplicationError("IDENTITY_FILE")).toBe(false); // retired with the documents section
     expect(isApplicationError("")).toBe(false);
   });
 

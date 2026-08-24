@@ -7,6 +7,7 @@ import { db, sql } from "@db/client";
 import { users, userRoles, sessions } from "@db/schema";
 import { ForbiddenError, type Permission, type Role, can } from "@/lib/rbac";
 import { config } from "@/lib/config";
+import { IMPERSONATION_COOKIE, verifyImpersonationToken } from "@/lib/auth/impersonation";
 
 const COOKIE = "gt_session";
 const TTL_DAYS = 14;
@@ -25,6 +26,14 @@ export interface SessionUser {
   locale: string;
   roles: Role[];
   isStaff: boolean;
+  /**
+   * Set when a member of staff is viewing the platform AS this user through
+   * the impersonation cookie. `id`, `roles` and everything else on this
+   * object belong to the driver being viewed; this field is the only trace
+   * of who is really behind the keyboard — and the audit log records it on
+   * every entry written meanwhile.
+   */
+  impersonator: { id: string; email: string } | null;
 }
 
 /** Issues an opaque token; only its SHA-256 hash is ever persisted. */
@@ -75,10 +84,44 @@ export async function getSessionUser(): Promise<SessionUser | null> {
   const row = rows[0];
   if (!row) return null;
   const roles = row.roles ?? [];
-  return {
+  const real: SessionUser = {
     id: row.id, email: row.email, locale: row.locale, roles,
     isStaff: roles.some((r) => STAFF_ROLES.has(r)),
+    impersonator: null,
   };
+
+  // Staff viewing the platform as a driver. The claim is only honoured when
+  // the REAL session belongs to the member of staff who was issued the
+  // cookie — a stolen impersonation cookie without their session is inert.
+  if (real.isStaff) {
+    const claim = verifyImpersonationToken(jar.get(IMPERSONATION_COOKIE)?.value);
+    if (claim && claim.staffUserId === real.id) {
+      const target = await loadUserForImpersonation(claim.targetUserId);
+      if (target) return { ...target, impersonator: { id: real.id, email: real.email } };
+    }
+  }
+
+  return real;
+}
+
+/**
+ * The driver behind an impersonation claim. Refuses anything that is not a
+ * plain ACTIVE driver account: impersonating another member of staff would
+ * be privilege escalation, whatever cookie says otherwise.
+ */
+async function loadUserForImpersonation(userId: string): Promise<Omit<SessionUser, "impersonator"> | null> {
+  const rows = await sql<{ id: string; email: string; locale: string; roles: Role[] | null }[]>`
+    SELECT u.id, u.email, u.locale,
+           array_remove(array_agg(r.role), NULL)::text[] AS roles
+    FROM users u
+    LEFT JOIN user_roles r ON r.user_id = u.id
+    WHERE u.id = ${userId}::uuid AND u.status = 'ACTIVE'
+    GROUP BY u.id`;
+  const row = rows[0];
+  if (!row) return null;
+  const roles = row.roles ?? [];
+  if (roles.some((r) => STAFF_ROLES.has(r))) return null;
+  return { id: row.id, email: row.email, locale: row.locale, roles, isStaff: false };
 }
 
 export async function destroySession(): Promise<void> {

@@ -5,7 +5,10 @@ import { z } from "zod";
 import { and, eq } from "drizzle-orm";
 import { db, sql } from "@db/client";
 import { driverProfiles, driverLanguages, vehicles, pricePlans, priceBands } from "@db/schema";
-import { requireUser, requirePermission } from "@/lib/auth/session";
+import { requireUser, requirePermission, getSessionUser } from "@/lib/auth/session";
+import { IMPERSONATION_COOKIE } from "@/lib/auth/impersonation";
+import { cookies } from "next/headers";
+import { redirect } from "next/navigation";
 import { writeAudit } from "@/lib/audit";
 import { validatePlanAgainstBand } from "@/lib/pricing/engine";
 import { parseMajor } from "@/lib/money";
@@ -511,6 +514,25 @@ export async function signContractAction(_prev: ActionState, formData: FormData)
   revalidatePath("/driver");
   revalidatePath("/driver/contract");
   return { ok: true, message: t("contract.signedJustNow") };
+}
+
+// ---------------------------------------------------------- impersonation ---
+/**
+ * The exit button on the impersonation banner. Audited BEFORE the cookie is
+ * cleared so the closing entry still carries the impersonation marker, then
+ * back to the console.
+ */
+export async function exitImpersonationAction(): Promise<void> {
+  const user = await getSessionUser();
+  if (user?.impersonator) {
+    await writeAudit({
+      actorUserId: user.impersonator.id, action: "admin.impersonation_ended",
+      objectType: "user", objectId: user.id,
+      reason: "staff closed the driver view",
+    });
+  }
+  (await cookies()).delete(IMPERSONATION_COOKIE);
+  redirect("/admin");
 }
 
 async function uniqueHandle(name: string): Promise<string> {

@@ -5,30 +5,28 @@ import { sql } from "@db/client";
 import { config } from "@/lib/config";
 import { writeAudit } from "@/lib/audit";
 import * as notify from "@/lib/notifications";
-import {
-  getStorage, hashDocumentNumber, assertUploadAllowed, UploadRejectedError,
-  type Bucket,
-} from "@/lib/storage";
 
 /**
  * Public driver applications.
  *
  * A prospective driver fills one form and becomes a real, reviewable file in
- * the system: an account they can sign into, a profile in the verification
- * queue, a vehicle, and their KYC documents in restricted storage.
+ * thesystem: an account they can sign into, a profile in the verification
+ * queue, and a vehicle.
  *
  * Three rules this module exists to keep:
  *
  *   1. An application grants NOTHING. The profile lands as SUBMITTED, the
- *      vehicle as SUBMITTED, every document as PENDING, and the account gets
- *      DRIVER_APPLICANT — which carries a single permission, to edit their own
- *      application. Publication is still a separate, staffed decision.
+ *      vehicle as SUBMITTED, and the account gets DRIVER_APPLICANT — which
+ *      carries a single permission, to edit their own application.
+ *      Publication is still a separate, staffed decision.
  *   2. Nobody can learn from this form whether an email address is already
  *      registered. A duplicate produces the same page, the same wording and
  *      the same timing as a first application; operations gets told instead.
- *   3. Files are written to storage before the database transaction opens,
- *      and deleted again if the transaction fails. A half-application with
- *      orphaned identity documents in a KYC bucket is the worst outcome here.
+ *   3. The form asks for NOTHING that needs a document to hand. Identity,
+ *      licence and registration are uploaded later from the driver's own
+ *      page — asking a driver on a phone to photograph papers mid-form was
+ *      where applications died. The publish gate still requires approved
+ *      identity and licence before anyone goes live; only the moment moves.
  */
 
 /**
@@ -50,25 +48,6 @@ export const APPLICATION_LEVELS = ["BASIC", "CONVERSATIONAL", "FLUENT", "NATIVE"
 
 export const APPLICATION_CLASSES = [
   "ECONOMY", "COMFORT", "MINIVAN", "SUV_4X4", "MINIBUS", "PREMIUM",
-] as const;
-
-/**
- * What we ask for at application time.
- *
- * Identity and licence are required: there is no assessing a driver without
- * them. Vehicle registration is accepted but not demanded — a driver filling
- * this in on a phone often has two of the three to hand, and losing the
- * application entirely is worse than chasing the rest by email.
- *
- * Insurance is deliberately NOT collected here. It is still required before a
- * driver can be published, and the agreement they sign obliges them to hold
- * it; it is simply gathered later, from their own documents page, rather than
- * standing between a willing driver and an application.
- */
-export const DOCUMENT_SLOTS = [
-  { field: "identityFile", type: "IDENTITY", required: true },
-  { field: "licenceFile", type: "DRIVING_LICENSE", required: true },
-  { field: "registrationFile", type: "VEHICLE_REGISTRATION", required: false },
 ] as const;
 
 const trimmed = (max: number) => z.string().trim().max(max);
@@ -93,8 +72,6 @@ export const ApplicationSchema = z.object({
   seats: z.coerce.number().int().min(1).max(60),
   luggage: z.coerce.number().int().min(0).max(60),
 
-  licenceNumber: trimmed(60).optional(),
-
   /** Unticked consent is a failed submission, never a silent default. */
   consent: z.literal("on", { message: "Please confirm you accept the terms and the data notice." }),
   /**
@@ -111,11 +88,6 @@ export type ApplicationInput = z.infer<typeof ApplicationSchema>;
 export interface ApplicationLanguage {
   language: (typeof APPLICATION_LANGUAGES)[number];
   level: (typeof APPLICATION_LEVELS)[number];
-}
-
-export interface ApplicationFiles {
-  /** Keyed by the DOCUMENT_SLOTS field name. */
-  [field: string]: File | undefined;
 }
 
 export interface ApplicationContext {
@@ -136,8 +108,7 @@ export interface ApplicationContext {
  * being written once in English.
  */
 export const APPLICATION_ERRORS = [
-  "INVALID", "AGE", "DOB", "EXPERIENCE",
-  "IDENTITY_FILE", "LICENCE_FILE", "FILE_REJECTED", "PLATE_TAKEN", "THROTTLED",
+  "INVALID", "AGE", "DOB", "EXPERIENCE", "PLATE_TAKEN", "THROTTLED",
 ] as const;
 
 export type ApplicationError = (typeof APPLICATION_ERRORS)[number];
@@ -172,7 +143,6 @@ const today = () => new Date().toISOString().slice(0, 10);
  */
 export function validateApplication(
   input: ApplicationInput,
-  files: ApplicationFiles,
   languages: ApplicationLanguage[],
 ): ApplicationError[] {
   const errors: ApplicationError[] = [];
@@ -187,35 +157,7 @@ export function validateApplication(
   // incomplete one.
   void languages;
 
-  for (const slot of DOCUMENT_SLOTS) {
-    const file = files[slot.field];
-    if (slot.required && !hasFile(file)) {
-      errors.push(slot.type === "IDENTITY" ? "IDENTITY_FILE" : "LICENCE_FILE");
-      continue;
-    }
-    if (!hasFile(file)) continue;
-    try {
-      assertUploadAllowed(file.type, file.size);
-    } catch (err) {
-      if (err instanceof UploadRejectedError) {
-        if (!errors.includes("FILE_REJECTED")) errors.push("FILE_REJECTED");
-      } else throw err;
-    }
-  }
-
   return errors;
-}
-
-const hasFile = (file: File | undefined): file is File => file instanceof File && file.size > 0;
-
-interface StagedDocument {
-  type: string;
-  key: string;
-  checksum: string;
-  sizeBytes: number;
-  mimeType: string;
-  expiresOn: string | null;
-  numberHash: string | null;
 }
 
 /**
@@ -227,10 +169,9 @@ interface StagedDocument {
  */
 export async function submitDriverApplication(
   input: ApplicationInput,
-  files: ApplicationFiles,
   context: ApplicationContext,
 ): Promise<ApplicationResult> {
-  const errors = validateApplication(input, files, context.languages);
+  const errors = validateApplication(input, context.languages);
   if (errors.length) return { ok: false, errors };
 
   const existing = await sql<{ id: string }[]>`
@@ -241,40 +182,6 @@ export async function submitDriverApplication(
     // same person applying twice they hear back from a human either way.
     await fileDuplicateNotice(input);
     return { ok: true };
-  }
-
-  // Storage first: object stores are not transactional, so the failure we can
-  // actually recover from is "files written, database rejected".
-  const staged: StagedDocument[] = [];
-  const storage = getStorage();
-
-  try {
-    for (const slot of DOCUMENT_SLOTS) {
-      const file = files[slot.field];
-      if (!hasFile(file)) continue;
-      const buffer = Buffer.from(await file.arrayBuffer());
-      assertUploadAllowed(file.type, buffer.byteLength);
-      const stored = await storage.put("restricted-kyc" satisfies Bucket, buffer, file.type);
-      staged.push({
-        type: slot.type,
-        key: stored.key,
-        checksum: stored.checksum,
-        sizeBytes: stored.sizeBytes,
-        mimeType: stored.mimeType,
-        // No expiry is asked for at application time. Operations records it
-        // when the document is verified, and the driver's own documents page
-        // requires one for anything re-uploaded later.
-        expiresOn: null,
-        numberHash:
-          slot.type === "DRIVING_LICENSE" && input.licenceNumber
-            ? hashDocumentNumber(input.licenceNumber)
-            : null,
-      });
-    }
-  } catch (err) {
-    await Promise.all(staged.map((d) => storage.remove(d.key).catch(() => {})));
-    if (err instanceof UploadRejectedError) return { ok: false, errors: ["FILE_REJECTED"] };
-    throw err;
   }
 
   const inviteToken = randomBytes(32).toString("base64url");
@@ -342,17 +249,7 @@ export async function submitDriverApplication(
                 ${JSON.stringify(context.capabilities)}::text::jsonb,
                 'SUBMITTED')
         RETURNING id`;
-
-      for (const doc of staged) {
-        const attachToVehicle = doc.type === "VEHICLE_REGISTRATION" || doc.type === "INSURANCE";
-        await tx`
-          INSERT INTO driver_documents
-            (driver_id, vehicle_id, type, storage_key, number_hash, mime_type, size_bytes,
-             checksum, expires_on, is_mandatory, state)
-          VALUES (${driverId}::uuid, ${attachToVehicle ? vehicle!.id : null}::uuid,
-                  ${doc.type}::doc_type, ${doc.key}, ${doc.numberHash}, ${doc.mimeType},
-                  ${doc.sizeBytes}, ${doc.checksum}, ${doc.expiresOn}::date, true, 'PENDING')`;
-      }
+      void vehicle;
 
       await tx`
         INSERT INTO driver_wallets (driver_id, credit_limit_minor)
@@ -368,10 +265,6 @@ export async function submitDriverApplication(
                   ip: context.ip,
                   userAgent: context.userAgent?.slice(0, 400) ?? null,
                 })}::text::jsonb)`;
-
-      const outstanding = DOCUMENT_SLOTS
-        .filter((s) => !staged.some((d) => d.type === s.type))
-        .map((s) => s.type);
 
       const [ticket] = await tx<{ id: string }[]>`
         INSERT INTO support_tickets (driver_id, subject, category, severity)
@@ -391,8 +284,7 @@ export async function submitDriverApplication(
           `Languages:  ${context.languages.map((l) => `${l.language}:${l.level}`).join(", ")}`,
           `Vehicle:    ${input.year} ${input.make} ${input.model} — ${input.plate.toUpperCase()}`,
           `Class:      ${inferVehicleClass(input.seats, context.capabilities)} (inferred from seats and 4x4 — confirm on inspection)`,
-          `Documents:  ${staged.map((d) => d.type).join(", ") || "none"}`,
-          outstanding.length ? `Outstanding: ${outstanding.join(", ")}` : `Outstanding: none`,
+          `Documents:  none yet — the driver uploads them from their portal after setting a password`,
           input.referralSource ? `Heard about us: ${input.referralSource}` : null,
           ``,
           `Review at ${config.appUrl}/admin/drivers/${driverId}`,
@@ -402,19 +294,16 @@ export async function submitDriverApplication(
         kind: "message.received",
         to: input.email,
         locale: input.locale,
-        subject: applicantEmail(input.locale, inviteToken, outstanding.length).subject,
-        body: applicantEmail(input.locale, inviteToken, outstanding.length).body,
+        subject: applicantEmail(input.locale, inviteToken).subject,
+        body: applicantEmail(input.locale, inviteToken).body,
         dedupe: `driver_application:${driverId}`,
       });
     });
   } catch (err) {
-    await Promise.all(staged.map((d) => storage.remove(d.key).catch(() => {})));
     if (String(err).includes("vehicles_plate_uq")) return { ok: false, errors: ["PLATE_TAKEN"] };
     throw err;
   }
 
-  // storage keys and document numbers are deliberately absent from the audit
-  // payload: the log is read far more widely than the KYC bucket.
   await writeAudit({
     action: "driver.application_received",
     objectType: "driver_profile",
@@ -423,7 +312,6 @@ export async function submitDriverApplication(
       publicName: displayName(input.legalFirstName, input.legalLastName),
       email: input.email,
       appliedVia: "public_form",
-      documents: staged.map((d) => d.type),
       languages: context.languages.map((l) => l.language),
     },
     reason: "public application form",
@@ -529,57 +417,58 @@ function slugify(name: string): string {
 }
 
 /** Applicant confirmation, in the language they filled the form in. */
-function applicantEmail(locale: string, token: string, outstanding: number) {
+function applicantEmail(locale: string, token: string) {
   const link = `${config.appUrl}/reset-password?token=${token}`;
   const M = {
     en: {
-      subject: "We have your Route Georgia driver application",
+      subject: "One step left — set your Route Georgia password",
       lines: [
-        "Thank you — your application is with our operations team.",
+        "Thank you — your application is in.",
         "",
-        "Set your password to finish your file and follow its progress:",
+        "Set your password here:",
         link,
         `The link works once and expires in ${INVITE_TTL_DAYS} days.`,
         "",
-        outstanding > 0
-          ? "Some documents are still missing. Sign in and add them — we cannot approve an incomplete file."
-          : "We have everything we asked for. Nothing else is needed from you right now.",
+        "Then, from your driver page, photograph and upload your ID and driving licence",
+        "(and the vehicle registration when you have it to hand). We can only review a",
+        "complete file, and nothing goes live before we have checked those documents.",
         "",
-        "What happens next: we check your documents, then call you for a short language and route interview.",
+        "After that: a short call about languages and routes, and you are ready to work.",
         "Most applications are answered within three working days.",
       ],
     },
     ka: {
-      subject: "თქვენი განაცხადი მიღებულია — Route Georgia",
+      subject: "დარჩა ერთი ნაბიჯი — დააყენეთ პაროლი Route Georgia-ზე",
       lines: [
-        "გმადლობთ — თქვენი განაცხადი ჩვენს ოპერაციების გუნდთანაა.",
+        "გმადლობთ — თქვენი განაცხადი მიღებულია.",
         "",
-        "დააყენეთ პაროლი, რომ დაასრულოთ განაცხადი და თვალი ადევნოთ მის მიმდინარეობას:",
+        "დააყენეთ პაროლი აქ:",
         link,
         `ბმული ერთხელ მუშაობს და ${INVITE_TTL_DAYS} დღეში იწურება.`,
         "",
-        outstanding > 0
-          ? "რამდენიმე დოკუმენტი ჯერ არ არის ატვირთული. შედით სისტემაში და დაამატეთ — არასრულ განაცხადს ვერ დავამტკიცებთ."
-          : "ყველა საჭირო დოკუმენტი მიღებულია. ამჟამად სხვა არაფერია საჭირო.",
+        "შემდეგ, თქვენი მძღოლის გვერდიდან, გადაუღეთ ფოტო და ატვირთეთ პირადობის მოწმობა",
+        "და მართვის მოწმობა (ავტომობილის რეგისტრაციაც, როცა ხელთ გექნებათ). განვიხილავთ",
+        "მხოლოდ სრულ განაცხადს და ამ დოკუმენტების შემოწმებამდე პროფილი არ გამოქვეყნდება.",
         "",
-        "შემდეგი ნაბიჯი: შევამოწმებთ დოკუმენტებს, შემდეგ დაგირეკავთ ენისა და მარშრუტების მოკლე გასაუბრებისთვის.",
+        "ამის შემდეგ: მოკლე ზარი ენებსა და მარშრუტებზე — და მზად ხართ სამუშაოდ.",
         "განაცხადებს ჩვეულებრივ სამ სამუშაო დღეში ვპასუხობთ.",
       ],
     },
     ru: {
-      subject: "Мы получили вашу заявку водителя — Route Georgia",
+      subject: "Остался один шаг — задайте пароль Route Georgia",
       lines: [
-        "Спасибо — ваша заявка у нашей операционной команды.",
+        "Спасибо — ваша заявка принята.",
         "",
-        "Задайте пароль, чтобы завершить заявку и следить за её статусом:",
+        "Задайте пароль здесь:",
         link,
         `Ссылка работает один раз и истекает через ${INVITE_TTL_DAYS} дней.`,
         "",
-        outstanding > 0
-          ? "Некоторых документов ещё нет. Войдите и добавьте их — неполную заявку мы одобрить не можем."
-          : "Все нужные документы получены. Больше от вас пока ничего не нужно.",
+        "Затем со своей страницы водителя сфотографируйте и загрузите удостоверение",
+        "личности и водительские права (и регистрацию автомобиля, когда она будет под",
+        "рукой). Мы рассматриваем только полную заявку, и профиль не публикуется до",
+        "проверки этих документов.",
         "",
-        "Что дальше: мы проверим документы, затем позвоним для короткого собеседования о языках и маршрутах.",
+        "Дальше: короткий звонок о языках и маршрутах — и вы готовы к работе.",
         "Обычно мы отвечаем в течение трёх рабочих дней.",
       ],
     },

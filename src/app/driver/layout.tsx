@@ -6,6 +6,8 @@ export const dynamic = "force-dynamic";
 export const metadata = { robots: { index: false } };
 
 import { getTranslator, isLocale, type Locale, type MessageKey } from "@/lib/i18n";
+import { adminT } from "@/lib/i18n/admin";
+import { exitImpersonationAction } from "./actions";
 
 /**
  * Every driver on this platform is Georgian. The console renders in the
@@ -33,8 +35,28 @@ export default async function DriverLayout({ children }: { children: React.React
   if (!user) redirect("/login?next=/driver");
   const t = getTranslator(isLocale(user.locale) ? (user.locale as Locale) : "ka");
 
+  const at = adminT(user.locale);
+
   return (
     <div className="flex min-h-dvh flex-col bg-ink-50">
+      {/* Impossible to miss, impossible to forget: staff acting as a driver
+          see who they are being on every page, with the way back one tap
+          away. The cookie expires on its own after an hour regardless. */}
+      {user.impersonator && (
+        <div className="sticky top-0 z-20 border-b border-gold-500/40 bg-gold-100">
+          <div className="mx-auto flex max-w-4xl flex-wrap items-center justify-between gap-2 px-4 py-2">
+            <p className="text-sm text-pine-900">
+              <span className="font-semibold">{at("impersonate.bannerTitle")} {user.email}.</span>{" "}
+              {at("impersonate.bannerBody")}
+            </p>
+            <form action={exitImpersonationAction}>
+              <button className="rounded-lg bg-pine-800 px-3 py-1.5 text-sm font-semibold text-white hover:bg-pine-700">
+                {at("impersonate.exit")}
+              </button>
+            </form>
+          </div>
+        </div>
+      )}
       <header className="sticky top-0 z-10 border-b border-ink-200 bg-white">
         <div className="mx-auto flex max-w-4xl items-center justify-between px-4 py-3">
           <Link href="/driver" className="flex items-center gap-2.5">

@@ -1,6 +1,7 @@
 import "server-only";
 import { randomUUID } from "node:crypto";
-import { headers } from "next/headers";
+import { cookies, headers } from "next/headers";
+import { IMPERSONATION_COOKIE, verifyImpersonationToken } from "@/lib/auth/impersonation";
 import { db } from "@db/client";
 import { auditLogs } from "@db/schema";
 import type { Role } from "@/lib/rbac";
@@ -31,6 +32,18 @@ export async function writeAudit(entry: AuditEntry): Promise<string> {
     ip = (await headers()).get("x-forwarded-for")?.split(",")[0]?.trim() ?? null;
   } catch { /* outside a request context (jobs, seeds) */ }
 
+  // Actions taken while staff impersonate a driver must never be
+  // indistinguishable from the driver's own. The marker is applied HERE, at
+  // the single point every audit entry passes through, so no action author
+  // has to remember it.
+  let reason = entry.reason ?? null;
+  try {
+    const claim = verifyImpersonationToken((await cookies()).get(IMPERSONATION_COOKIE)?.value);
+    if (claim) {
+      reason = `${reason ?? ""}${reason ? " " : ""}[performed by staff ${claim.staffUserId} impersonating this driver]`;
+    }
+  } catch { /* outside a request context */ }
+
   await db.insert(auditLogs).values({
     actorUserId: entry.actorUserId ?? null,
     actorRole: (entry.actorRole ?? null) as never,
@@ -39,7 +52,7 @@ export async function writeAudit(entry: AuditEntry): Promise<string> {
     objectId: entry.objectId ?? null,
     before: (entry.before ?? null) as never,
     after: (entry.after ?? null) as never,
-    reason: entry.reason ?? null,
+    reason,
     correlationId,
     ip,
   });

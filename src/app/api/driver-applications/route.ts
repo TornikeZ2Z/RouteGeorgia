@@ -3,19 +3,19 @@ import { headers } from "next/headers";
 import { assertSameOrigin, rateLimit, clientKey, CrossOriginError, seeOther } from "@/lib/security";
 import { isLocale, DEFAULT_LOCALE } from "@/lib/i18n";
 import {
-  ApplicationSchema, DOCUMENT_SLOTS, APPLICATION_LANGUAGES, APPLICATION_LEVELS,
+  ApplicationSchema, APPLICATION_LANGUAGES, APPLICATION_LEVELS,
   submitDriverApplication,
-  type ApplicationError, type ApplicationFiles, type ApplicationLanguage,
+  type ApplicationError, type ApplicationLanguage,
 } from "@/lib/driver-application";
 
 /**
  * Driver applications from the public form.
  *
- * A plain multipart form POST rather than a server action, for two reasons:
- * the page must work on a phone with JavaScript blocked or still loading, and
- * server actions carry a body-size limit that four photographed documents can
- * exceed. The answer comes back as a redirect carrying error CODES only —
- * never the applicant's data. See src/lib/driver-application.ts.
+ * A plain form POST rather than a server action, so the page works on a phone
+ * with JavaScript blocked or still loading. No files travel with it — the
+ * driver uploads documents later from their own portal. The answer comes back
+ * as a redirect carrying error CODES only — never the applicant's data. See
+ * src/lib/driver-application.ts.
  */
 const AMENITIES = ["air_conditioning", "wifi", "pets_allowed", "child_seat"] as const;
 const CAPABILITIES = ["four_wheel_drive", "winter_tyres", "wheelchair_access"] as const;
@@ -66,17 +66,11 @@ export async function POST(request: NextRequest) {
       return { language, level };
     });
 
-  const files: ApplicationFiles = {};
-  for (const slot of DOCUMENT_SLOTS) {
-    const value = form.get(slot.field);
-    if (value instanceof File && value.size > 0) files[slot.field] = value;
-  }
-
   const flags = (names: readonly string[]) =>
     Object.fromEntries(names.map((name) => [name, form.get(name) === "on"]));
 
   const h = await headers();
-  const result = await submitDriverApplication(parsed.data, files, {
+  const result = await submitDriverApplication(parsed.data, {
     amenities: flags(AMENITIES),
     capabilities: flags(CAPABILITIES),
     languages,

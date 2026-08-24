@@ -61,6 +61,21 @@ export default async function DriverHome() {
         actions={<Badge tone={STATUS_TONE[driver.status as keyof typeof STATUS_TONE]}>{driver.status}</Badge>}
       />
 
+      {/* Documents moved out of the application form, so for a fresh
+          applicant this banner IS the onboarding: nothing else can move
+          until identity and licence exist. */}
+      {(!docs.some((d) => d.type === "IDENTITY") || !docs.some((d) => d.type === "DRIVING_LICENSE")) && (
+        <Alert tone="warning" title={t("console.docsNeededTitle")}>
+          <p className="leading-relaxed">{t("console.docsNeededBody")}</p>
+          <Link
+            href="/driver/documents"
+            className="mt-3 inline-flex min-h-11 items-center rounded-xl bg-gold-400 px-4 text-sm font-bold text-pine-900 hover:bg-gold-300"
+          >
+            {t("console.docsNeededCta")}
+          </Link>
+        </Alert>
+      )}
+
       {contractDue && (
         <Alert tone="warning" title={t("contract.bannerTitle")}>
           <p className="leading-relaxed">{t("contract.bannerBody")}</p>
