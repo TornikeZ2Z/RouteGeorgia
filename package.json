@@ -12,6 +12,7 @@
     "start": "next start",
     "lint": "next lint",
     "typecheck": "tsc --noEmit",
+    "check:lockfile": "node scripts/check-lockfile.mjs",
     "db:start": "node scripts/pg.mjs start",
     "db:stop": "node scripts/pg.mjs stop",
     "db:migrate": "tsx db/migrate.ts",

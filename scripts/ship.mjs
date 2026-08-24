@@ -47,6 +47,7 @@ if (!changed) {
 }
 
 console.log("\nChecking before publishing:\n");
+step("lock file", () => run("node scripts/check-lockfile.mjs"));
 step("type check", () => run("npm run typecheck"));
 step("tests", () => run("npm test"));
 
