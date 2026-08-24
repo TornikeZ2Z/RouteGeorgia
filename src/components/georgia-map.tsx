@@ -94,7 +94,7 @@ export function GeorgiaMap({ locale, places, initialCat = "all" }: { locale: str
 
   const chip = (active: boolean) =>
     `rounded-lg border px-3 py-1.5 text-sm transition-colors ${
-      active ? "border-ink-900 bg-ink-900 text-white" : "border-ink-300 text-ink-900 hover:border-ink-500"
+      active ? "border-ink-900 bg-ink-900 text-white dark:text-pine-900" : "border-ink-300 text-ink-900 hover:border-ink-500"
     }`;
 
   return (

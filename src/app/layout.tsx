@@ -49,7 +49,18 @@ export const metadata: Metadata = {
 
 export default function RootLayout({ children }: { children: React.ReactNode }) {
   return (
-    <html lang="en">
+    <html lang="en" suppressHydrationWarning>
+      <head>
+        {/* Applies the saved (or system) theme before first paint. */}
+        <script
+          dangerouslySetInnerHTML={{
+            __html:
+              "(function(){try{var t=localStorage.theme;" +
+              "if(t==='dark'||(!t&&matchMedia('(prefers-color-scheme: dark)').matches))" +
+              "document.documentElement.classList.add('dark')}catch(e){}})()",
+          }}
+        />
+      </head>
       <body className="min-h-dvh antialiased">{children}</body>
     </html>
   );

@@ -149,7 +149,7 @@ export default async function Home({
                 <p className="eyebrow text-pine-300">{t("home.promoEyebrow")}</p>
                 <p className="font-display mt-2 text-xl">{t("home.promoTitle")}</p>
                 <p className="mt-2 text-sm leading-relaxed text-pine-100">{t("home.promoBody")}</p>
-                <span className="mt-4 inline-flex items-center gap-1.5 rounded-lg bg-white px-4 py-2 text-sm font-semibold text-pine-800 transition-colors group-hover:bg-ink-100">
+                <span className="mt-4 inline-flex items-center gap-1.5 rounded-lg bg-white px-4 py-2 text-sm font-semibold text-pine-800 transition-colors group-hover:bg-ink-100 dark:bg-ink-900 dark:group-hover:bg-ink-800">
                   {t("home.promoCta")}
                   <span aria-hidden>→</span>
                 </span>
@@ -281,7 +281,7 @@ export default async function Home({
           </div>
           <Link
             href={`/${locale}/plan`}
-            className="inline-flex min-h-12 items-center rounded-lg bg-white px-6 py-3 font-bold tracking-[-0.02em] text-ink-900 transition-colors hover:bg-ink-100"
+            className="inline-flex min-h-12 items-center rounded-lg bg-white px-6 py-3 font-bold tracking-[-0.02em] text-pine-800 transition-colors hover:bg-ink-100 dark:bg-ink-900 dark:hover:bg-ink-800"
           >
             {t("home.planTeaserCta")}
           </Link>
@@ -408,7 +408,7 @@ export default async function Home({
             <p className="mt-2 text-sm leading-relaxed text-pine-200">{t("home.helpBody")}</p>
             <div className="mt-5 flex flex-col gap-2.5">
               <a href={`https://wa.me/${config.contact.phone.replace(/[^0-9]/g, "")}`}
-                 className="rounded-lg bg-white px-4 py-2.5 text-center text-sm font-bold tracking-[-0.01em] text-pine-800 hover:bg-pine-100">
+                 className="rounded-lg bg-white px-4 py-2.5 text-center text-sm font-bold tracking-[-0.01em] text-pine-800 hover:bg-pine-100 dark:bg-ink-900 dark:hover:bg-ink-800">
                 {t("home.helpWhatsApp")}
               </a>
               <a href={`tel:${config.contact.phone.replace(/\s+/g, "")}`}

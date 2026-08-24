@@ -70,7 +70,7 @@ export default async function ToursIndex({ params, searchParams }: Props) {
             href={cat ? `/${locale}/tours?cat=${cat}` : `/${locale}/tours`}
             className={`rounded-lg border px-4 py-2 text-sm transition-colors ${
               activeCat === cat || (!activeCat && !cat)
-                ? "border-ink-900 bg-ink-900 text-white"
+                ? "border-ink-900 bg-ink-900 text-white dark:text-pine-900"
                 : "border-ink-300 text-ink-900 hover:border-ink-500"
             }`}
           >

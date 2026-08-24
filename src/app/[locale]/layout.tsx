@@ -8,6 +8,7 @@ import { config } from "@/lib/config";
 import { PreferenceSwitcher } from "@/components/preference-switcher";
 import { CookieNotice } from "@/components/cookie-notice";
 import { Logo } from "@/components/logo";
+import { ThemeToggle } from "@/components/theme-toggle";
 
 export function generateStaticParams() {
   return LOCALES.map((locale) => ({ locale }));
@@ -51,17 +52,18 @@ export default async function LocaleLayout({
         {t("common.home")}
       </a>
 
-      <header className="sticky top-0 z-30 border-b border-white/10 bg-pine-800/95 text-white backdrop-blur-md">
+      <header className="sticky top-0 z-30 border-b border-ink-200 bg-white/95 text-ink-900 backdrop-blur-md dark:border-white/10 dark:bg-pine-800/95 dark:text-white">
         <div className="mx-auto flex max-w-[1400px] 2xl:max-w-[1680px] items-center gap-3 px-4 py-3 sm:px-6 lg:px-10">
           <Link href={`/${locale}`} aria-label={t("brand.name")} className="shrink-0">
-            <Logo dark />
+            <span className="dark:hidden"><Logo /></span>
+            <span className="hidden dark:inline"><Logo dark /></span>
           </Link>
 
           <nav className="hidden flex-1 items-center gap-0.5 text-sm lg:flex" aria-label="Main">
             {nav.map((item) => (
               <Link
                 key={item.href} href={item.href}
-                className="rounded-lg px-3 py-2 text-pine-100 transition-colors hover:text-white"
+                className="rounded-lg px-3 py-2 font-medium text-ink-600 transition-colors hover:text-ink-900 dark:text-pine-100 dark:hover:text-white"
               >
                 {item.label}
               </Link>
@@ -72,7 +74,7 @@ export default async function LocaleLayout({
             {config.contact.phone && (
               <a
                 href={`tel:${config.contact.phone.replace(/\s+/g, "")}`}
-                className="hidden items-center gap-1.5 rounded-lg px-2.5 py-2 text-sm font-semibold text-white hover:text-gold-300 xl:flex"
+                className="hidden items-center gap-1.5 rounded-lg px-2.5 py-2 text-sm font-semibold text-ink-900 hover:text-gold-600 dark:text-white dark:hover:text-gold-300 xl:flex"
               >
                 <svg viewBox="0 0 24 24" className="size-4 text-gold-400" fill="none" stroke="currentColor"
                      strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round" aria-hidden>
@@ -81,18 +83,19 @@ export default async function LocaleLayout({
                 {config.contact.phone}
               </a>
             )}
+            <ThemeToggle className="hidden sm:flex" />
             <div className="hidden lg:block">
-              <PreferenceSwitcher locale={locale as Locale} currency={currency} returnTo={`/${locale}`} dark />
+              <PreferenceSwitcher locale={locale as Locale} currency={currency} returnTo={`/${locale}`} />
             </div>
             {user ? (
               <Link
                 href={user.isStaff ? "/admin" : "/driver"}
-                className="rounded-xl border border-white/25 px-3 py-2 text-sm text-white hover:border-white/60"
+                className="rounded-xl border border-ink-300 px-3 py-2 text-sm text-ink-900 hover:border-ink-500 dark:border-white/25 dark:text-white dark:hover:border-white/60"
               >
                 {user.isStaff ? "Operations" : "My driving"}
               </Link>
             ) : (
-              <Link href="/login" className="hidden rounded-lg px-3 py-2 text-sm text-pine-200 hover:text-white sm:block">
+              <Link href="/login" className="hidden rounded-lg px-3 py-2 text-sm text-ink-500 hover:text-ink-900 dark:text-pine-200 dark:hover:text-white sm:block">
                 {t("nav.signIn")}
               </Link>
             )}
@@ -107,10 +110,10 @@ export default async function LocaleLayout({
 
         {/* Mobile navigation: a scrollable strip rather than a hamburger, so
             every destination stays one tap away. */}
-        <nav className="flex gap-1 overflow-x-auto border-t border-white/10 px-3 py-2 text-sm lg:hidden" aria-label="Main">
+        <nav className="flex gap-1 overflow-x-auto border-t border-ink-200 px-3 py-2 text-sm dark:border-white/10 lg:hidden" aria-label="Main">
           {nav.map((item) => (
             <Link key={item.href} href={item.href}
-                  className="whitespace-nowrap rounded-lg px-3 py-1.5 font-medium text-pine-100 hover:text-white">
+                  className="whitespace-nowrap rounded-lg px-3 py-1.5 font-medium text-ink-600 hover:text-ink-900 dark:text-pine-100 dark:hover:text-white">
               {item.label}
             </Link>
           ))}

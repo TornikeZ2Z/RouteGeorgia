@@ -1,5 +1,8 @@
 @import "tailwindcss";
 
+/* Class-based dark mode: `dark:` utilities respond to .dark on <html>. */
+@custom-variant dark (&:where(.dark, .dark *));
+
 /* ---------------------------------------------------------------------------
    RouteGeorgia — design tokens. Fourth system: the navy-and-gold brand.
 
@@ -94,7 +97,7 @@
 html { -webkit-text-size-adjust: 100%; }
 
 body {
-  background: #ffffff;
+  background: var(--color-page, #ffffff);
   color: var(--color-ink-900);
   font-family: var(--font-sans);
   font-size: 16px;
@@ -145,6 +148,54 @@ h1, h2, h3, h4, h5, nav, button, .font-display {
 ::selection {
   background: var(--color-gold-100);
   color: var(--color-brand-600);
+}
+
+/* ---------------------------------------------------------------------
+   Dark theme.
+
+   The palette is variable-driven, so dark mode is mostly a remap: the
+   neutral (ink) scale inverts onto navy-tinted surfaces and the handful
+   of utilities that hard-code white or deep navy get targeted overrides.
+   Navy panels (header, hero, map, footer) already read correctly.
+--------------------------------------------------------------------- */
+.dark {
+  --color-page: #0a1626;
+
+  --color-ink-50:  #10233c;  /* section tints */
+  --color-ink-100: #142944;
+  --color-ink-200: #1d3554;  /* dividers */
+  --color-ink-300: #28425f;  /* card borders */
+  --color-ink-400: #587493;
+  --color-ink-500: #97abc1;  /* steel text */
+  --color-ink-600: #aabdd0;
+  --color-ink-700: #c3d2e1;
+  --color-ink-800: #dbe6f0;
+  --color-ink-900: #eef4fa;  /* main text */
+
+  /* Text-sized gold needs the brighter cut on dark surfaces. */
+  --color-gold-600: #d4af37;
+}
+
+.dark ::selection {
+  background: var(--color-gold-600);
+  color: #0b1d33;
+}
+
+/* White cards and panels become raised navy surfaces. */
+.dark :where(.bg-white) { background-color: #10233c; }
+.dark :where(.bg-white\/95) { background-color: rgb(16 35 60 / 0.95); }
+
+/* Deep-navy fills need lift to stay visible on a navy page. */
+.dark :where(.bg-brand-600) { background-color: #255374; }
+.dark :where(.hover\:bg-brand-700):hover { background-color: #2e6390; }
+.dark :where(.text-brand-600) { color: #9dbde4; }
+
+.dark .rule-fade {
+  background: linear-gradient(
+    to right,
+    color-mix(in oklab, #ffffff 22%, transparent),
+    transparent
+  );
 }
 
 @media (prefers-reduced-motion: reduce) {

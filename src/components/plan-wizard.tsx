@@ -42,7 +42,7 @@ export function PlanWizard({
 
   const pill = (active: boolean) =>
     `rounded-lg border px-4 py-2.5 text-sm transition-colors ${
-      active ? "border-ink-900 bg-ink-900 text-white" : "border-ink-300 text-ink-900 hover:border-ink-500"
+      active ? "border-ink-900 bg-ink-900 text-white dark:text-pine-900" : "border-ink-300 text-ink-900 hover:border-ink-500"
     }`;
 
   const when = () => {
