@@ -1,17 +1,38 @@
 import { requireUser } from "@/lib/auth/session";
 import { sql } from "@db/client";
+import { getTranslator, isLocale, type Locale, type MessageKey } from "@/lib/i18n";
 import { Alert, Badge, Card, EmptyState, Field, Input, PageHeader, Select, Table } from "@/components/ui";
 import { ActionForm } from "@/components/form-state";
 import { uploadDocumentAction } from "../actions";
 
 export const dynamic = "force-dynamic";
 
-const REQUIRED = ["IDENTITY", "DRIVING_LICENSE", "INSURANCE"] as const;
+/**
+ * Identity and driving licence are what verification cannot start without.
+ * Insurance is deliberately absent: the platform no longer collects it —
+ * the signed agreement leaves the legal obligation with the driver.
+ */
+const REQUIRED = ["IDENTITY", "DRIVING_LICENSE"] as const;
+
+const DOC_KEY: Record<string, MessageKey> = {
+  IDENTITY: "console.docIDENTITY",
+  DRIVING_LICENSE: "console.docDRIVING_LICENSE",
+  VEHICLE_REGISTRATION: "console.docVEHICLE_REGISTRATION",
+  INSURANCE: "console.docINSURANCE",
+  INSPECTION: "console.docINSPECTION",
+};
+
+const STATE_KEY: Record<string, MessageKey> = {
+  APPROVED: "console.dsAPPROVED", PENDING: "console.dsPENDING",
+  CHANGES_REQUESTED: "console.dsCHANGES_REQUESTED", REJECTED: "console.dsREJECTED",
+  EXPIRED: "console.dsEXPIRED",
+};
 
 export default async function DocumentsPage() {
   const user = await requireUser();
+  const t = getTranslator(isLocale(user.locale) ? (user.locale as Locale) : "ka");
   const [driver] = await sql<{ id: string }[]>`SELECT id FROM driver_profiles WHERE user_id = ${user.id}::uuid`;
-  if (!driver) return <EmptyState title="Create your profile first" />;
+  if (!driver) return <EmptyState title={t("console.noProfileT")} />;
 
   const [docs, vehicles] = await Promise.all([
     sql<DocRow[]>`
@@ -22,35 +43,30 @@ export default async function DocumentsPage() {
   ]);
 
   const have = new Set(docs.map((d) => d.type));
-  const missing = REQUIRED.filter((t) => !have.has(t));
+  const missing = REQUIRED.filter((type) => !have.has(type));
+
+  const docLabel = (type: string) => (DOC_KEY[type] ? t(DOC_KEY[type]) : type.toLowerCase());
+  const stateLabel = (state: string) => (STATE_KEY[state] ? t(STATE_KEY[state]) : state.toLowerCase());
 
   return (
     <div className="space-y-6">
-      <PageHeader
-        title="Documents"
-        description="Uploads are stored in restricted storage and only reviewers can open them."
-      />
+      <PageHeader title={t("console.docsTitle")} description={t("console.docsDesc")} />
 
       {missing.length > 0 && (
-        <Alert tone="warning" title="Still required">
-          {missing.map((m) => m.replaceAll("_", " ").toLowerCase()).join(", ")}
+        <Alert tone="warning" title={t("console.stillRequiredT")}>
+          {missing.map((type) => docLabel(type)).join(", ")}
         </Alert>
       )}
 
-      <Alert tone="info" title="Insurance must cover paying passengers">
-        A standard private motor policy usually excludes carrying passengers for payment. Upload a policy
-        that explicitly covers commercial passenger transport, or your profile cannot be published.
-      </Alert>
-
       {docs.length > 0 && (
-        <Table head={["Document", "Expires", "Status", "Reviewer note"]}>
+        <Table head={[t("console.colDocument"), t("console.colExpires"), t("console.colStatus"), t("console.colReviewerNote")]}>
           {docs.map((d) => (
             <tr key={d.id}>
-              <td className="px-4 py-2.5">{d.type.replaceAll("_", " ").toLowerCase()}</td>
+              <td className="px-4 py-2.5">{docLabel(d.type)}</td>
               <td className="px-4 py-2.5 tabular-nums">{d.expires_on ?? "—"}</td>
               <td className="px-4 py-2.5">
                 <Badge tone={d.state === "APPROVED" ? "success" : d.state === "PENDING" ? "info" : "warning"}>
-                  {d.state}
+                  {stateLabel(d.state)}
                 </Badge>
               </td>
               <td className="px-4 py-2.5 text-ink-600">{d.review_reason ?? "—"}</td>
@@ -60,34 +76,33 @@ export default async function DocumentsPage() {
       )}
 
       <Card className="p-4 sm:p-6">
-        <h2 className="mb-4 font-semibold text-ink-900">Upload a document</h2>
-        <ActionForm action={uploadDocumentAction} submitLabel="Upload">
-          <Field label="Document type" htmlFor="type" required>
+        <h2 className="mb-4 font-semibold text-ink-900">{t("console.uploadCta")}</h2>
+        <ActionForm action={uploadDocumentAction} submitLabel={t("console.uploadCta")}>
+          <Field label={t("console.docTypeL")} htmlFor="type" required>
             <Select id="type" name="type" required>
-              <option value="IDENTITY">Identity document</option>
-              <option value="DRIVING_LICENSE">Driving licence</option>
-              <option value="VEHICLE_REGISTRATION">Vehicle registration</option>
-              <option value="INSURANCE">Insurance (passenger cover)</option>
-              <option value="INSPECTION">Technical inspection</option>
+              <option value="IDENTITY">{t("console.docIDENTITY")}</option>
+              <option value="DRIVING_LICENSE">{t("console.docDRIVING_LICENSE")}</option>
+              <option value="VEHICLE_REGISTRATION">{t("console.docVEHICLE_REGISTRATION")}</option>
+              <option value="INSPECTION">{t("console.docINSPECTION")}</option>
             </Select>
           </Field>
 
-          <Field label="Related vehicle" htmlFor="vehicleId" hint="Only for registration, insurance and inspection.">
+          <Field label={t("console.relatedVehicle")} htmlFor="vehicleId" hint={t("console.relatedVehicleHint")}>
             <Select id="vehicleId" name="vehicleId">
-              <option value="">Not vehicle specific</option>
+              <option value="">{t("console.notVehicleSpecific")}</option>
               {vehicles.map((v) => <option key={v.id} value={v.id}>{v.make} {v.model}</option>)}
             </Select>
           </Field>
 
-          <Field label="Document number" htmlFor="number" hint="Stored as a one-way hash, used only to detect duplicates.">
+          <Field label={t("console.docNumberL")} htmlFor="number" hint={t("console.docNumberHint")}>
             <Input id="number" name="number" autoComplete="off" />
           </Field>
 
-          <Field label="Expiry date" htmlFor="expiresOn" hint="Required for licence and insurance.">
+          <Field label={t("console.docExpiryL")} htmlFor="expiresOn" hint={t("console.docExpiryHint")}>
             <Input id="expiresOn" name="expiresOn" type="date" />
           </Field>
 
-          <Field label="File" htmlFor="file" hint="JPEG, PNG, WebP or PDF, up to 12 MB." required>
+          <Field label={t("console.docFileL")} htmlFor="file" hint={t("console.docFileHint")} required>
             <Input id="file" name="file" type="file" accept="image/jpeg,image/png,image/webp,application/pdf" required />
           </Field>
         </ActionForm>

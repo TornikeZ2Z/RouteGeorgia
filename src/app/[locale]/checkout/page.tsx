@@ -15,13 +15,13 @@ export const metadata = { robots: { index: false } };
 
 interface Props {
   params: Promise<{ locale: string }>;
-  searchParams: Promise<{ quote?: string; error?: string }>;
+  searchParams: Promise<{ quote?: string; error?: string; pd?: string; dd?: string }>;
 }
 
 export default async function CheckoutPage({ params, searchParams }: Props) {
   const { locale } = await params;
   if (!isLocale(locale)) notFound();
-  const { quote: quoteId, error } = await searchParams;
+  const { quote: quoteId, error, pd, dd } = await searchParams;
   const t = getTranslator(locale as Locale);
   if (!quoteId) return <EmptyState title={t("checkout.noQuoteT")}>{t("checkout.noQuoteB")}</EmptyState>;
 
@@ -84,7 +84,10 @@ export default async function CheckoutPage({ params, searchParams }: Props) {
           <CheckoutForm
             quoteId={quote.id}
             locale={locale as Locale}
-            defaults={{ passengers: quote.passengers, luggage: quote.luggage }}
+            defaults={{
+              passengers: quote.passengers, luggage: quote.luggage,
+              pickupAddress: (pd ?? "").slice(0, 300), dropoffAddress: (dd ?? "").slice(0, 300),
+            }}
             cashAvailable={!balance.cashBlocked}
             isAirport={points.some((p) => p.includes("airport"))}
             error={error}

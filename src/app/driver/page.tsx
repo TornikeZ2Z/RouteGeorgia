@@ -20,10 +20,11 @@ export default async function DriverHome() {
     SELECT id, handle, public_name, status::text AS status, published
     FROM driver_profiles WHERE user_id = ${user.id}::uuid`;
 
+  const tEarly = getTranslator((isLocale(user.locale) ? user.locale : "ka") as Locale);
   if (!driver) {
     return (
-      <EmptyState title="You do not have a driver profile yet">
-        <Link className="text-ink-900 underline" href="/driver/application">Start your application</Link>
+      <EmptyState title={tEarly("console.noProfileT")}>
+        <Link className="text-ink-900 underline" href="/driver/application">{tEarly("console.noProfileB")}</Link>
       </EmptyState>
     );
   }
@@ -57,8 +58,12 @@ export default async function DriverHome() {
     <div className="space-y-6">
       <PageHeader
         title={driver.public_name}
-        description={`Profile status: ${driver.status.replaceAll("_", " ").toLowerCase()}`}
-        actions={<Badge tone={STATUS_TONE[driver.status as keyof typeof STATUS_TONE]}>{driver.status}</Badge>}
+        description={t("console.profileStatus", { status: t(("console.st" + driver.status) as Parameters<typeof t>[0]) })}
+        actions={
+          <Badge tone={STATUS_TONE[driver.status as keyof typeof STATUS_TONE]}>
+            {t(("console.st" + driver.status) as Parameters<typeof t>[0])}
+          </Badge>
+        }
       />
 
       {/* Documents moved out of the application form, so for a fresh
@@ -89,38 +94,40 @@ export default async function DriverHome() {
       )}
 
       {driver.status === "CHANGES_REQUESTED" && (
-        <Alert tone="warning" title="Changes requested">
-          Operations asked for updates before your profile can be published. Check Documents and Profile.
-        </Alert>
+        <Alert tone="warning" title={t("console.changesReqT")}>{t("console.changesReqB")}</Alert>
       )}
 
       {expiringSoon.length > 0 && (
-        <Alert tone="warning" title="Documents expiring soon">
-          {expiringSoon.map((d) => `${d.type.replaceAll("_", " ")} (expires ${d.expires_on})`).join(", ")}.
-          New bookings pause automatically once a mandatory document expires.
+        <Alert tone="warning" title={t("console.expiringT")}>
+          {expiringSoon.map((d) => `${d.type.replaceAll("_", " ").toLowerCase()} (${d.expires_on})`).join(", ")}.{" "}
+          {t("console.expiringB")}
         </Alert>
       )}
 
       <div className="grid gap-4 sm:grid-cols-3">
         <Card className="p-4">
-          <p className="text-sm text-ink-500">Vehicles</p>
+          <p className="text-sm text-ink-500">{t("console.statVehicles")}</p>
           <p className="mt-1 text-2xl font-semibold">{vehicles.length}</p>
-          <p className="mt-1 text-xs text-ink-500">{vehicles.filter((v) => v.published).length} published</p>
+          <p className="mt-1 text-xs text-ink-500">
+            {t("console.statPublishedCount", { count: vehicles.filter((v) => v.published).length })}
+          </p>
         </Card>
         <Card className="p-4">
-          <p className="text-sm text-ink-500">Documents awaiting review</p>
+          <p className="text-sm text-ink-500">{t("console.statDocsPending")}</p>
           <p className="mt-1 text-2xl font-semibold">{pending.length}</p>
         </Card>
         <Card className="p-4">
-          <p className="text-sm text-ink-500">Upcoming calendar blocks</p>
+          <p className="text-sm text-ink-500">{t("console.statBlocks")}</p>
           <p className="mt-1 text-2xl font-semibold">{blocks[0]?.n ?? 0}</p>
         </Card>
       </div>
 
       {driver.published && (
-        <Alert tone="success" title="Your profile is live">
-          Travellers can find you in search results.{" "}
-          <Link className="underline" href={`/en/drivers/${driver.handle}`}>View public profile</Link>
+        <Alert tone="success" title={t("console.liveT")}>
+          {t("console.liveB")}{" "}
+          <Link className="underline" href={`/${isLocale(user.locale) ? user.locale : "ka"}/drivers/${driver.handle}`}>
+            {t("console.viewPublic")}
+          </Link>
         </Alert>
       )}
     </div>

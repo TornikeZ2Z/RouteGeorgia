@@ -1,16 +1,23 @@
 import { requireUser } from "@/lib/auth/session";
 import { sql } from "@db/client";
 import { toMajorString } from "@/lib/money";
+import { getTranslator, isLocale, type Locale, type MessageKey } from "@/lib/i18n";
 import { Alert, Badge, Card, EmptyState, Field, Input, PageHeader, Select, Table } from "@/components/ui";
 import { ActionForm } from "@/components/form-state";
 import { savePricePlanAction } from "../actions";
 
 export const dynamic = "force-dynamic";
 
+const CLASS_KEY: Record<string, MessageKey> = {
+  ECONOMY: "console.clsECONOMY", COMFORT: "console.clsCOMFORT", MINIVAN: "console.clsMINIVAN",
+  SUV_4X4: "console.clsSUV_4X4", MINIBUS: "console.clsMINIBUS", PREMIUM: "console.clsPREMIUM",
+};
+
 export default async function PricingPage() {
   const user = await requireUser();
+  const t = getTranslator(isLocale(user.locale) ? (user.locale as Locale) : "ka");
   const [driver] = await sql<{ id: string }[]>`SELECT id FROM driver_profiles WHERE user_id = ${user.id}::uuid`;
-  if (!driver) return <EmptyState title="Create your profile first" />;
+  if (!driver) return <EmptyState title={t("console.noProfileT")} />;
 
   const [vehicles, plans, bands] = await Promise.all([
     sql<{ id: string; make: string; model: string; class: string }[]>`
@@ -26,54 +33,46 @@ export default async function PricingPage() {
       FROM price_bands WHERE active`,
   ]);
 
-  if (vehicles.length === 0) return <EmptyState title="Add a vehicle before setting prices" />;
+  const classLabel = (value: string) => (CLASS_KEY[value] ? t(CLASS_KEY[value]) : value.toLowerCase());
+
+  if (vehicles.length === 0) return <EmptyState title={t("console.addVehicleT")} />;
 
   return (
     <div className="space-y-6">
-      <PageHeader
-        title="Your prices"
-        description="You set your own rates inside the platform bands for your vehicle class."
-      />
+      <PageHeader title={t("console.priceTitle")} description={t("console.priceDesc")} />
 
-      <Alert tone="info" title="How your price is calculated">
-        Your per-km rate is applied to the loaded distance. On routes where you must return empty, a share
-        of that return distance is added — the share is set per route by operations, so you do not have to
-        inflate your rate to cover it. Long mountain routes recover most of the return leg; city transfers
-        recover almost none.
-      </Alert>
+      <Alert tone="info" title={t("console.howPriceT")}>{t("console.howPriceB")}</Alert>
 
       <Card className="p-4 sm:p-6">
-        <h2 className="mb-1 font-semibold text-ink-900">Set a new price version</h2>
-        <p className="mb-4 text-sm text-ink-600">
-          Saving creates a new version. Quotes already given to travellers keep their original price.
-        </p>
+        <h2 className="mb-1 font-semibold text-ink-900">{t("console.newVerT")}</h2>
+        <p className="mb-4 text-sm text-ink-600">{t("console.newVerB")}</p>
 
-        <ActionForm action={savePricePlanAction} submitLabel="Save new version">
-          <Field label="Vehicle" htmlFor="vehicleId" required>
+        <ActionForm action={savePricePlanAction} submitLabel={t("console.saveVerCta")}>
+          <Field label={t("console.vehicleL")} htmlFor="vehicleId" required>
             <Select id="vehicleId" name="vehicleId" required>
               {vehicles.map((v) => (
-                <option key={v.id} value={v.id}>{v.make} {v.model} ({v.class.toLowerCase()})</option>
+                <option key={v.id} value={v.id}>{v.make} {v.model} ({classLabel(v.class)})</option>
               ))}
             </Select>
           </Field>
 
           <div className="grid gap-4 sm:grid-cols-2">
-            <Field label="Rate per km (GEL)" htmlFor="ratePerKm" required>
+            <Field label={t("console.rateKmL")} htmlFor="ratePerKm" required>
               <Input id="ratePerKm" name="ratePerKm" inputMode="decimal" placeholder="1.20" required />
             </Field>
-            <Field label="Rate per minute (GEL)" htmlFor="ratePerMinute" hint="Optional. Helps on slow mountain roads.">
+            <Field label={t("console.rateMinL")} htmlFor="ratePerMinute" hint={t("console.rateMinHint")}>
               <Input id="ratePerMinute" name="ratePerMinute" inputMode="decimal" defaultValue="0" />
             </Field>
-            <Field label="Extra stop fee (GEL)" htmlFor="perStopFee">
+            <Field label={t("console.stopFeeL")} htmlFor="perStopFee">
               <Input id="perStopFee" name="perStopFee" inputMode="decimal" defaultValue="0" />
             </Field>
-            <Field label="Overnight fee (GEL)" htmlFor="overnightFee" hint="Your accommodation and meals on multi-day trips.">
+            <Field label={t("console.overnightL")} htmlFor="overnightFee" hint={t("console.overnightHint")}>
               <Input id="overnightFee" name="overnightFee" inputMode="decimal" defaultValue="0" />
             </Field>
-            <Field label="Minimum fare (GEL)" htmlFor="minimumFare">
+            <Field label={t("console.minFareL")} htmlFor="minimumFare">
               <Input id="minimumFare" name="minimumFare" inputMode="decimal" defaultValue="0" />
             </Field>
-            <Field label="Season factor (%)" htmlFor="seasonFactorPct" hint="100 = no change. Shown to travellers in the breakdown.">
+            <Field label={t("console.seasonL")} htmlFor="seasonFactorPct" hint={t("console.seasonHint")}>
               <Input id="seasonFactorPct" name="seasonFactorPct" type="number" min={80} max={200} defaultValue={100} />
             </Field>
           </div>
@@ -81,11 +80,11 @@ export default async function PricingPage() {
       </Card>
 
       <section>
-        <h2 className="mb-2 font-semibold text-ink-900">Platform bands</h2>
-        <Table head={["Class", "Rate per km", "Minimum fare", "Max fare", "Max season"]}>
+        <h2 className="mb-2 font-semibold text-ink-900">{t("console.bandsT")}</h2>
+        <Table head={[t("console.colClass"), t("console.colRateKm"), t("console.colMinFare"), t("console.colMaxFare"), t("console.colMaxSeason")]}>
           {bands.map((b) => (
             <tr key={b.class}>
-              <td className="px-4 py-2.5">{b.class.replaceAll("_", " ").toLowerCase()}</td>
+              <td className="px-4 py-2.5">{classLabel(b.class)}</td>
               <td className="px-4 py-2.5 tabular-nums">
                 {toMajorString(b.min_rate_per_km_minor)} – {toMajorString(b.max_rate_per_km_minor)}
               </td>
@@ -99,8 +98,8 @@ export default async function PricingPage() {
 
       {plans.length > 0 && (
         <section>
-          <h2 className="mb-2 font-semibold text-ink-900">Version history</h2>
-          <Table head={["Vehicle", "Version", "Rate/km", "Minimum", "Season", "From", "Status"]}>
+          <h2 className="mb-2 font-semibold text-ink-900">{t("console.verHistT")}</h2>
+          <Table head={[t("console.colVehicle"), t("console.colVersion"), t("console.colRateKm"), t("console.colMinFare"), t("console.seasonL"), t("console.colFrom"), t("console.colStatus")]}>
             {plans.map((p) => (
               <tr key={p.id}>
                 <td className="px-4 py-2.5">{p.make} {p.model}</td>
@@ -110,7 +109,9 @@ export default async function PricingPage() {
                 <td className="px-4 py-2.5 tabular-nums">{(p.season_factor_bps / 100).toFixed(0)}%</td>
                 <td className="px-4 py-2.5">{new Date(p.effective_from).toLocaleDateString()}</td>
                 <td className="px-4 py-2.5">
-                  <Badge tone={p.status === "ACTIVE" ? "success" : "neutral"}>{p.status}</Badge>
+                  <Badge tone={p.status === "ACTIVE" ? "success" : "neutral"}>
+                    {p.status === "ACTIVE" ? t("console.planActive") : t("console.planOld")}
+                  </Badge>
                 </td>
               </tr>
             ))}

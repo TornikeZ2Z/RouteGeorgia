@@ -10,7 +10,7 @@ export function CheckoutForm({
 }: {
   quoteId: string;
   locale: Locale;
-  defaults: { passengers: number; luggage: number };
+  defaults: { passengers: number; luggage: number; pickupAddress?: string; dropoffAddress?: string };
   cashAvailable: boolean;
   isAirport: boolean;
   error?: string;
@@ -85,10 +85,18 @@ export function CheckoutForm({
         </p>
         <div className="space-y-4">
           <Field label={t("checkout.pickup")} htmlFor="pickupAddress" required>
-            <Input id="pickupAddress" name="pickupAddress" required />
+            <Input
+              id="pickupAddress" name="pickupAddress" required maxLength={300}
+              defaultValue={defaults.pickupAddress || undefined}
+              placeholder={t("checkout.pickupPh")}
+            />
           </Field>
           <Field label={t("checkout.dropoff")} htmlFor="dropoffAddress" required>
-            <Input id="dropoffAddress" name="dropoffAddress" required />
+            <Input
+              id="dropoffAddress" name="dropoffAddress" required maxLength={300}
+              defaultValue={defaults.dropoffAddress || undefined}
+              placeholder={t("checkout.dropoffPh")}
+            />
           </Field>
 
           {isAirport && (

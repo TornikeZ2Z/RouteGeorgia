@@ -113,6 +113,13 @@ export default async function DriverProfile({ params, searchParams }: Props) {
   const sp = (await searchParams) ?? {};
   const quoteParam = Array.isArray(sp.quote) ? sp.quote[0] : sp.quote;
   const trip = await loadTripQuote(quoteParam, driver.id);
+
+  // Exact addresses, still riding along from the search.
+  const one = (v: string | string[] | undefined) => (Array.isArray(v) ? v[0] : v) ?? "";
+  const addressParams = new URLSearchParams();
+  if (one(sp.pd).trim()) addressParams.set("pd", one(sp.pd).trim().slice(0, 300));
+  if (one(sp.dd).trim()) addressParams.set("dd", one(sp.dd).trim().slice(0, 300));
+  const addressThread = addressParams.size > 0 ? `&${addressParams}` : "";
   const fmtWhen = (d: Date) =>
     d.toLocaleString(locale, { day: "numeric", month: "short", hour: "2-digit", minute: "2-digit", timeZone: "Asia/Tbilisi" });
 
@@ -138,7 +145,7 @@ export default async function DriverProfile({ params, searchParams }: Props) {
                 {formatMoney(trip.grossMinor, CANONICAL, locale)}
               </p>
               <a
-                href={`/${locale}/checkout?quote=${trip.id}`}
+                href={`/${locale}/checkout?quote=${trip.id}${addressThread}`}
                 className="inline-flex min-h-11 items-center rounded-lg bg-gold-400 px-6 py-2.5 font-bold tracking-[-0.01em] text-pine-900 shadow-sm transition-colors hover:bg-gold-300"
               >
                 {t("driver.bookNow")}

@@ -68,6 +68,11 @@ export function SearchForm({
   const [returnWhen, setReturnWhen] = useState(defaultReturnWhen());
   const [passengers, setPassengers] = useState(2);
   const [luggage, setLuggage] = useState(2);
+  // Free text, carried untouched to checkout: "Rooms Hotel, 14 Kostava St".
+  // The chosen locations still decide the route and the price; these decide
+  // where the driver actually stops the car.
+  const [pickupDetail, setPickupDetail] = useState("");
+  const [dropDetail, setDropDetail] = useState("");
   const [error, setError] = useState<string | null>(null);
 
   function submit(e: React.FormEvent) {
@@ -91,6 +96,8 @@ export function SearchForm({
     const q = new URLSearchParams({
       from, to, when, passengers: String(passengers), luggage: String(luggage),
     });
+    if (pickupDetail.trim()) q.set("pd", pickupDetail.trim().slice(0, 300));
+    if (dropDetail.trim()) q.set("dd", dropDetail.trim().slice(0, 300));
     if (roundTrip) q.set("return", returnWhen);
     if (tourSlug) q.set("tour", tourSlug);
     for (const s of stops) q.append("stop", s);
@@ -172,6 +179,31 @@ export function SearchForm({
             {t("search.addStop")}
           </Button>
         )}
+
+      <div className="grid gap-3 sm:grid-cols-2">
+        <div>
+          <label htmlFor="pickup-detail-0" className="mb-1 block text-xs font-medium text-ink-500">
+            {t("search.exactFromL")}
+          </label>
+          <input
+            id="pickup-detail-0" type="text" maxLength={300} value={pickupDetail}
+            onChange={(e) => setPickupDetail(e.target.value)}
+            placeholder={t("checkout.pickupPh")}
+            className="w-full rounded-xl border border-ink-200 bg-white px-3 py-2 text-sm text-ink-900 placeholder:text-ink-400 hover:border-ink-300 focus:border-ink-900"
+          />
+        </div>
+        <div>
+          <label htmlFor="drop-detail-0" className="mb-1 block text-xs font-medium text-ink-500">
+            {t("search.exactToL")}
+          </label>
+          <input
+            id="drop-detail-0" type="text" maxLength={300} value={dropDetail}
+            onChange={(e) => setDropDetail(e.target.value)}
+            placeholder={t("checkout.dropoffPh")}
+            className="w-full rounded-xl border border-ink-200 bg-white px-3 py-2 text-sm text-ink-900 placeholder:text-ink-400 hover:border-ink-300 focus:border-ink-900"
+          />
+        </div>
+      </div>
         <Button type="submit" className="w-full">{t("search.submit")}</Button>
         <p className="text-xs text-ink-500">{t("search.stopsNote")}</p>
         {error && <p className="text-sm text-[--color-danger]" role="alert">{error}</p>}
@@ -235,6 +267,29 @@ export function SearchForm({
       </div>
 
       {stopsEditor}
+
+      <details className="rounded-2xl border border-ink-200 bg-white px-4 py-3">
+        <summary className="cursor-pointer text-sm font-medium text-ink-700">
+          {t("search.exactFromL")} / {t("search.exactToL")}
+        </summary>
+        <div className="mt-3 grid gap-3 sm:grid-cols-2">
+          <input
+            type="text" maxLength={300} value={pickupDetail}
+            onChange={(e) => setPickupDetail(e.target.value)}
+            placeholder={t("checkout.pickupPh")}
+            aria-label={t("search.exactFromL")}
+            className="w-full rounded-xl border border-ink-200 bg-white px-3 py-2 text-sm text-ink-900 placeholder:text-ink-400 focus:border-ink-900"
+          />
+          <input
+            type="text" maxLength={300} value={dropDetail}
+            onChange={(e) => setDropDetail(e.target.value)}
+            placeholder={t("checkout.dropoffPh")}
+            aria-label={t("search.exactToL")}
+            className="w-full rounded-xl border border-ink-200 bg-white px-3 py-2 text-sm text-ink-900 placeholder:text-ink-400 focus:border-ink-900"
+          />
+        </div>
+        <p className="mt-2 text-xs text-ink-500">{t("search.exactHint")}</p>
+      </details>
 
       <div className="flex flex-wrap items-center justify-between gap-3">
         {!lockRoute ? (

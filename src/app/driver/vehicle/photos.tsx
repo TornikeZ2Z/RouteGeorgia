@@ -7,40 +7,41 @@ import { uploadVehiclePhotoAction, deleteVehiclePhotoAction } from "../actions";
 
 const INITIAL = { ok: false } as const;
 
-export function PhotoUploader({ vehicles }: { vehicles: { id: string; label: string }[] }) {
+export interface PhotoLabels {
+  title: string; vehicle: string; show: string;
+  exterior: string; interior: string; rearSeats: string; luggage: string;
+  desc: string; descHint: string; photos: string; photosHint: string; upload: string;
+}
+
+export function PhotoUploader({
+  vehicles, labels,
+}: { vehicles: { id: string; label: string }[]; labels: PhotoLabels }) {
   const [state, action] = useActionState(uploadVehiclePhotoAction, INITIAL);
 
   return (
     <form action={action} className="space-y-4">
-      <h3 className="font-medium text-ink-900">Upload photos</h3>
+      <h3 className="font-medium text-ink-900">{labels.title}</h3>
 
-      <Field label="Vehicle" htmlFor="photo-vehicle" required>
+      <Field label={labels.vehicle} htmlFor="photo-vehicle" required>
         <Select id="photo-vehicle" name="vehicleId" required>
           {vehicles.map((v) => <option key={v.id} value={v.id}>{v.label}</option>)}
         </Select>
       </Field>
 
-      <Field label="What do they show?" htmlFor="viewType">
+      <Field label={labels.show} htmlFor="viewType">
         <Select id="viewType" name="viewType" defaultValue="exterior">
-          <option value="exterior">Outside of the car</option>
-          <option value="interior">Inside — front</option>
-          <option value="rear_seats">Inside — passenger seats</option>
-          <option value="luggage">Luggage space</option>
+          <option value="exterior">{labels.exterior}</option>
+          <option value="interior">{labels.interior}</option>
+          <option value="rear_seats">{labels.rearSeats}</option>
+          <option value="luggage">{labels.luggage}</option>
         </Select>
       </Field>
 
-      <Field
-        label="Description" htmlFor="altText"
-        hint="Read aloud by screen readers. For example: silver minivan, side view."
-      >
+      <Field label={labels.desc} htmlFor="altText" hint={labels.descHint}>
         <Input id="altText" name="altText" maxLength={160} />
       </Field>
 
-      <Field
-        label="Photos" htmlFor="photos"
-        hint="JPEG, PNG or WebP, up to 8 at a time. Photograph your own car — do not use pictures from the internet."
-        required
-      >
+      <Field label={labels.photos} htmlFor="photos" hint={labels.photosHint} required>
         <Input
           id="photos" name="photos" type="file" multiple
           accept="image/jpeg,image/png,image/webp" required
@@ -48,18 +49,18 @@ export function PhotoUploader({ vehicles }: { vehicles: { id: string; label: str
       </Field>
 
       {state.message && <Alert tone={state.ok ? "success" : "danger"}>{state.message}</Alert>}
-      <SubmitButton>Upload</SubmitButton>
+      <SubmitButton>{labels.upload}</SubmitButton>
     </form>
   );
 }
 
-export function RemovePhoto({ mediaId }: { mediaId: string }) {
+export function RemovePhoto({ mediaId, label }: { mediaId: string; label: string }) {
   const [state, action] = useActionState(deleteVehiclePhotoAction, INITIAL);
   return (
     <form action={action}>
       <input type="hidden" name="mediaId" value={mediaId} />
       <button className="text-xs text-ink-500 underline hover:text-[--color-danger]">
-        Remove
+        {label}
       </button>
       {!state.ok && state.message && <span className="sr-only">{state.message}</span>}
     </form>

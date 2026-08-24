@@ -106,15 +106,18 @@ export async function submitApplicationAction(): Promise<ActionState> {
   }
 
   // Completeness gate: refuse to waste a reviewer's time on a partial file.
+  // Insurance is deliberately NOT on this list — the platform no longer
+  // collects it. Identity and licence are what verification starts from.
   const [counts] = await sql<{ vehicles: number; docs: number; langs: number }[]>`
     SELECT
       (SELECT count(*) FROM vehicles WHERE driver_id = ${driver.id}::uuid)::int AS vehicles,
-      (SELECT count(*) FROM driver_documents WHERE driver_id = ${driver.id}::uuid AND is_mandatory)::int AS docs,
+      (SELECT count(*) FROM driver_documents WHERE driver_id = ${driver.id}::uuid
+        AND type IN ('IDENTITY', 'DRIVING_LICENSE'))::int AS docs,
       (SELECT count(*) FROM driver_languages WHERE driver_id = ${driver.id}::uuid)::int AS langs`;
 
   const missing: string[] = [];
   if ((counts?.vehicles ?? 0) === 0) missing.push("at least one vehicle");
-  if ((counts?.docs ?? 0) < 3) missing.push("identity, driving licence and insurance documents");
+  if ((counts?.docs ?? 0) < 2) missing.push("identity and driving licence documents");
   if ((counts?.langs ?? 0) === 0) missing.push("at least one spoken language");
   if (missing.length) return { ok: false, message: `Still needed: ${missing.join(", ")}.` };
 

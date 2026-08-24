@@ -8,6 +8,7 @@ export const metadata = { robots: { index: false } };
 import { getTranslator, isLocale, type Locale, type MessageKey } from "@/lib/i18n";
 import { adminT } from "@/lib/i18n/admin";
 import { exitImpersonationAction } from "./actions";
+import { DriverNav } from "./nav";
 
 /**
  * Every driver on this platform is Georgian. The console renders in the
@@ -27,15 +28,16 @@ const NAV: { href: string; label: MessageKey }[] = [
 ];
 
 /**
- * Driver surface. Built mobile-first and kept deliberately light: the target
- * device is a mid-range Android phone on an intermittent connection.
+ * Driver surface, in the same visual language as the operations console: a
+ * sidebar on desktop, a scroll strip on the phone the driver actually uses.
  */
 export default async function DriverLayout({ children }: { children: React.ReactNode }) {
   const user = await getSessionUser();
   if (!user) redirect("/login?next=/driver");
   const t = getTranslator(isLocale(user.locale) ? (user.locale as Locale) : "ka");
-
   const at = adminT(user.locale);
+
+  const items = NAV.map((item) => ({ href: item.href, label: t(item.label) }));
 
   return (
     <div className="flex min-h-dvh flex-col bg-ink-50">
@@ -43,8 +45,8 @@ export default async function DriverLayout({ children }: { children: React.React
           see who they are being on every page, with the way back one tap
           away. The cookie expires on its own after an hour regardless. */}
       {user.impersonator && (
-        <div className="sticky top-0 z-20 border-b border-gold-500/40 bg-gold-100">
-          <div className="mx-auto flex max-w-4xl flex-wrap items-center justify-between gap-2 px-4 py-2">
+        <div className="sticky top-0 z-30 border-b border-gold-500/40 bg-gold-100">
+          <div className="flex flex-wrap items-center justify-between gap-2 px-4 py-2 lg:px-6">
             <p className="text-sm text-pine-900">
               <span className="font-semibold">{at("impersonate.bannerTitle")} {user.email}.</span>{" "}
               {at("impersonate.bannerBody")}
@@ -57,10 +59,11 @@ export default async function DriverLayout({ children }: { children: React.React
           </div>
         </div>
       )}
-      <header className="sticky top-0 z-10 border-b border-ink-200 bg-white">
-        <div className="mx-auto flex max-w-4xl items-center justify-between px-4 py-3">
-          <Link href="/driver" className="flex items-center gap-2.5">
-            <span aria-hidden className="grid size-8 place-items-center rounded-full bg-brand-600 text-white">
+
+      <header className="sticky top-0 z-20 border-b border-ink-200 bg-white">
+        <div className="flex items-center gap-3 px-4 py-2.5 lg:px-6">
+          <Link href="/driver" className="flex shrink-0 items-center gap-2.5">
+            <span aria-hidden className="grid size-8 place-items-center rounded-full bg-pine-800 text-white">
               <svg viewBox="0 0 24 24" className="size-4" fill="none" stroke="currentColor" aria-hidden>
                 <ellipse cx="12" cy="14" rx="9" ry="5.5" strokeWidth="1.4" opacity=".45" />
                 <path d="M4 18 C9 10, 15 16, 20 7" strokeWidth="2.2" strokeLinecap="round" />
@@ -68,23 +71,30 @@ export default async function DriverLayout({ children }: { children: React.React
             </span>
             <span className="font-display text-lg text-ink-900">{t("console.title")}</span>
           </Link>
-          <form action="/logout" method="post">
-            <button className="rounded px-3 py-1.5 text-sm text-ink-600 hover:bg-ink-100">{t("nav.signOut")}</button>
-          </form>
+
+          <div className="ml-auto flex shrink-0 items-center gap-2 text-sm">
+            <span className="hidden rounded-lg bg-ink-50 px-2.5 py-1.5 text-xs text-ink-600 md:block">
+              {user.email}
+            </span>
+            <form action="/logout" method="post">
+              <button className="rounded-lg px-2.5 py-1.5 text-ink-500 hover:bg-ink-100 hover:text-ink-900">
+                {t("nav.signOut")}
+              </button>
+            </form>
+          </div>
         </div>
-        <nav aria-label="Driver" className="mx-auto max-w-4xl overflow-x-auto px-2 pb-2">
-          <ul className="flex gap-1 text-sm">
-            {NAV.map((item) => (
-              <li key={item.href}>
-                <Link href={item.href} className="block whitespace-nowrap rounded-lg px-3 py-1.5 text-ink-600 hover:bg-ink-100">
-                  {t(item.label)}
-                </Link>
-              </li>
-            ))}
-          </ul>
-        </nav>
+
+        <div className="lg:hidden">
+          <DriverNav items={items} />
+        </div>
       </header>
-      <main className="mx-auto w-full max-w-4xl flex-1 px-4 py-6">{children}</main>
+
+      <div className="flex flex-1">
+        <aside className="hidden w-56 shrink-0 border-r border-ink-200 bg-white px-3 py-6 lg:block">
+          <DriverNav items={items} />
+        </aside>
+        <main className="w-full min-w-0 max-w-5xl flex-1 px-4 py-6 lg:px-8">{children}</main>
+      </div>
     </div>
   );
 }

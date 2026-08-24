@@ -35,6 +35,13 @@ export default async function SearchPage({ params, searchParams }: Props) {
   const t = getTranslator(locale);
   const sp = await searchParams;
 
+  // Exact addresses typed at search time ride along to checkout untouched.
+  const one = (v: string | string[] | undefined) => (Array.isArray(v) ? v[0] : v) ?? "";
+  const addressParams = new URLSearchParams();
+  if (one(sp.pd).trim()) addressParams.set("pd", one(sp.pd).trim().slice(0, 300));
+  if (one(sp.dd).trim()) addressParams.set("dd", one(sp.dd).trim().slice(0, 300));
+  const addressThread = addressParams.size > 0 ? `&${addressParams}` : "";
+
   const from = str(sp.from), to = str(sp.to), when = str(sp.when);
   const stops = list(sp.stop).filter(Boolean);
 
@@ -245,7 +252,7 @@ export default async function SearchPage({ params, searchParams }: Props) {
                             )}
                             <p className="mt-0.5 text-xs text-ink-500">{t("search.priceForVehicle")}</p>
                             <Link
-                              href={`/${locale}/drivers/${offer.handle}?quote=${offer.quoteId}`}
+                              href={`/${locale}/drivers/${offer.handle}?quote=${offer.quoteId}${addressThread}`}
                               className="mt-4 inline-flex min-h-11 w-full items-center justify-center rounded-lg bg-brand-600 px-5 py-2.5 text-sm font-semibold text-white shadow-sm transition-colors hover:bg-brand-700"
                             >
                               {t("search.viewBook")} →
