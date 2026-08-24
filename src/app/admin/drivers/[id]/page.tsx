@@ -6,6 +6,7 @@ import { Alert, Badge, Card, PageHeader, Table } from "@/components/ui";
 import { DecisionPanel, DocumentDecision, VehicleDecision, LanguageVerification, PublishPanel, UploadDocumentPanel } from "./panels";
 import { WalletPanel } from "../forms";
 import { driverBalance } from "@/lib/ledger";
+import { getActiveContract, getSignature, missingCompanyDetails } from "@/lib/contract";
 import { can as canDo } from "@/lib/rbac";
 
 export const dynamic = "force-dynamic";
@@ -40,6 +41,9 @@ export default async function DriverDetail({ params }: { params: Promise<{ id: s
       SELECT from_state::text, to_state::text, reason, created_at
       FROM driver_decisions WHERE driver_id = ${id}::uuid ORDER BY created_at DESC LIMIT 20`,
   ]);
+
+  const [contract, signature] = await Promise.all([getActiveContract("en"), getSignature(id)]);
+  const missingCompany = missingCompanyDetails();
 
   const balance = canDo(actor.roles, "admin.finance.read") ? await driverBalance(id) : null;
   const mayDecide = can(actor.roles, "admin.drivers.decide");
@@ -198,6 +202,64 @@ export default async function DriverDetail({ params }: { params: Promise<{ id: s
               blockedReason={balance.blockedReason}
             />
           )}
+          {/* Publication is blocked without a signature, by this console and by
+              a trigger on driver_profiles. Say where the file stands before a
+              reviewer tries and gets refused. */}
+          <Card className="p-4 text-sm">
+            <h3 className="font-semibold text-ink-900">Driver agreement</h3>
+            {signature ? (
+              <dl className="mt-2 space-y-1.5 text-ink-600">
+                <div className="flex justify-between gap-3">
+                  <dt className="text-ink-500">Status</dt>
+                  <dd><Badge tone="success">Signed</Badge></dd>
+                </div>
+                <div className="flex justify-between gap-3">
+                  <dt className="text-ink-500">Version</dt>
+                  <dd className="text-right">{signature.contractVersion}</dd>
+                </div>
+                <div className="flex justify-between gap-3">
+                  <dt className="text-ink-500">Signed</dt>
+                  <dd className="text-right tabular-nums">
+                    {new Date(signature.signedAt).toLocaleString()}
+                  </dd>
+                </div>
+                <div className="flex justify-between gap-3">
+                  <dt className="text-ink-500">Name typed</dt>
+                  <dd className="text-right">{signature.signedName}</dd>
+                </div>
+                <div className="flex justify-between gap-3">
+                  <dt className="text-ink-500">Language</dt>
+                  <dd className="text-right uppercase">{signature.locale}</dd>
+                </div>
+                <div className="mt-1 border-t border-ink-100 pt-2">
+                  <dt className="text-ink-500">Document fingerprint</dt>
+                  <dd className="mt-1 break-all font-mono text-[11px] text-ink-600">
+                    {signature.bodyHash}
+                  </dd>
+                </div>
+              </dl>
+            ) : missingCompany.length > 0 ? (
+              <p className="mt-2 leading-relaxed text-ink-600">
+                No agreement can be offered yet: {missingCompany.join(", ")}{" "}
+                {missingCompany.length === 1 ? "is" : "are"} not set, so the contract would name a
+                counterparty that does not exist. Set them in the environment, then publish a
+                contract version.
+              </p>
+            ) : !contract ? (
+              <p className="mt-2 leading-relaxed text-ink-600">
+                No contract version is published, so nobody can sign one and nobody can go live.
+              </p>
+            ) : (
+              <p className="mt-2 leading-relaxed text-ink-600">
+                <Badge tone="warning">Not signed</Badge>{" "}
+                <span className="mt-2 block">
+                  Version {contract.version} is waiting for this driver. They were told by email and
+                  SMS when they were approved. This profile cannot be published until they sign.
+                </span>
+              </p>
+            )}
+          </Card>
+
           {mayDecide && <DecisionPanel driverId={driver.id} currentStatus={driver.status} />}
           {mayPublish && <PublishPanel driverId={driver.id} published={driver.published} />}
 

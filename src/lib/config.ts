@@ -31,6 +31,17 @@ const Schema = z.object({
   /** Shown in the header and footer once the business SIM exists. Hidden when empty. */
   SUPPORT_PHONE: z.string().default(""),
   SUPPORT_EMAIL: z.string().default("support@routegeorgia.ge"),
+
+  /**
+   * The contracting entity, as it must appear in the driver agreement.
+   *
+   * Empty until the company is registered. The agreement refuses to publish
+   * while any of these is blank — a driver must never be asked to sign a
+   * contract whose counterparty reads "to be completed".
+   */
+  COMPANY_LEGAL_NAME: z.string().default(""),
+  COMPANY_ID_NUMBER: z.string().default(""),
+  COMPANY_ADDRESS: z.string().default(""),
   NODE_ENV: z.enum(["development", "test", "production"]).default("development"),
 });
 
@@ -82,6 +93,11 @@ export const config = {
   },
 
   contact: { phone: env.SUPPORT_PHONE, email: env.SUPPORT_EMAIL },
+  company: {
+    legalName: env.COMPANY_LEGAL_NAME,
+    idNumber: env.COMPANY_ID_NUMBER,
+    address: env.COMPANY_ADDRESS,
+  },
   routing: { provider: env.ROUTING_PROVIDER, apiKey: env.ROUTING_API_KEY },
   storage: { driver: env.STORAGE_DRIVER },
 } as const;

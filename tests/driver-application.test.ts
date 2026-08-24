@@ -9,7 +9,8 @@
 import { describe, it, expect } from "vitest";
 import {
   ApplicationSchema, validateApplication, APPLICATION_ERRORS, isApplicationError,
-  DOCUMENT_SLOTS, type ApplicationFiles, type ApplicationLanguage,
+  DOCUMENT_SLOTS, displayName, inferVehicleClass, transliterate,
+  type ApplicationFiles, type ApplicationLanguage,
 } from "@/lib/driver-application";
 import { en } from "@/lib/i18n/en";
 import { ka } from "@/lib/i18n/ka";
@@ -29,7 +30,6 @@ const FIELDS = {
   locale: "en",
   legalFirstName: "Giorgi",
   legalLastName: "Kapanadze",
-  publicName: "Giorgi K.",
   dateOfBirth: iso(-38),
   email: "giorgi@example.com",
   phone: "+995 555 12 34 56",
@@ -39,10 +39,8 @@ const FIELDS = {
   model: "Land Cruiser Prado",
   year: "2019",
   plate: "AA-123-BB",
-  vehicleClass: "SUV_4X4",
   seats: "4",
   luggage: "3",
-  licenceExpiresOn: iso(3),
   consent: "on",
 };
 
@@ -58,7 +56,7 @@ const files = (over: ApplicationFiles = {}): ApplicationFiles => ({
   ...over,
 });
 
-const SPEAKS: ApplicationLanguage[] = [{ language: "ka", level: "NATIVE" }];
+const SPEAKS: ApplicationLanguage[] = [{ language: "en", level: "FLUENT" }];
 
 describe("application schema", () => {
   it("accepts a complete application", () => {
@@ -79,12 +77,8 @@ describe("application schema", () => {
     expect(ApplicationSchema.safeParse({ ...FIELDS, year: "1974" }).success).toBe(false);
   });
 
-  it("rejects a vehicle class that is not one of ours", () => {
-    expect(ApplicationSchema.safeParse({ ...FIELDS, vehicleClass: "LIMOUSINE" }).success).toBe(false);
-  });
-
   it("trims whitespace rather than storing a padded name", () => {
-    expect(parse({ publicName: "  Giorgi K.  " }).publicName).toBe("Giorgi K.");
+    expect(parse({ legalFirstName: "  Giorgi  " }).legalFirstName).toBe("Giorgi");
   });
 
   /**
@@ -114,16 +108,6 @@ describe("application rules", () => {
     expect(errors).toContain("EXPERIENCE");
   });
 
-  it("refuses an expired driving licence", () => {
-    const errors = validateApplication(parse({ licenceExpiresOn: iso(0, -1) }), files(), SPEAKS);
-    expect(errors).toContain("LICENCE_EXPIRED");
-  });
-
-  it("refuses a licence that expires today", () => {
-    const errors = validateApplication(parse({ licenceExpiresOn: iso(0) }), files(), SPEAKS);
-    expect(errors).toContain("LICENCE_EXPIRED");
-  });
-
   it("demands identity and licence images", () => {
     const errors = validateApplication(parse(), {}, SPEAKS);
     expect(errors).toContain("IDENTITY_FILE");
@@ -136,27 +120,13 @@ describe("application rules", () => {
     expect(errors).toContain("IDENTITY_FILE");
   });
 
-  it("demands at least one language", () => {
-    expect(validateApplication(parse(), files(), [])).toContain("NO_LANGUAGE");
-  });
-
-  it("pairs insurance file and expiry date in both directions", () => {
-    const dateOnly = validateApplication(parse({ insuranceExpiresOn: iso(1) }), files(), SPEAKS);
-    expect(dateOnly).toContain("INSURANCE_FILE");
-
-    const fileOnly = validateApplication(
-      parse(), files({ insuranceFile: photo("insurance.pdf") }), SPEAKS,
-    );
-    expect(fileOnly).toContain("INSURANCE_EXPIRY");
-  });
-
-  it("refuses an insurance policy that has already lapsed", () => {
-    const errors = validateApplication(
-      parse({ insuranceExpiresOn: iso(0, -1) }),
-      files({ insuranceFile: photo("insurance.jpg") }),
-      SPEAKS,
-    );
-    expect(errors).toContain("INSURANCE_EXPIRED");
+  /**
+   * Georgian is recorded for every applicant without being asked, so someone
+   * who speaks neither English nor Russian is a normal applicant, not an
+   * incomplete one. This used to be a blocking error.
+   */
+  it("accepts an applicant who ticked no language at all", () => {
+    expect(validateApplication(parse(), files(), [])).toEqual([]);
   });
 
   it("rejects a file type storage would refuse, once, not per file", () => {
@@ -165,10 +135,63 @@ describe("application rules", () => {
     expect(errors.filter((e) => e === "FILE_REJECTED")).toHaveLength(1);
   });
 
-  it("does not require registration or insurance to apply", () => {
-    const optional = DOCUMENT_SLOTS.filter((s) => !s.required).map((s) => s.type);
-    expect(optional).toEqual(["VEHICLE_REGISTRATION", "INSURANCE"]);
-    expect(validateApplication(parse(), files(), SPEAKS)).toEqual([]);
+  it("asks for identity and licence, and nothing else, to apply", () => {
+    expect(DOCUMENT_SLOTS.filter((s) => s.required).map((s) => s.type))
+      .toEqual(["IDENTITY", "DRIVING_LICENSE"]);
+    expect(DOCUMENT_SLOTS.filter((s) => !s.required).map((s) => s.type))
+      .toEqual(["VEHICLE_REGISTRATION"]);
+  });
+
+  /**
+   * Insurance is still required before a driver can be published and the
+   * signed agreement obliges them to hold it — it is simply collected from
+   * their documents page rather than blocking the application.
+   */
+  it("does not ask for insurance at application time", () => {
+    expect(DOCUMENT_SLOTS.map((s) => s.type)).not.toContain("INSURANCE");
+  });
+});
+
+describe("derived fields", () => {
+  /** The form stopped asking for these; wrong answers here reach travellers. */
+  it("builds the public name from the legal name", () => {
+    expect(displayName("Giorgi", "Kapanadze")).toBe("Giorgi K.");
+    expect(displayName("  giorgi  ", "  kapanadze  ")).toBe("giorgi K.");
+    // Georgian Mkhedruli is unicameral: uppercasing it yields Mtavruli, the
+    // all-caps display form, which reads as shouting inside a name.
+    expect(displayName("გიორგი", "კაპანაძე")).toBe("გიორგი კ.");
+    expect(displayName("Иван", "Беридзе")).toBe("Иван Б.");
+  });
+
+  it("does not leave a dangling initial when there is no surname", () => {
+    expect(displayName("Giorgi", "")).toBe("Giorgi");
+  });
+
+  it("infers the vehicle class from seats and four-wheel drive", () => {
+    expect(inferVehicleClass(4, {})).toBe("COMFORT");
+    expect(inferVehicleClass(4, { four_wheel_drive: true })).toBe("SUV_4X4");
+    expect(inferVehicleClass(7, {})).toBe("MINIVAN");
+    expect(inferVehicleClass(16, {})).toBe("MINIBUS");
+  });
+
+  /** A 4x4 minibus is a minibus: seats decide the price band first. */
+  it("puts seats ahead of four-wheel drive for large vehicles", () => {
+    expect(inferVehicleClass(16, { four_wheel_drive: true })).toBe("MINIBUS");
+  });
+
+  /**
+   * Handles become public URLs. Without transliteration every Georgian name
+   * stripped down to nothing and the whole domestic supply shared
+   * indistinguishable handles like "driver-7c18".
+   */
+  it("transliterates Georgian names so handles stay readable", () => {
+    expect(transliterate("გიორგი")).toBe("giorgi");
+    expect(transliterate("კაპანაძე")).toBe("kapanadze");
+    expect(transliterate("ცხრაძე")).toBe("tskhradze");
+  });
+
+  it("leaves Latin text alone", () => {
+    expect(transliterate("Giorgi K.")).toBe("Giorgi K.");
   });
 });
 

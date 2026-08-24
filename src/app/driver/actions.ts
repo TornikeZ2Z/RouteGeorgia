@@ -11,6 +11,9 @@ import { validatePlanAgainstBand } from "@/lib/pricing/engine";
 import { parseMajor } from "@/lib/money";
 import { createBlock, deleteBlock, AvailabilityConflictError } from "@/lib/availability";
 import { getStorage, hashDocumentNumber, assertUploadAllowed, UploadRejectedError } from "@/lib/storage";
+import { signContract, type SignError } from "@/lib/contract";
+import { getTranslator, isLocale, type Locale, type MessageKey } from "@/lib/i18n";
+import { headers } from "next/headers";
 
 export type ActionState = { ok: boolean; message?: string; errors?: string[] };
 
@@ -464,6 +467,50 @@ export async function removeAvailabilityBlockAction(_prev: ActionState, formData
   });
   revalidatePath("/driver/availability");
   return { ok: true, message: "Removed." };
+}
+
+// -------------------------------------------------------------- contract ---
+const SIGN_ERROR_KEY: Record<SignError, MessageKey> = {
+  NO_CONTRACT: "contract.errNoContract",
+  NOT_APPROVED: "contract.errNotApproved",
+  ALREADY_SIGNED: "contract.errAlreadySigned",
+  NAME_MISMATCH: "contract.errNameMismatch",
+  NOT_CONFIRMED: "contract.errNotConfirmed",
+  STALE: "contract.errStale",
+};
+
+/**
+ * Sign the driver agreement.
+ *
+ * Everything that decides whether this is allowed — the driver being approved,
+ * a published version existing, the company details being complete, the text
+ * on screen still being the text on offer — is re-checked on the server in
+ * src/lib/contract.ts. This action only carries the request and turns the
+ * outcome into a sentence in the driver's own language.
+ */
+export async function signContractAction(_prev: ActionState, formData: FormData): Promise<ActionState> {
+  const { user, driver } = await myDriver();
+  const locale = (isLocale(user.locale) ? user.locale : "ka") as Locale;
+  const t = getTranslator(locale);
+  if (!driver) return { ok: false, message: t("contract.errNotApproved") };
+
+  const h = await headers();
+  const result = await signContract({
+    driverId: driver.id,
+    userId: user.id,
+    locale,
+    typedName: String(formData.get("signedName") ?? ""),
+    confirmed: formData.get("confirmed") === "on",
+    bodyHash: String(formData.get("bodyHash") ?? ""),
+    ip: h.get("x-forwarded-for")?.split(",")[0]?.trim() ?? null,
+    userAgent: h.get("user-agent"),
+  });
+
+  if (!result.ok) return { ok: false, message: t(SIGN_ERROR_KEY[result.error]) };
+
+  revalidatePath("/driver");
+  revalidatePath("/driver/contract");
+  return { ok: true, message: t("contract.signedJustNow") };
 }
 
 async function uniqueHandle(name: string): Promise<string> {

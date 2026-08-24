@@ -4,9 +4,9 @@ import type { Metadata } from "next";
 import { sql } from "@db/client";
 import { isLocale, getTranslator, LOCALES, type MessageKey } from "@/lib/i18n";
 import { config } from "@/lib/config";
-import { Alert, Card, Field, Input, Select, Textarea } from "@/components/ui";
+import { Alert, Card, Field, Input, Select } from "@/components/ui";
 import {
-  APPLICATION_CLASSES, APPLICATION_LANGUAGES, APPLICATION_LEVELS,
+  APPLICATION_LANGUAGES, APPLICATION_LEVELS,
   isApplicationError, type ApplicationError,
 } from "@/lib/driver-application";
 
@@ -33,8 +33,7 @@ export async function generateMetadata({
  * for "Türkçe" on the page, not for the Georgian word for Turkish.
  */
 const LANGUAGE_NAME: Record<(typeof APPLICATION_LANGUAGES)[number], string> = {
-  ka: "ქართული", en: "English", ru: "Русский", tr: "Türkçe", hy: "Հայերեն",
-  az: "Azərbaycanca", de: "Deutsch", fr: "Français", ar: "العربية", he: "עברית",
+  en: "English", ru: "Русский",
 };
 
 const LEVEL_KEY: Record<(typeof APPLICATION_LEVELS)[number], MessageKey> = {
@@ -42,16 +41,9 @@ const LEVEL_KEY: Record<(typeof APPLICATION_LEVELS)[number], MessageKey> = {
   FLUENT: "drive.lvlFluent", NATIVE: "drive.lvlNative",
 };
 
-const CLASS_KEY: Record<(typeof APPLICATION_CLASSES)[number], MessageKey> = {
-  ECONOMY: "drive.clsEconomy", COMFORT: "drive.clsComfort", MINIVAN: "drive.clsMinivan",
-  SUV_4X4: "drive.clsSuv", MINIBUS: "drive.clsMinibus", PREMIUM: "drive.clsPremium",
-};
-
 const ERROR_KEY: Record<ApplicationError, MessageKey> = {
   INVALID: "drive.errInvalid", AGE: "drive.errAge", DOB: "drive.errDob",
-  EXPERIENCE: "drive.errExperience", LICENCE_EXPIRED: "drive.errLicenceExpired",
-  INSURANCE_EXPIRED: "drive.errInsuranceExpired", INSURANCE_FILE: "drive.errInsuranceFile",
-  INSURANCE_EXPIRY: "drive.errInsuranceExpiry", NO_LANGUAGE: "drive.errNoLanguage",
+  EXPERIENCE: "drive.errExperience",
   IDENTITY_FILE: "drive.errIdentityFile", LICENCE_FILE: "drive.errLicenceFile",
   FILE_REJECTED: "drive.errFileRejected", PLATE_TAKEN: "drive.errPlateTaken",
   THROTTLED: "drive.errThrottled",
@@ -60,7 +52,6 @@ const ERROR_KEY: Record<ApplicationError, MessageKey> = {
 const AMENITIES: [string, MessageKey][] = [
   ["air_conditioning", "filters.ac"], ["wifi", "filters.wifi"],
   ["child_seat", "filters.childSeat"], ["pets_allowed", "filters.pets"],
-  ["smoke_free", "drive.smokeFree"],
 ];
 
 const CAPABILITIES: [string, MessageKey][] = [
@@ -150,7 +141,6 @@ export default async function DrivePage({
       <Alert tone="info" title={t("drive.readyTitle")}>
         <ul className="mt-1 list-inside list-disc space-y-1">
           <li>{t("drive.ready1")}</li>
-          <li>{t("drive.ready2")}</li>
           <li>{t("drive.ready3")}</li>
         </ul>
       </Alert>
@@ -199,10 +189,6 @@ export default async function DrivePage({
               </Field>
             </div>
 
-            <Field label={t("drive.publicName")} htmlFor="publicName" hint={t("drive.publicNameHint")} required>
-              <Input id="publicName" name="publicName" required minLength={2} maxLength={80} />
-            </Field>
-
             <div className="grid gap-4 sm:grid-cols-2">
               <Field label={t("drive.dob")} htmlFor="dateOfBirth" hint={t("drive.dobHint")} required>
                 <Input id="dateOfBirth" name="dateOfBirth" type="date" required
@@ -228,18 +214,9 @@ export default async function DrivePage({
               </Select>
             </Field>
 
-            <Field label={t("drive.bio")} htmlFor="bio" hint={t("drive.bioHint")}>
-              <Textarea id="bio" name="bio" rows={4} maxLength={1200} />
+            <Field label={t("drive.referral")} htmlFor="referralSource" hint={t("drive.referralHint")}>
+              <Input id="referralSource" name="referralSource" maxLength={120} />
             </Field>
-
-            <div className="grid gap-4 sm:grid-cols-2">
-              <Field label={t("drive.emergency")} htmlFor="emergencyContact" hint={t("drive.emergencyHint")}>
-                <Input id="emergencyContact" name="emergencyContact" maxLength={80} />
-              </Field>
-              <Field label={t("drive.referral")} htmlFor="referralSource" hint={t("drive.referralHint")}>
-                <Input id="referralSource" name="referralSource" maxLength={120} />
-              </Field>
-            </div>
           </fieldset>
 
           {/* ------------------------------------------------ languages --- */}
@@ -296,13 +273,6 @@ export default async function DrivePage({
                 <Input id="plate" name="plate" required minLength={2} maxLength={20}
                        className="uppercase" placeholder="AA-123-BB" />
               </Field>
-              <Field label={t("filters.vehicleClass")} htmlFor="vehicleClass" hint={t("drive.classHint")} required>
-                <Select id="vehicleClass" name="vehicleClass" defaultValue="COMFORT" required>
-                  {APPLICATION_CLASSES.map((c) => (
-                    <option key={c} value={c}>{t(CLASS_KEY[c])}</option>
-                  ))}
-                </Select>
-              </Field>
               <Field label={t("drive.seats")} htmlFor="seats" hint={t("drive.seatsHint")} required>
                 <Input id="seats" name="seats" type="number" inputMode="numeric" min={1} max={60} required />
               </Field>
@@ -353,30 +323,14 @@ export default async function DrivePage({
                      className="file:mr-3 file:rounded-lg file:border-0 file:bg-ink-100 file:px-3 file:py-2 file:text-sm" />
             </Field>
 
-            <div className="grid gap-4 sm:grid-cols-2">
-              <Field label={t("drive.licenceNumber")} htmlFor="licenceNumber" hint={t("drive.licenceNumberHint")}>
-                <Input id="licenceNumber" name="licenceNumber" maxLength={60} />
-              </Field>
-              <Field label={t("drive.licenceExpiry")} htmlFor="licenceExpiresOn" required>
-                <Input id="licenceExpiresOn" name="licenceExpiresOn" type="date" required
-                       min={isoYearsAgo(0)} />
-              </Field>
-            </div>
+            <Field label={t("drive.licenceNumber")} htmlFor="licenceNumber" hint={t("drive.licenceNumberHint")}>
+              <Input id="licenceNumber" name="licenceNumber" maxLength={60} />
+            </Field>
 
-            <Field label={t("drive.registration")} htmlFor="registrationFile" hint={t("drive.registrationHint")}>
+            <Field label={t("drive.registration")} htmlFor="registrationFile">
               <Input id="registrationFile" name="registrationFile" type="file" accept={FILE_ACCEPT}
                      className="file:mr-3 file:rounded-lg file:border-0 file:bg-ink-100 file:px-3 file:py-2 file:text-sm" />
             </Field>
-
-            <div className="grid gap-4 sm:grid-cols-2">
-              <Field label={t("drive.insurance")} htmlFor="insuranceFile" hint={t("drive.insuranceHint")}>
-                <Input id="insuranceFile" name="insuranceFile" type="file" accept={FILE_ACCEPT}
-                       className="file:mr-3 file:rounded-lg file:border-0 file:bg-ink-100 file:px-3 file:py-2 file:text-sm" />
-              </Field>
-              <Field label={t("drive.insuranceExpiry")} htmlFor="insuranceExpiresOn">
-                <Input id="insuranceExpiresOn" name="insuranceExpiresOn" type="date" min={isoYearsAgo(0)} />
-              </Field>
-            </div>
 
             <p className="text-xs leading-relaxed text-ink-500">{t("drive.docPrivacy")}</p>
           </fieldset>

@@ -13,7 +13,8 @@ import { hashPassword } from "@/lib/auth/password";
 import { config } from "@/lib/config";
 import { getStorage, assertUploadAllowed, UploadRejectedError, hashDocumentNumber } from "@/lib/storage";
 import { cancelBooking } from "@/lib/booking";
-import { dispatchPending } from "@/lib/notifications";
+import { dispatchPending, queue as queueNotification } from "@/lib/notifications";
+import { getActiveContract, companyDetailsComplete } from "@/lib/contract";
 import { reassignBooking, refundBooking, recordCashSettlement } from "@/lib/operations";
 import type { ActionState } from "@/app/driver/actions";
 
@@ -67,9 +68,106 @@ export async function decideDriverAction(_prev: ActionState, formData: FormData)
     after: { status: decision }, reason,
   });
 
+  // Approval is the moment the agreement becomes theirs to accept. Tell them
+  // by both channels: a driver who applied on a phone watches SMS more
+  // reliably than email, and the contract is the only thing now standing
+  // between them and their first booking.
+  let extra = "";
+  if (decision === "APPROVED") {
+    const notified = await notifyContractReady(driverId);
+    extra = notified
+      ? " They have been told the contract is ready to sign."
+      : " NOTE: no contract is published yet, so they could not be told to sign one.";
+  }
+
   revalidatePath("/admin/drivers");
   revalidatePath(`/admin/drivers/${driverId}`);
-  return { ok: true, message: `Driver set to ${decision.replaceAll("_", " ").toLowerCase()}.` };
+  return {
+    ok: true,
+    message: `Driver set to ${decision.replaceAll("_", " ").toLowerCase()}.${extra}`,
+  };
+}
+
+/**
+ * Queue the "your contract is ready" messages and send them immediately.
+ *
+ * Returns false when there is nothing to sign yet — no published version, or
+ * the company's own legal details are still blank — so the caller can say so
+ * rather than implying the driver received something they did not.
+ */
+async function notifyContractReady(driverId: string): Promise<boolean> {
+  const [row] = await sql<{
+    email: string; phone: string | null; locale: string; public_name: string;
+  }[]>`
+    SELECT u.email, u.phone, u.locale, d.public_name
+    FROM driver_profiles d JOIN users u ON u.id = d.user_id
+    WHERE d.id = ${driverId}::uuid`;
+  if (!row) return false;
+
+  const contract = await getActiveContract(row.locale);
+  if (!contract || !companyDetailsComplete()) return false;
+
+  const copy = contractReadyMessage(row.locale, row.public_name);
+  const queued: string[] = [];
+
+  await sql.begin(async (tx) => {
+    const emailId = await queueNotification(tx, {
+      kind: "contract.ready", channel: "EMAIL", to: row.email, locale: row.locale,
+      subject: copy.subject, body: copy.email,
+      dedupe: `${driverId}:${contract.version}:email`,
+    });
+    if (emailId) queued.push(emailId);
+
+    if (row.phone) {
+      const smsId = await queueNotification(tx, {
+        kind: "contract.ready", channel: "SMS", to: row.phone, locale: row.locale,
+        subject: copy.subject, body: copy.sms,
+        dedupe: `${driverId}:${contract.version}:sms`,
+      });
+      if (smsId) queued.push(smsId);
+    }
+  });
+
+  if (queued.length) await dispatchPending(queued.length, queued).catch(() => {});
+  return true;
+}
+
+/** Georgian and English only, matching the languages the agreement exists in. */
+function contractReadyMessage(locale: string, name: string) {
+  if (locale === "ka") {
+    return {
+      subject: "თქვენი ხელშეკრულება მზადაა — RouteGeorgia",
+      email: [
+        `გამარჯობა, ${name}.`,
+        ``,
+        `თქვენი განაცხადი შემოწმდა და დამტკიცდა. რჩება ბოლო ნაბიჯი: მძღოლის ხელშეკრულების გაცნობა და ხელმოწერა.`,
+        ``,
+        `${config.appUrl}/driver/contract`,
+        ``,
+        `ხელმოწერის შემდეგ თქვენი პროფილი გამოქვეყნდება და მგზავრები შეძლებენ თქვენს დაჯავშნას.`,
+        `ხელშეკრულებას ხელს აწერთ თქვენი სრული სახელისა და გვარის აკრეფით — ეს იურიდიულად უტოლდება ხელით შესრულებულ ხელმოწერას.`,
+        ``,
+        `თუ რაიმე გაუგებარია, გვიპასუხეთ ამ წერილზე ხელმოწერამდე.`,
+      ].join("\n"),
+      sms: `RouteGeorgia: თქვენი განაცხადი დამტკიცდა. ხელშეკრულების ხელმოსაწერად: ${config.appUrl}/driver/contract`,
+    };
+  }
+  return {
+    subject: "Your RouteGeorgia driver contract is ready",
+    email: [
+      `Hello ${name},`,
+      ``,
+      `We have checked your application and approved it. One step is left: read and sign the driver agreement.`,
+      ``,
+      `${config.appUrl}/driver/contract`,
+      ``,
+      `Once you sign, we publish your profile and travellers can book you.`,
+      `You sign by typing your full legal name — under Georgian law that has the same force as signing by hand.`,
+      ``,
+      `If anything in it is unclear, reply to this email before you sign.`,
+    ].join("\n"),
+    sms: `RouteGeorgia: your application is approved. Sign your contract here: ${config.appUrl}/driver/contract`,
+  };
 }
 
 const PublishSchema = z.object({
@@ -109,6 +207,19 @@ export async function publishDriverAction(_prev: ActionState, formData: FormData
     if ((gate?.expired ?? 0) > 0) blockers.push("a mandatory document has expired");
     if ((gate?.vehicles ?? 0) === 0) blockers.push("at least one vehicle must be approved");
     if ((gate?.plans ?? 0) === 0) blockers.push("an active price plan is required");
+
+    // Approval is our decision; the signature is theirs. A trigger on
+    // driver_profiles refuses the update as well — this check exists so the
+    // reviewer reads a sentence instead of a database error.
+    const [signed] = await sql<{ live: string | null; signed: number }[]>`
+      SELECT current_contract_version() AS live,
+             (SELECT count(*) FROM contract_signatures s
+               WHERE s.driver_id = ${driverId}::uuid
+                 AND s.contract_version = current_contract_version())::int AS signed`;
+    if (signed?.live && (signed?.signed ?? 0) === 0) {
+      blockers.push(`the driver agreement (${signed.live}) has not been signed by this driver`);
+    }
+
     if (blockers.length) return { ok: false, errors: blockers };
   }
 

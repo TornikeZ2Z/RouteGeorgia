@@ -363,6 +363,39 @@ export const auditLogs = pgTable("audit_logs", {
   ip: text("ip"),
 });
 
+/**
+ * The driver agreement. Signatures are append-only at the database level, and
+ * carry the hash of the text as the driver read it — placeholders already
+ * resolved. See db/migrations/0010_driver_contract.sql and src/lib/contract.ts.
+ */
+export const contractVersions = pgTable("contract_versions", {
+  id: uuid("id").primaryKey().defaultRandom(),
+  version: text("version").notNull(),
+  locale: text("locale").notNull(),
+  title: text("title").notNull(),
+  body: text("body").notNull(),
+  effectiveFrom: timestamp("effective_from", { withTimezone: true }).notNull().defaultNow(),
+  published: boolean("published").notNull().default(false),
+  createdAt: timestamp("created_at", { withTimezone: true }).notNull().defaultNow(),
+  updatedAt: timestamp("updated_at", { withTimezone: true }).notNull().defaultNow(),
+}, (t) => [uniqueIndex("contract_versions_version_locale_uq").on(t.version, t.locale)]);
+
+export const contractSignatures = pgTable("contract_signatures", {
+  id: uuid("id").primaryKey().defaultRandom(),
+  driverId: uuid("driver_id").notNull().references(() => driverProfiles.id, { onDelete: "cascade" }),
+  contractVersion: text("contract_version").notNull(),
+  locale: text("locale").notNull(),
+  signedName: text("signed_name").notNull(),
+  bodyHash: text("body_hash").notNull(),
+  signedAt: timestamp("signed_at", { withTimezone: true }).notNull().defaultNow(),
+  ip: text("ip"),
+  userAgent: text("user_agent"),
+  evidence: jsonb("evidence").notNull().default({}),
+}, (t) => [
+  uniqueIndex("contract_signatures_once").on(t.driverId, t.contractVersion),
+  index("contract_signatures_driver_idx").on(t.driverId),
+]);
+
 export const contentPages = pgTable("content_pages", {
   id: uuid("id").primaryKey().defaultRandom(),
   slug: text("slug").notNull(),

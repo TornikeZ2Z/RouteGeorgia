@@ -31,10 +31,20 @@ import {
  *      orphaned identity documents in a KYC bucket is the worst outcome here.
  */
 
-/** Codes the search filters already know how to label. */
-export const APPLICATION_LANGUAGES = [
-  "ka", "en", "ru", "tr", "hy", "az", "de", "fr", "ar", "he",
-] as const;
+/**
+ * Languages the form asks about.
+ *
+ * Every driver on this platform is Georgian, so Georgian is recorded as
+ * native without asking — the same assumption the seed makes. What actually
+ * changes which work a driver is offered is whether they can talk to an
+ * English- or Russian-speaking traveller, so those are the only two questions
+ * worth a checkbox. Anything else a driver speaks is added later, from their
+ * own profile page, where it does not slow down an application.
+ */
+export const APPLICATION_LANGUAGES = ["en", "ru"] as const;
+
+/** Recorded for every applicant without being asked. */
+export const ASSUMED_LANGUAGE = { language: "ka", level: "NATIVE" } as const;
 
 export const APPLICATION_LEVELS = ["BASIC", "CONVERSATIONAL", "FLUENT", "NATIVE"] as const;
 
@@ -43,19 +53,22 @@ export const APPLICATION_CLASSES = [
 ] as const;
 
 /**
- * What we ask for, and what a reviewer cannot work without.
+ * What we ask for at application time.
  *
  * Identity and licence are required: there is no assessing a driver without
- * them. Registration and insurance are accepted here but not demanded — a
- * driver filling this in on a phone at the roadside often has two of the four
- * to hand, and losing the application entirely is worse than chasing the rest
- * by email. Operations sees exactly which are outstanding.
+ * them. Vehicle registration is accepted but not demanded — a driver filling
+ * this in on a phone often has two of the three to hand, and losing the
+ * application entirely is worse than chasing the rest by email.
+ *
+ * Insurance is deliberately NOT collected here. It is still required before a
+ * driver can be published, and the agreement they sign obliges them to hold
+ * it; it is simply gathered later, from their own documents page, rather than
+ * standing between a willing driver and an application.
  */
 export const DOCUMENT_SLOTS = [
-  { field: "identityFile", type: "IDENTITY", required: true, expiry: false },
-  { field: "licenceFile", type: "DRIVING_LICENSE", required: true, expiry: true },
-  { field: "registrationFile", type: "VEHICLE_REGISTRATION", required: false, expiry: false },
-  { field: "insuranceFile", type: "INSURANCE", required: false, expiry: true },
+  { field: "identityFile", type: "IDENTITY", required: true },
+  { field: "licenceFile", type: "DRIVING_LICENSE", required: true },
+  { field: "registrationFile", type: "VEHICLE_REGISTRATION", required: false },
 ] as const;
 
 const trimmed = (max: number) => z.string().trim().max(max);
@@ -65,14 +78,11 @@ export const ApplicationSchema = z.object({
 
   legalFirstName: trimmed(80).min(2),
   legalLastName: trimmed(80).min(2),
-  publicName: trimmed(80).min(2),
   dateOfBirth: z.string().regex(/^\d{4}-\d{2}-\d{2}$/, "Enter your date of birth."),
   email: trimmed(200).email(),
   phone: trimmed(40).min(6),
   baseLocationId: z.string().uuid().optional().or(z.literal("")),
   experienceYears: z.coerce.number().int().min(0).max(70),
-  bio: trimmed(1200).optional(),
-  emergencyContact: trimmed(80).optional(),
   referralSource: trimmed(120).optional(),
 
   make: trimmed(40).min(1),
@@ -80,13 +90,10 @@ export const ApplicationSchema = z.object({
   year: z.coerce.number().int().min(1990).max(new Date().getFullYear() + 1),
   color: trimmed(30).optional(),
   plate: trimmed(20).min(2),
-  vehicleClass: z.enum(APPLICATION_CLASSES),
   seats: z.coerce.number().int().min(1).max(60),
   luggage: z.coerce.number().int().min(0).max(60),
 
   licenceNumber: trimmed(60).optional(),
-  licenceExpiresOn: z.string().regex(/^\d{4}-\d{2}-\d{2}$/, "Enter the licence expiry date."),
-  insuranceExpiresOn: z.string().regex(/^\d{4}-\d{2}-\d{2}$/).optional().or(z.literal("")),
 
   /** Unticked consent is a failed submission, never a silent default. */
   consent: z.literal("on", { message: "Please confirm you accept the terms and the data notice." }),
@@ -129,9 +136,8 @@ export interface ApplicationContext {
  * being written once in English.
  */
 export const APPLICATION_ERRORS = [
-  "INVALID", "AGE", "DOB", "EXPERIENCE", "LICENCE_EXPIRED", "INSURANCE_EXPIRED",
-  "INSURANCE_FILE", "INSURANCE_EXPIRY", "NO_LANGUAGE", "IDENTITY_FILE",
-  "LICENCE_FILE", "FILE_REJECTED", "PLATE_TAKEN", "THROTTLED",
+  "INVALID", "AGE", "DOB", "EXPERIENCE",
+  "IDENTITY_FILE", "LICENCE_FILE", "FILE_REJECTED", "PLATE_TAKEN", "THROTTLED",
 ] as const;
 
 export type ApplicationError = (typeof APPLICATION_ERRORS)[number];
@@ -176,12 +182,10 @@ export function validateApplication(
   else if (age > 90) errors.push("DOB");
   else if (input.experienceYears > age - 17) errors.push("EXPERIENCE");
 
-  if (input.licenceExpiresOn <= today()) errors.push("LICENCE_EXPIRED");
-  if (input.insuranceExpiresOn && input.insuranceExpiresOn <= today()) errors.push("INSURANCE_EXPIRED");
-  if (input.insuranceExpiresOn && !hasFile(files.insuranceFile)) errors.push("INSURANCE_FILE");
-  if (hasFile(files.insuranceFile) && !input.insuranceExpiresOn) errors.push("INSURANCE_EXPIRY");
-
-  if (languages.length === 0) errors.push("NO_LANGUAGE");
+  // No language check: Georgian is recorded for every applicant, so a driver
+  // who speaks neither English nor Russian is a normal applicant, not an
+  // incomplete one.
+  void languages;
 
   for (const slot of DOCUMENT_SLOTS) {
     const file = files[slot.field];
@@ -257,10 +261,10 @@ export async function submitDriverApplication(
         checksum: stored.checksum,
         sizeBytes: stored.sizeBytes,
         mimeType: stored.mimeType,
-        expiresOn:
-          slot.type === "DRIVING_LICENSE" ? input.licenceExpiresOn
-          : slot.type === "INSURANCE" ? (input.insuranceExpiresOn || null)
-          : null,
+        // No expiry is asked for at application time. Operations records it
+        // when the document is verified, and the driver's own documents page
+        // requires one for anything re-uploaded later.
+        expiresOn: null,
         numberHash:
           slot.type === "DRIVING_LICENSE" && input.licenceNumber
             ? hashDocumentNumber(input.licenceNumber)
@@ -296,20 +300,27 @@ export async function submitDriverApplication(
         INSERT INTO user_roles (user_id, role)
         VALUES (${userId}::uuid, 'DRIVER_APPLICANT')`;
 
+      const publicName = displayName(input.legalFirstName, input.legalLastName);
+
       const [driver] = await tx<{ id: string }[]>`
         INSERT INTO driver_profiles
           (user_id, handle, public_name, legal_first_name, legal_last_name, date_of_birth,
-           base_location_id, bio, emergency_contact, status, submitted_at,
+           base_location_id, status, submitted_at,
            applied_via, experience_years, referral_source)
         VALUES (${userId}::uuid,
-                ${slugify(input.publicName)} || '-' || substr(md5(random()::text), 1, 4),
-                ${input.publicName}, ${input.legalFirstName}, ${input.legalLastName},
+                ${slugify(publicName)} || '-' || substr(md5(random()::text), 1, 4),
+                ${publicName}, ${input.legalFirstName}, ${input.legalLastName},
                 ${input.dateOfBirth}::date, ${input.baseLocationId || null}::uuid,
-                ${input.bio || null}, ${input.emergencyContact || null},
                 'SUBMITTED', now(), 'public_form', ${input.experienceYears},
                 ${input.referralSource || null})
         RETURNING id`;
       driverId = driver!.id;
+
+      // Georgian first, then anything they ticked.
+      await tx`
+        INSERT INTO driver_languages (driver_id, language, declared_level)
+        VALUES (${driverId}::uuid, ${ASSUMED_LANGUAGE.language}, ${ASSUMED_LANGUAGE.level}::proficiency)
+        ON CONFLICT DO NOTHING`;
 
       for (const lang of context.languages) {
         // declared_level only. A verified level comes from an interview and
@@ -324,7 +335,8 @@ export async function submitDriverApplication(
         INSERT INTO vehicles (driver_id, make, model, year, color, plate, class, seats, luggage,
                               amenities, capabilities, status)
         VALUES (${driverId}::uuid, ${input.make}, ${input.model}, ${input.year},
-                ${input.color || null}, ${input.plate.toUpperCase()}, ${input.vehicleClass}::vehicle_class,
+                ${input.color || null}, ${input.plate.toUpperCase()},
+                ${inferVehicleClass(input.seats, context.capabilities)}::vehicle_class,
                 ${input.seats}, ${input.luggage},
                 ${JSON.stringify(context.amenities)}::text::jsonb,
                 ${JSON.stringify(context.capabilities)}::text::jsonb,
@@ -364,7 +376,7 @@ export async function submitDriverApplication(
       const [ticket] = await tx<{ id: string }[]>`
         INSERT INTO support_tickets (driver_id, subject, category, severity)
         VALUES (${driverId}::uuid,
-                ${`Driver application — ${input.publicName}`},
+                ${`Driver application — ${displayName(input.legalFirstName, input.legalLastName)}`},
                 'DRIVER_APPLICATION', 'SEV3')
         RETURNING id`;
       await tx`
@@ -372,12 +384,13 @@ export async function submitDriverApplication(
         VALUES (${ticket!.id}::uuid, ${[
           `Applied through the public form.`,
           ``,
-          `Name:       ${input.legalFirstName} ${input.legalLastName} (shown as ${input.publicName})`,
+          `Name:       ${input.legalFirstName} ${input.legalLastName} (shown as ${displayName(input.legalFirstName, input.legalLastName)})`,
           `Email:      ${input.email}`,
           `Phone:      ${input.phone}`,
           `Experience: ${input.experienceYears} year(s)`,
           `Languages:  ${context.languages.map((l) => `${l.language}:${l.level}`).join(", ")}`,
-          `Vehicle:    ${input.year} ${input.make} ${input.model} — ${input.plate.toUpperCase()} (${input.vehicleClass})`,
+          `Vehicle:    ${input.year} ${input.make} ${input.model} — ${input.plate.toUpperCase()}`,
+          `Class:      ${inferVehicleClass(input.seats, context.capabilities)} (inferred from seats and 4x4 — confirm on inspection)`,
           `Documents:  ${staged.map((d) => d.type).join(", ") || "none"}`,
           outstanding.length ? `Outstanding: ${outstanding.join(", ")}` : `Outstanding: none`,
           input.referralSource ? `Heard about us: ${input.referralSource}` : null,
@@ -407,7 +420,7 @@ export async function submitDriverApplication(
     objectType: "driver_profile",
     objectId: driverId,
     after: {
-      publicName: input.publicName,
+      publicName: displayName(input.legalFirstName, input.legalLastName),
       email: input.email,
       appliedVia: "public_form",
       documents: staged.map((d) => d.type),
@@ -453,9 +466,65 @@ async function fileDuplicateNotice(input: ApplicationInput): Promise<void> {
   });
 }
 
+/**
+ * What travellers see. The form no longer asks for it: a driver typing their
+ * own display name produced everything from a bare first name to a full legal
+ * name with a patronymic, and the convention on this site is settled anyway.
+ */
+export function displayName(first: string, last: string): string {
+  const initial = last.trim().charAt(0);
+  if (!initial) return first.trim();
+  // Georgian Mkhedruli has no capitals in ordinary writing: toUpperCase() maps
+  // it to Mtavruli, which is the all-caps display form and reads as shouting
+  // in the middle of a name. Latin and Cyrillic initials are capitalised as
+  // usual.
+  const mkhedruli = /[ა-ჿ]/.test(initial);
+  return `${first.trim()} ${mkhedruli ? initial : initial.toUpperCase()}.`;
+}
+
+/**
+ * Vehicle class, inferred rather than asked.
+ *
+ * Applicants guessed at this and guessed wrong, and it decides which price
+ * band applies — so it is worth getting from facts they cannot mistake. Seats
+ * and four-wheel drive give the right answer for almost every car on Georgian
+ * roads; operations confirms it when the vehicle is inspected, which was
+ * always the real check.
+ */
+export function inferVehicleClass(
+  seats: number,
+  capabilities: Record<string, boolean>,
+): (typeof APPLICATION_CLASSES)[number] {
+  if (seats >= 8) return "MINIBUS";
+  if (capabilities.four_wheel_drive) return "SUV_4X4";
+  if (seats >= 5) return "MINIVAN";
+  return "COMFORT";
+}
+
+/**
+ * Georgian Mkhedruli to Latin, for handles only.
+ *
+ * A driver's public URL is built from their name. Stripping non-Latin
+ * characters turned every Georgian name into nothing, so the whole Georgian
+ * supply would share indistinguishable handles like "driver-7c18" — bad for
+ * search, and unhelpful for anyone reading a link. This is the standard
+ * national transliteration, close enough for a slug.
+ */
+const MKHEDRULI_TO_LATIN: Record<string, string> = {
+  ა: "a", ბ: "b", გ: "g", დ: "d", ე: "e", ვ: "v", ზ: "z", თ: "t", ი: "i",
+  კ: "k", ლ: "l", მ: "m", ნ: "n", ო: "o", პ: "p", ჟ: "zh", რ: "r", ს: "s",
+  ტ: "t", უ: "u", ფ: "p", ქ: "k", ღ: "gh", ყ: "q", შ: "sh", ჩ: "ch", ც: "ts",
+  ძ: "dz", წ: "ts", ჭ: "ch", ხ: "kh", ჯ: "j", ჰ: "h",
+};
+
+export function transliterate(value: string): string {
+  return [...value].map((ch) => MKHEDRULI_TO_LATIN[ch] ?? ch).join("");
+}
+
 function slugify(name: string): string {
   return (
-    name.toLowerCase().normalize("NFKD").replace(/[^a-z0-9]+/g, "-").replace(/^-|-$/g, "") || "driver"
+    transliterate(name).toLowerCase().normalize("NFKD")
+      .replace(/[^a-z0-9]+/g, "-").replace(/^-|-$/g, "") || "driver"
   );
 }
 
@@ -474,7 +543,7 @@ function applicantEmail(locale: string, token: string, outstanding: number) {
         "",
         outstanding > 0
           ? "Some documents are still missing. Sign in and add them — we cannot approve an incomplete file."
-          : "We have all four documents. Nothing else is needed from you right now.",
+          : "We have everything we asked for. Nothing else is needed from you right now.",
         "",
         "What happens next: we check your documents, then call you for a short language and route interview.",
         "Most applications are answered within three working days.",
@@ -491,7 +560,7 @@ function applicantEmail(locale: string, token: string, outstanding: number) {
         "",
         outstanding > 0
           ? "რამდენიმე დოკუმენტი ჯერ არ არის ატვირთული. შედით სისტემაში და დაამატეთ — არასრულ განაცხადს ვერ დავამტკიცებთ."
-          : "ოთხივე დოკუმენტი მიღებულია. ამჟამად სხვა არაფერია საჭირო.",
+          : "ყველა საჭირო დოკუმენტი მიღებულია. ამჟამად სხვა არაფერია საჭირო.",
         "",
         "შემდეგი ნაბიჯი: შევამოწმებთ დოკუმენტებს, შემდეგ დაგირეკავთ ენისა და მარშრუტების მოკლე გასაუბრებისთვის.",
         "განაცხადებს ჩვეულებრივ სამ სამუშაო დღეში ვპასუხობთ.",
@@ -508,7 +577,7 @@ function applicantEmail(locale: string, token: string, outstanding: number) {
         "",
         outstanding > 0
           ? "Некоторых документов ещё нет. Войдите и добавьте их — неполную заявку мы одобрить не можем."
-          : "Все четыре документа получены. Больше от вас пока ничего не нужно.",
+          : "Все нужные документы получены. Больше от вас пока ничего не нужно.",
         "",
         "Что дальше: мы проверим документы, затем позвоним для короткого собеседования о языках и маршрутах.",
         "Обычно мы отвечаем в течение трёх рабочих дней.",

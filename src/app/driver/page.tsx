@@ -2,6 +2,8 @@ import Link from "next/link";
 import { requireUser } from "@/lib/auth/session";
 import { sql } from "@db/client";
 import { Alert, Badge, Card, EmptyState, PageHeader } from "@/components/ui";
+import { getTranslator, isLocale, type Locale } from "@/lib/i18n";
+import { getActiveContract, getSignature, companyDetailsComplete } from "@/lib/contract";
 
 export const dynamic = "force-dynamic";
 
@@ -37,6 +39,15 @@ export default async function DriverHome() {
       WHERE driver_id = ${driver.id}::uuid AND upper(period) > now()`,
   ]);
 
+  // The one thing standing between an approved driver and going live.
+  const [contract, signature] = await Promise.all([
+    getActiveContract(user.locale),
+    getSignature(driver.id),
+  ]);
+  const contractDue =
+    driver.status === "APPROVED" && contract !== null && companyDetailsComplete() && signature === null;
+  const t = getTranslator((isLocale(user.locale) ? user.locale : "ka") as Locale);
+
   const expiringSoon = docs.filter(
     (d) => d.expires_on && new Date(d.expires_on).getTime() < Date.now() + 30 * 86_400_000,
   );
@@ -49,6 +60,18 @@ export default async function DriverHome() {
         description={`Profile status: ${driver.status.replaceAll("_", " ").toLowerCase()}`}
         actions={<Badge tone={STATUS_TONE[driver.status as keyof typeof STATUS_TONE]}>{driver.status}</Badge>}
       />
+
+      {contractDue && (
+        <Alert tone="warning" title={t("contract.bannerTitle")}>
+          <p className="leading-relaxed">{t("contract.bannerBody")}</p>
+          <Link
+            href="/driver/contract"
+            className="mt-3 inline-flex min-h-11 items-center rounded-xl bg-gold-400 px-4 text-sm font-bold text-pine-900 hover:bg-gold-300"
+          >
+            {t("contract.bannerCta")}
+          </Link>
+        </Alert>
+      )}
 
       {driver.status === "CHANGES_REQUESTED" && (
         <Alert tone="warning" title="Changes requested">

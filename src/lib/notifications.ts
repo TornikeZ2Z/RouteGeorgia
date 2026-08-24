@@ -21,7 +21,8 @@ export type NotificationKind =
   | "booking.cancelled.customer" | "booking.cancelled.driver"
   | "booking.acknowledged.customer" | "booking.driver_reassigned.customer"
   | "booking.reminder.customer" | "booking.completed.customer"
-  | "review.invitation" | "message.received";
+  | "review.invitation" | "message.received"
+  | "contract.ready";
 
 export interface QueueInput {
   kind: NotificationKind;

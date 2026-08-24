@@ -16,6 +16,7 @@ const NAV: { href: string; label: MessageKey }[] = [
   { href: "/driver", label: "console.navOverview" },
   { href: "/driver/orders", label: "console.navOrders" },
   { href: "/driver/earnings", label: "console.navEarnings" },
+  { href: "/driver/contract", label: "console.navContract" },
   { href: "/driver/application", label: "console.navProfile" },
   { href: "/driver/vehicle", label: "console.navVehicle" },
   { href: "/driver/documents", label: "console.navDocuments" },

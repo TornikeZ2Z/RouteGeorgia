@@ -17,7 +17,7 @@ import {
  * exceed. The answer comes back as a redirect carrying error CODES only —
  * never the applicant's data. See src/lib/driver-application.ts.
  */
-const AMENITIES = ["air_conditioning", "wifi", "pets_allowed", "child_seat", "smoke_free"] as const;
+const AMENITIES = ["air_conditioning", "wifi", "pets_allowed", "child_seat"] as const;
 const CAPABILITIES = ["four_wheel_drive", "winter_tyres", "wheelchair_access"] as const;
 
 export async function POST(request: NextRequest) {
