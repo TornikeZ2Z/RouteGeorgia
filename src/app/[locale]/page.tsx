@@ -301,172 +301,103 @@ export default async function Home({
         </section>
       )}
 
-      {/* ------------------------------------------------ explore map ----- */}
-      <section>
-        <div className="text-center">
-          <p className="eyebrow">{t("home.mapEyebrow")}</p>
-          <h2 className="font-display mt-2 text-3xl text-ink-900 sm:text-4xl">{t("home.mapTitle")}</h2>
-          <p className="mx-auto mt-3 max-w-xl text-ink-500">{t("home.mapBody")}</p>
-        </div>
-        <div className="mt-8">
-          <GeorgiaMap
-            locale={locale}
-            initialCat={initialCat}
-            places={DESTINATIONS.flatMap((d) => {
-              const loc = locations.find((l) => l.slug === d.slug);
-              if (!loc) return [];
-              return [{
-                slug: d.slug, name: loc.name_en, lat: Number(loc.lat), lon: Number(loc.lon),
-                categories: d.categories, seasons: d.seasons, icon: d.icon,
-                descKey: d.descKey, labelPos: d.labelPos, dx: d.dx, dy: d.dy,
-                photo: sitePhoto(`destinations/${d.slug}.jpg`),
-              }];
-            })}
-          />
-        </div>
-      </section>
-
-      {/* ------------------------------------------------ how many days --- */}
-      <section>
-        <p className="eyebrow">{t("home.daysEyebrow")}</p>
-        <h2 className="font-display mt-2 text-3xl text-ink-900 sm:text-4xl">{t("home.daysTitle")}</h2>
-        <ul className="mt-8 grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
-          {([["1", "home.day1t", "home.day1b"], ["3", "home.day2t", "home.day2b"],
-             ["5", "home.day3t", "home.day3b"], ["7", "home.day4t", "home.day4b"]] as const).map(([d, title, body]) => (
-            <li key={d}>
-              <Link
-                href={`/${locale}/plan?d=${d}&i=nature&p=0`}
-                className="flex h-full flex-col rounded-2xl border border-ink-200 bg-white p-6 shadow-[0_1px_3px_rgba(11,29,51,.06)] transition-all duration-300 hover:-translate-y-1 hover:shadow-[var(--shadow-soft)]"
-              >
-                <span className="font-display text-3xl text-ink-900">{t(title)}</span>
-                <span className="mt-2 flex-1 text-sm leading-relaxed text-ink-500">{t(body)}</span>
-                <span className="mt-4 text-sm font-bold tracking-[-0.02em] text-ink-900 underline underline-offset-4">
-                  {t("home.daysCta")}
-                </span>
-              </Link>
-            </li>
-          ))}
-        </ul>
-      </section>
-
-      {/* ------------------------------------------------ build my route -- */}
-      <section className="rounded-2xl bg-pine-800 px-6 py-14 text-white sm:px-12">
-        <div className="flex flex-wrap items-center justify-between gap-8">
-          <div className="max-w-2xl">
-            <p className="eyebrow text-pine-300">{t("home.planTeaserEyebrow")}</p>
-            <h2 className="font-display mt-3 text-3xl sm:text-4xl">{t("home.planTeaserTitle")}</h2>
-            <p className="mt-4 leading-relaxed text-pine-100">{t("home.planTeaserBody")}</p>
-          </div>
+      {/* -------------------------------------- plan your perfect trip ---- */}
+      <section className="grid gap-6 lg:grid-cols-[minmax(0,22rem)_1fr] lg:items-center">
+        <div>
+          <p className="eyebrow">{t("home.planTeaserEyebrow")}</p>
+          <h2 className="font-display mt-2 text-3xl text-ink-900 sm:text-4xl">{t("home.planTeaserTitle")}</h2>
+          <p className="mt-4 leading-relaxed text-ink-500">{t("home.planTeaserBody")}</p>
           <Link
             href={`/${locale}/plan`}
-            className="inline-flex min-h-12 items-center rounded-lg bg-white px-6 py-3 font-bold tracking-[-0.02em] text-pine-800 transition-colors hover:bg-ink-100 dark:bg-ink-900 dark:hover:bg-ink-800"
+            className="mt-6 inline-flex min-h-12 items-center rounded-lg bg-brand-600 px-6 py-3 font-bold tracking-[-0.02em] text-white shadow-[0_0_2px_0_rgba(0,0,0,.16)] transition-colors hover:bg-brand-700"
           >
             {t("home.planTeaserCta")}
           </Link>
         </div>
-      </section>
-
-      {/* ------------------------------------------------ tours ----------- */}
-      {tours.length > 0 && (
-        <section>
-          <div className="flex flex-wrap items-end justify-between gap-3">
-            <div>
-              <p className="eyebrow">{t("home.toursEyebrow")}</p>
-              <h2 className="font-display mt-2 text-3xl text-ink-900 sm:text-4xl">{t("home.toursTitle")}</h2>
-            </div>
-            <Link href={`/${locale}/tours`} className="text-sm font-semibold text-ink-900 underline underline-offset-4">
-              {t("home.seeAllTours")}
-            </Link>
+        <div className="divide-y divide-ink-100 rounded-2xl border border-ink-200 bg-white px-6 shadow-[0_1px_3px_rgba(11,29,51,.06)] sm:px-8">
+          {/* step 1 — days */}
+          <div className="flex flex-wrap items-center gap-x-6 gap-y-3 py-5">
+            <StepBadge n={1} />
+            <p className="w-40 font-semibold text-ink-900">{t("home.planStep1")}</p>
+            <ul className="flex flex-wrap gap-2">
+              {([["1", "home.day1t"], ["3", "home.day2t"], ["5", "home.day3t"], ["7", "home.day4t"]] as const).map(([d, label]) => (
+                <li key={d}>
+                  <Link
+                    href={`/${locale}/plan?d=${d}&i=nature&p=0`}
+                    className="inline-flex rounded-full border border-ink-200 px-3.5 py-1.5 text-sm font-medium text-ink-600 transition-colors hover:border-gold-500 hover:text-ink-900"
+                  >
+                    {t(label)}
+                  </Link>
+                </li>
+              ))}
+            </ul>
           </div>
-          <ul className="mt-7 grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
-            {tours.slice(0, 3).map((tour) => (
-              <li key={tour.slug}>
-                <Link
-                  href={`/${locale}/tours/${tour.slug}`}
-                  className="group flex h-full flex-col overflow-hidden rounded-2xl border border-ink-200 bg-white shadow-[0_1px_3px_rgba(11,29,51,.06)] transition-all duration-300 hover:-translate-y-1 hover:shadow-[var(--shadow-soft)]"
-                >
-                  <div className="relative overflow-hidden">
-                    <PlaceImage
-                      imageKey={tour.heroImageKey}
-                      photoSrc={sitePhoto(`tours/${tour.slug}.jpg`)}
-                      alt={tour.heroImageAlt ?? tour.title}
-                      seedText={tour.slug}
-                      className="h-52 w-full transition-transform duration-500 group-hover:scale-105"
-                    />
-                    <span className="absolute left-4 top-4">
-                      <Badge tone="neutral">
-                        {tour.durationDays === 1 ? t("tours.dayTrip") : t("tours.days", { count: tour.durationDays })}
-                      </Badge>
+          {/* step 2 — interests */}
+          <div className="flex flex-wrap items-center gap-x-6 gap-y-3 py-5">
+            <StepBadge n={2} />
+            <p className="w-40 font-semibold text-ink-900">{t("home.planStep2")}</p>
+            <ul className="flex flex-wrap gap-4">
+              {([["nature", "nature", "plan.int1"], ["culture", "culture", "plan.int2"], ["wine", "wine", "plan.int3"],
+                 ["adventure", "mountains", "plan.int4"], ["rest", "sea", "plan.int5"]] as const).map(([interest, icon, label]) => (
+                <li key={interest}>
+                  <Link
+                    href={`/${locale}/plan?d=3&i=${interest}&p=0`}
+                    className="group flex flex-col items-center gap-1.5 text-ink-600 transition-colors hover:text-ink-900"
+                  >
+                    <span className="grid size-11 place-items-center rounded-full border border-ink-200 transition-colors group-hover:border-gold-500">
+                      <svg viewBox="0 0 24 24" className="size-5" fill="none" stroke="currentColor"
+                           strokeWidth="1.7" strokeLinecap="round" strokeLinejoin="round" aria-hidden>
+                        <path d={CATEGORY_ICONS[icon]} />
+                      </svg>
                     </span>
-                  </div>
-                  <div className="flex flex-1 flex-col p-6">
-                    <p className="font-display text-xl text-ink-900 group-hover:text-ink-900">{tour.title}</p>
-                    <p className="mt-2 flex-1 text-sm leading-relaxed text-ink-600">{tour.summary}</p>
-                  </div>
-                </Link>
-              </li>
-            ))}
-          </ul>
-        </section>
-      )}
-
-      {/* ------------------------------------------------ seasons --------- */}
-      <section>
-        <p className="eyebrow">{t("home.seasonsEyebrow")}</p>
-        <h2 className="font-display mt-2 text-3xl text-ink-900 sm:text-4xl">{t("home.seasonsTitle")}</h2>
-        <ul className="mt-8 grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
-          {([["home.season1t", "home.season1b"], ["home.season2t", "home.season2b"],
-             ["home.season3t", "home.season3b"], ["home.season4t", "home.season4b"]] as const).map(([title, body]) => (
-            <li key={title} className="rounded-2xl border border-ink-200 bg-white p-6 shadow-[0_1px_3px_rgba(11,29,51,.06)]">
-              <p className="font-display text-2xl text-ink-900">{t(title)}</p>
-              <p className="mt-2 text-sm leading-relaxed text-ink-500">{t(body)}</p>
-            </li>
-          ))}
-        </ul>
-      </section>
-
-      {/* ------------------------------------------------ organisations --- */}
-      <section className="rounded-2xl border border-ink-200 bg-white p-6 shadow-[0_1px_3px_rgba(11,29,51,.06)] sm:p-10">
-        <div className="flex flex-wrap items-center justify-between gap-6">
-          <div className="max-w-2xl">
-            <p className="eyebrow">{t("home.b2bEyebrow")}</p>
-            <h2 className="font-display mt-2 text-2xl text-ink-900 sm:text-3xl">{t("home.b2bTitle")}</h2>
-            <p className="mt-3 leading-relaxed text-ink-500">{t("home.b2bBody")}</p>
+                    <span className="text-[11px] font-medium">
+                      {t(label)}
+                    </span>
+                  </Link>
+                </li>
+              ))}
+            </ul>
           </div>
-          <div className="flex flex-wrap gap-3">
-            <Link href={`/${locale}/business`} className="rounded-lg border border-ink-300 px-5 py-3 text-sm text-ink-900 hover:border-ink-500">
-              {t("home.b2bBusiness")}
-            </Link>
-            <Link href={`/${locale}/schools`} className="rounded-lg border border-ink-300 px-5 py-3 text-sm text-ink-900 hover:border-ink-500">
-              {t("home.b2bSchools")}
-            </Link>
+          {/* step 3 — party */}
+          <div className="flex flex-wrap items-center gap-x-6 gap-y-3 py-5">
+            <StepBadge n={3} />
+            <p className="w-40 font-semibold text-ink-900">{t("home.planStep3")}</p>
+            <ul className="flex flex-wrap gap-2">
+              {(["plan.party1", "plan.party2", "plan.party3", "plan.party4"] as const).map((key, i) => (
+                <li key={key}>
+                  <Link
+                    href={`/${locale}/plan?d=3&i=nature&p=${i}`}
+                    className="inline-flex rounded-full border border-ink-200 px-3.5 py-1.5 text-sm font-medium text-ink-600 transition-colors hover:border-gold-500 hover:text-ink-900"
+                  >
+                    {t(key)}
+                  </Link>
+                </li>
+              ))}
+            </ul>
           </div>
         </div>
       </section>
-
-      {/* ------------------------------------------------ travellers ------ */}
-      {travellers.length > 0 && (
-        <section>
-          <p className="eyebrow">{t("home.travellersEyebrow")}</p>
-          <h2 className="font-display mt-2 text-3xl text-ink-900 sm:text-4xl">{t("home.travellersTitle")}</h2>
-          <p className="mt-3 max-w-xl text-ink-500">{t("home.travellersBody")}</p>
-          <ul className="mt-8 grid grid-cols-2 gap-4 lg:grid-cols-4">
-            {travellers.map((photo) => (
-              <li key={photo.src} className="overflow-hidden rounded-lg border border-ink-300 bg-white">
-                {/* eslint-disable-next-line @next/next/no-img-element */}
-                <img src={photo.src} alt={photo.caption} loading="lazy" className="aspect-square w-full rounded-t-lg object-cover" />
-                <p className="px-4 py-3 text-sm text-ink-500">{photo.caption}</p>
-              </li>
-            ))}
-          </ul>
-        </section>
-      )}
 
       {/* -------------------------------------------- why + contact ------- */}
       <section className={config.contact.phone ? "grid gap-4 lg:grid-cols-[1fr_20rem]" : "grid gap-4"}>
         <div className="rounded-2xl bg-pine-50 p-6 sm:p-10">
           <h2 className="font-display text-2xl text-ink-900 sm:text-3xl">{t("home.whyRG")}</h2>
-          <dl className="mt-6 grid grid-cols-2 gap-x-8 gap-y-6 sm:grid-cols-4">
+          <ul className="mt-6 grid gap-x-8 gap-y-5 sm:grid-cols-2">
+            {([["home.why1t", "home.why1b"], ["home.why2t", "home.why2b"],
+               ["home.why3t", "home.why3b"], ["home.why4t", "home.why4b"]] as const).map(([tt, bb]) => (
+              <li key={tt} className="flex gap-3">
+                <svg viewBox="0 0 24 24" className="mt-0.5 size-5 shrink-0 text-gold-600" fill="none" stroke="currentColor"
+                     strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" aria-hidden>
+                  <path d="m5 12 5 5L20 7" />
+                </svg>
+                <div>
+                  <p className="font-semibold text-ink-900">{t(tt)}</p>
+                  <p className="mt-0.5 text-sm leading-relaxed text-ink-500">{t(bb)}</p>
+                </div>
+              </li>
+            ))}
+          </ul>
+          <dl className="mt-8 grid grid-cols-2 gap-x-8 gap-y-6 border-t border-ink-200 pt-6 sm:grid-cols-4">
             {([[stats[0]?.drivers ?? 0, t("home.statDrivers")],
                [locations.length, t("home.statLocations")],
                [tours.length, t("home.statTours")],
@@ -498,6 +429,49 @@ export default async function Home({
         )}
       </section>
 
+      {/* ------------------------------------------------ explore map ----- */}
+      <section>
+        <div className="text-center">
+          <p className="eyebrow">{t("home.mapEyebrow")}</p>
+          <h2 className="font-display mt-2 text-3xl text-ink-900 sm:text-4xl">{t("home.mapTitle")}</h2>
+          <p className="mx-auto mt-3 max-w-xl text-ink-500">{t("home.mapBody")}</p>
+        </div>
+        <div className="mt-8">
+          <GeorgiaMap
+            locale={locale}
+            initialCat={initialCat}
+            places={DESTINATIONS.flatMap((d) => {
+              const loc = locations.find((l) => l.slug === d.slug);
+              if (!loc) return [];
+              return [{
+                slug: d.slug, name: loc.name_en, lat: Number(loc.lat), lon: Number(loc.lon),
+                categories: d.categories, seasons: d.seasons, icon: d.icon,
+                descKey: d.descKey, labelPos: d.labelPos, dx: d.dx, dy: d.dy,
+                photo: sitePhoto(`destinations/${d.slug}.jpg`),
+              }];
+            })}
+          />
+        </div>
+      </section>
+
+      {/* ------------------------------------------------ travellers ------ */}
+      {travellers.length > 0 && (
+        <section>
+          <p className="eyebrow">{t("home.travellersEyebrow")}</p>
+          <h2 className="font-display mt-2 text-3xl text-ink-900 sm:text-4xl">{t("home.travellersTitle")}</h2>
+          <p className="mt-3 max-w-xl text-ink-500">{t("home.travellersBody")}</p>
+          <ul className="mt-8 grid grid-cols-2 gap-4 lg:grid-cols-4">
+            {travellers.map((photo) => (
+              <li key={photo.src} className="overflow-hidden rounded-lg border border-ink-300 bg-white">
+                {/* eslint-disable-next-line @next/next/no-img-element */}
+                <img src={photo.src} alt={photo.caption} loading="lazy" className="aspect-square w-full rounded-t-lg object-cover" />
+                <p className="px-4 py-3 text-sm text-ink-500">{photo.caption}</p>
+              </li>
+            ))}
+          </ul>
+        </section>
+      )}
+
       {/* ------------------------------------------------ closing CTA ----- */}
       <section className="rounded-2xl bg-pine-800 px-6 py-14 text-center text-white sm:px-12">
         <h2 className="font-display text-3xl sm:text-4xl">{t("home.closingTitle")}</h2>
@@ -511,5 +485,13 @@ export default async function Home({
       </section>
 
     </div>
+  );
+}
+
+function StepBadge({ n }: { n: number }) {
+  return (
+    <span className="grid size-9 shrink-0 place-items-center rounded-full bg-brand-600 font-display text-sm font-bold text-white">
+      {n}
+    </span>
   );
 }
