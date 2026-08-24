@@ -134,6 +134,10 @@ export const driverProfiles = pgTable("driver_profiles", {
   status: driverStatus("status").notNull().default("DRAFT"),
   published: boolean("published").notNull().default(false),
   suspendedReason: text("suspended_reason"),
+  /** 'staff' | 'public_form' | 'import' — how this file entered the system. */
+  appliedVia: text("applied_via").notNull().default("staff"),
+  experienceYears: integer("experience_years"),
+  referralSource: text("referral_source"),
   ratingSum: integer("rating_sum").notNull().default(0),
   ratingCount: integer("rating_count").notNull().default(0),
   completedTrips: integer("completed_trips").notNull().default(0),

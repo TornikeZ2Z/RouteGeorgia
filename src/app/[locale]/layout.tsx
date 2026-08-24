@@ -117,7 +117,7 @@ export default async function LocaleLayout({
               {item.label}
             </Link>
           ))}
-          <Link href="/driver" className="whitespace-nowrap rounded-lg px-3 py-1.5 font-medium text-ink-900">
+          <Link href={`/${locale}/drive`} className="whitespace-nowrap rounded-lg px-3 py-1.5 font-medium text-ink-900">
             {t("nav.becomeDriver")}
           </Link>
         </nav>
@@ -158,7 +158,7 @@ export default async function LocaleLayout({
               <li><Link className="hover:text-white" href={`/${locale}/about`}>{t("nav.about")}</Link></li>
               <li><Link className="hover:text-white" href={`/${locale}/business`}>{t("nav.business")}</Link></li>
               <li><Link className="hover:text-white" href={`/${locale}/schools`}>{t("nav.schools")}</Link></li>
-              <li><Link className="hover:text-white" href="/driver">{t("nav.becomeDriver")}</Link></li>
+              <li><Link className="hover:text-white" href={`/${locale}/drive`}>{t("nav.becomeDriver")}</Link></li>
               <li><Link className="hover:text-white" href="/login">{t("nav.signIn")}</Link></li>
             </ul>
             <p className="mt-5 text-sm font-semibold text-white">{t("footer.legal")}</p>

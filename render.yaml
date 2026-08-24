@@ -1,0 +1,32 @@
+# Render service definition.
+#
+# The build command is the important line: migrations must run BEFORE the new
+# code starts, or a deploy ships code that queries columns the database does
+# not have yet. That answer previously lived only in vercel.json — which Render
+# never reads — so it was one dashboard field away from being lost.
+#
+# IMPORTANT: Render only applies this file to services created from a
+# Blueprint. A service created by hand in the dashboard keeps using the build
+# command typed into its settings, and ignores everything here. If this service
+# was made by hand, either set its Build Command to match the one below, or
+# re-create it from this Blueprint.
+services:
+  - type: web
+    name: routegeorgia
+    runtime: node
+    region: frankfurt
+    plan: starter
+    branch: main
+    buildCommand: npm ci && npm run db:migrate && npm run build
+    startCommand: npm run start
+    healthCheckPath: /api/health
+    autoDeploy: true
+    envVars:
+      - key: NODE_VERSION
+        value: "20"
+      # Set in the dashboard, never here: DATABASE_URL, SESSION_SECRET,
+      # SUPPORT_PHONE, SUPPORT_EMAIL, STORAGE_DRIVER, ENFORCE_CANONICAL_HOST.
+      - key: APP_URL
+        value: https://routegeorgia.ge
+      - key: NODE_ENV
+        value: production

@@ -36,18 +36,25 @@ export interface QueueInput {
   payload?: Record<string, unknown>;
 }
 
-export async function queue(tx: Executor, input: QueueInput): Promise<void> {
+/**
+ * Returns the new row's id, or null when the dedupe key already existed and
+ * nothing was inserted. Callers that need a specific message sent promptly —
+ * rather than whatever is oldest in the outbox — pass it to `dispatchPending`.
+ */
+export async function queue(tx: Executor, input: QueueInput): Promise<string | null> {
   const dedupeKey = createHash("sha256")
     .update(`${input.kind}:${input.dedupe}`)
     .digest("hex");
 
-  await tx`
+  const rows = await tx<{ id: string }[]>`
     INSERT INTO notifications (kind, channel, to_address, locale, subject, body, payload, booking_id, dedupe_key)
     VALUES (${input.kind}, ${input.channel ?? "EMAIL"}::notify_channel, ${input.to},
             ${input.locale ?? "en"}, ${input.subject}, ${input.body},
             ${JSON.stringify(input.payload ?? {})}::text::jsonb,
             ${input.bookingId ?? null}::uuid, ${dedupeKey})
-    ON CONFLICT (dedupe_key) DO NOTHING`;
+    ON CONFLICT (dedupe_key) DO NOTHING
+    RETURNING id`;
+  return rows[0]?.id ?? null;
 }
 
 // ------------------------------------------------------------- transport ---
@@ -81,16 +88,29 @@ export function getTransport(): Transport {
  * scheduled worker. Safe to run concurrently: rows are claimed with
  * SKIP LOCKED so two dispatchers never send the same message twice.
  */
-export async function dispatchPending(limit = 25): Promise<{ sent: number; failed: number }> {
+export async function dispatchPending(
+  limit = 25,
+  /**
+   * Restrict the batch to specific rows. Without it the outbox is drained
+   * oldest-first, which is right for a background worker and wrong when one
+   * message must go now: a single message queued behind a long backlog of
+   * older retries would wait for cycles that nothing on this deployment
+   * currently runs. Pass the id from `queue` to send just that one.
+   */
+  only?: readonly string[],
+): Promise<{ sent: number; failed: number }> {
   const transport = getTransport();
   let sent = 0;
   let failed = 0;
+
+  const ids = only && only.length > 0 ? [...only] : null;
 
   const claimed = await rootSql<{ id: string; channel: string; to_address: string; subject: string; body: string }[]>`
     UPDATE notifications SET state = 'SENDING', attempts = attempts + 1
     WHERE id IN (
       SELECT id FROM notifications
       WHERE state IN ('QUEUED','FAILED') AND attempts < 5
+        AND (${ids}::uuid[] IS NULL OR id = ANY(${ids}::uuid[]))
       ORDER BY created_at
       LIMIT ${limit}
       FOR UPDATE SKIP LOCKED)

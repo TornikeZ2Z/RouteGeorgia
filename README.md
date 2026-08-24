@@ -148,10 +148,18 @@ manage-booking with cancellation, and booking-scoped messaging.** Every price
 shows its full breakdown, and "Recommended" explains itself.
 
 **Driver app** (`/driver`)
-Application, languages, vehicle, photo upload, documents with expiry tracking,
+Profile, languages, vehicle, photo upload, documents with expiry tracking,
 versioned price plans, availability calendar, **an order inbox with
 acknowledgement, decline, trip milestones and cash confirmation, plus an
 earnings page driven from the ledger.**
+
+**Driver application** (`/en/drive`, `/ka/drive`, `/ru/drive`)
+One public page a prospective driver can be sent a link to. It collects their
+details, languages, vehicle and KYC documents, then creates the account, the
+profile in the verification queue as SUBMITTED, the vehicle and the documents
+as PENDING, and emails them a link to set their password. An application
+grants nothing: approval and publication remain separate, staffed decisions.
+Applying does not reveal whether an address already has an account.
 
 **Operations console** (`/admin`)
 Verification queue, document, vehicle and photo decisions with mandatory
@@ -228,7 +236,7 @@ Two rules worth keeping:
 npm test
 ```
 
-58 tests. The database ones skip cleanly if Postgres is not running.
+89 tests. The database ones skip cleanly if Postgres is not running.
 
 They cover the things that are expensive to get wrong: rounding at scale,
 quote determinism and replay, price bands, RBAC denials, and — against a real

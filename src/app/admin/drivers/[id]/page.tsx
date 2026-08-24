@@ -17,6 +17,7 @@ export default async function DriverDetail({ params }: { params: Promise<{ id: s
   const [driver] = await sql<DriverRow[]>`
     SELECT d.id, d.public_name, d.handle, d.legal_first_name, d.legal_last_name, d.bio,
            d.status::text AS status, d.published, d.submitted_at, d.suspended_reason,
+           d.applied_via, d.experience_years, d.referral_source, d.date_of_birth,
            u.email, u.phone, l.name_en AS base_location
     FROM driver_profiles d
     JOIN users u ON u.id = d.user_id
@@ -208,6 +209,49 @@ export default async function DriverDetail({ params }: { params: Promise<{ id: s
               Base: {driver.base_location ?? "not set"}
             </p>
           </Card>
+
+          {/* Where the file came from and what the applicant declared about
+              themselves. A self-service application is not less trustworthy
+              than one typed in the office, but a reviewer should know which
+              one they are reading. */}
+          <Card className="p-4 text-sm">
+            <h3 className="font-semibold text-ink-900">Application</h3>
+            <dl className="mt-2 space-y-1.5 text-ink-600">
+              <div className="flex justify-between gap-3">
+                <dt className="text-ink-500">Source</dt>
+                <dd className="text-right">
+                  {driver.applied_via === "public_form" ? "Public form" :
+                   driver.applied_via === "import" ? "Imported" : "Entered by staff"}
+                </dd>
+              </div>
+              {driver.submitted_at && (
+                <div className="flex justify-between gap-3">
+                  <dt className="text-ink-500">Submitted</dt>
+                  <dd className="text-right tabular-nums">
+                    {new Date(driver.submitted_at).toLocaleDateString()}
+                  </dd>
+                </div>
+              )}
+              {driver.date_of_birth && (
+                <div className="flex justify-between gap-3">
+                  <dt className="text-ink-500">Born</dt>
+                  <dd className="text-right tabular-nums">{driver.date_of_birth}</dd>
+                </div>
+              )}
+              {driver.experience_years !== null && (
+                <div className="flex justify-between gap-3">
+                  <dt className="text-ink-500">Declared experience</dt>
+                  <dd className="text-right tabular-nums">{driver.experience_years} yr</dd>
+                </div>
+              )}
+              {driver.referral_source && (
+                <div className="flex justify-between gap-3">
+                  <dt className="text-ink-500">Heard about us</dt>
+                  <dd className="text-right">{driver.referral_source}</dd>
+                </div>
+              )}
+            </dl>
+          </Card>
         </div>
       </div>
     </div>
@@ -218,6 +262,8 @@ interface DriverRow {
   id: string; public_name: string; handle: string; legal_first_name: string | null;
   legal_last_name: string | null; bio: string | null; status: string; published: boolean;
   submitted_at: Date | null; suspended_reason: string | null;
+  applied_via: string; experience_years: number | null; referral_source: string | null;
+  date_of_birth: string | null;
   email: string; phone: string | null; base_location: string | null;
 }
 interface DocRow { id: string; type: string; state: string; expires_on: string | null; review_reason: string | null; created_at: Date }

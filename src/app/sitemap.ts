@@ -37,6 +37,7 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
       { url: `${config.appUrl}/${locale}/schools`, changeFrequency: "monthly", priority: 0.5, alternates: alternates("/schools") },
       { url: `${config.appUrl}/${locale}/hourly`, changeFrequency: "monthly", priority: 0.4, alternates: alternates("/hourly") },
       { url: `${config.appUrl}/${locale}/contact`, changeFrequency: "monthly", priority: 0.5, alternates: alternates("/contact") },
+      { url: `${config.appUrl}/${locale}/drive`, changeFrequency: "monthly", priority: 0.6, alternates: alternates("/drive") },
       { url: `${config.appUrl}/${locale}/legal/terms`, changeFrequency: "yearly", priority: 0.3, alternates: alternates("/legal/terms") },
       { url: `${config.appUrl}/${locale}/legal/privacy`, changeFrequency: "yearly", priority: 0.3, alternates: alternates("/legal/privacy") },
       { url: `${config.appUrl}/${locale}/legal/cancellation`, changeFrequency: "yearly", priority: 0.3, alternates: alternates("/legal/cancellation") },

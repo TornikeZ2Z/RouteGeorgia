@@ -50,6 +50,18 @@ console.log("\nChecking before publishing:\n");
 step("type check", () => run("npm run typecheck"));
 step("tests", () => run("npm test"));
 
+/**
+ * The database tests write — blocks, and an audit row the append-only trigger
+ * makes permanent — so tests/setup.ts refuses to run them against DATABASE_URL.
+ * Say so out loud: a silent skip looks exactly like a pass.
+ */
+if (!process.env.TEST_DATABASE_URL) {
+  console.log(
+    "\n  note: database invariant tests were SKIPPED (no TEST_DATABASE_URL).\n" +
+    "        Set it to a scratch database to check them — never to the live one.",
+  );
+}
+
 const message =
   process.argv.slice(2).join(" ") ||
   `Update ${new Date().toISOString().slice(0, 16).replace("T", " ")}`;
