@@ -64,6 +64,14 @@ const Schema = z.object({
    * instead of sending, which is the development behaviour.
    */
   RESEND_API_KEY: z.string().default(""),
+  /**
+   * SMTP, for Google Workspace and anything else that speaks it. Takes
+   * precedence over Resend when a host, user and password are all present.
+   */
+  SMTP_HOST: z.string().default(""),
+  SMTP_PORT: z.coerce.number().int().positive().default(465),
+  SMTP_USER: z.string().default(""),
+  SMTP_PASSWORD: z.string().default(""),
   /** Must be an address on a domain verified with the provider. */
   MAIL_FROM: z.string().default("RouteGeorgia <noreply@routegeorgia.ge>"),
 
@@ -159,7 +167,16 @@ export const config = {
   },
 
   contact: { phone: env.SUPPORT_PHONE, email: env.SUPPORT_EMAIL },
-  mail: { resendApiKey: env.RESEND_API_KEY, from: env.MAIL_FROM },
+  mail: {
+    resendApiKey: env.RESEND_API_KEY,
+    from: env.MAIL_FROM,
+    smtp: {
+      host: env.SMTP_HOST,
+      port: env.SMTP_PORT,
+      user: env.SMTP_USER,
+      password: env.SMTP_PASSWORD,
+    },
+  },
   company: {
     legalName: env.COMPANY_LEGAL_NAME,
     idNumber: env.COMPANY_ID_NUMBER,

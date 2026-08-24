@@ -2,6 +2,7 @@ import "server-only";
 import { createHash } from "node:crypto";
 import type { Sql, TransactionSql } from "postgres";
 import { sql as rootSql } from "@db/client";
+import { createTransport, type Transporter } from "nodemailer";
 import { config } from "@/lib/config";
 import { formatMoney } from "@/lib/money";
 import type { Locale } from "@/lib/i18n";
@@ -123,18 +124,62 @@ const resendTransport: Transport = {
 };
 
 /**
- * Email goes to the provider once a key is configured; SMS has no provider
- * yet and still prints to the log. Routing by channel rather than swapping
- * the whole transport means adding an SMS provider later touches only this
- * function.
+ * SMTP, for Google Workspace and anything else that speaks it.
+ *
+ * The connection is built once and reused: Gmail counts connections as well
+ * as messages, and opening a fresh one per email is how an account ends up
+ * rate limited. Nodemailer pools and re-authenticates on its own.
+ */
+let mailer: Transporter | null = null;
+
+const smtpTransport: Transport = {
+  name: "smtp",
+  async send(message) {
+    mailer ??= createTransport({
+      host: config.mail.smtp.host,
+      port: config.mail.smtp.port,
+      // 465 is implicit TLS; 587 upgrades with STARTTLS. Never plaintext:
+      // this connection carries a password on every message.
+      secure: config.mail.smtp.port === 465,
+      requireTLS: config.mail.smtp.port !== 465,
+      auth: { user: config.mail.smtp.user, pass: config.mail.smtp.password },
+      pool: true,
+      maxConnections: 2,
+    });
+
+    const info = await mailer.sendMail({
+      from: config.mail.from,
+      to: message.to,
+      subject: message.subject,
+      text: message.body,
+    });
+    return { ref: info.messageId ?? "smtp" };
+  },
+};
+
+const smtpConfigured = () =>
+  Boolean(config.mail.smtp.host && config.mail.smtp.user && config.mail.smtp.password);
+
+/**
+ * Which transport actually carries a message.
+ *
+ * SMTP wins over Resend when both are configured, because SMTP is the one
+ * someone set up deliberately for this domain. SMS has no provider yet and
+ * still prints to the log — routing by channel here means adding one later
+ * touches only this function.
  */
 export function getTransport(): Transport {
-  if (!config.mail.resendApiKey) return consoleTransport;
+  const email =
+    smtpConfigured() ? smtpTransport
+    : config.mail.resendApiKey ? resendTransport
+    : null;
+
+  if (!email) return consoleTransport;
 
   return {
-    name: "resend+console",
+    name: `${email.name}+console`,
     async send(message) {
-      if (message.channel === "EMAIL") return resendTransport.send(message);
+      if (message.channel === "EMAIL") return email.send(message);
       return consoleTransport.send(message);
     },
   };
