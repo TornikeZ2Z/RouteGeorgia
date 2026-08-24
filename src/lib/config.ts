@@ -27,7 +27,26 @@ const Schema = z.object({
 
   ROUTING_PROVIDER: z.enum(["haversine", "google", "mapbox"]).default("haversine"),
   ROUTING_API_KEY: z.string().default(""),
+  /**
+   * Where uploaded files live.
+   *
+   * "local" writes to the server's own disk and is for development only: on a
+   * container host the filesystem is discarded on every deploy, which for a
+   * KYC bucket means a driver's passport disappears the next time anyone ships
+   * a change. Production must be "s3".
+   *
+   * "s3" is any S3-compatible object store — Cloudflare R2, AWS S3, Backblaze
+   * B2. R2 is the cheaper fit here: no egress charge, and the documents are
+   * streamed through the app rather than served from the bucket.
+   */
   STORAGE_DRIVER: z.enum(["local", "s3"]).default("local"),
+  S3_BUCKET: z.string().default(""),
+  /** R2: https://<account-id>.r2.cloudflarestorage.com — omit for AWS S3. */
+  S3_ENDPOINT: z.string().default(""),
+  /** R2 ignores this but the protocol requires one; "auto" is correct there. */
+  S3_REGION: z.string().default("auto"),
+  S3_ACCESS_KEY_ID: z.string().default(""),
+  S3_SECRET_ACCESS_KEY: z.string().default(""),
   /** Shown in the header and footer once the business SIM exists. Hidden when empty. */
   SUPPORT_PHONE: z.string().default(""),
   SUPPORT_EMAIL: z.string().default("support@routegeorgia.ge"),
@@ -53,6 +72,44 @@ if (!parsed.success) {
 }
 
 const env = parsed.data;
+
+/**
+ * Refuse to start rather than fail at upload time.
+ *
+ * The old S3 adapter threw when it was first called, which meant a
+ * misconfigured deployment looked healthy and then lost a driver's
+ * application halfway through submitting it. A missing bucket name is a
+ * deployment mistake; it should stop the deployment, not a driver.
+ */
+if (env.STORAGE_DRIVER === "s3") {
+  const missing = (
+    [
+      ["S3_BUCKET", env.S3_BUCKET],
+      ["S3_ACCESS_KEY_ID", env.S3_ACCESS_KEY_ID],
+      ["S3_SECRET_ACCESS_KEY", env.S3_SECRET_ACCESS_KEY],
+    ] as const
+  ).filter(([, value]) => !value.trim()).map(([name]) => name);
+
+  if (missing.length > 0) {
+    throw new Error(
+      `STORAGE_DRIVER is "s3" but ${missing.join(", ")} ${missing.length === 1 ? "is" : "are"} not set.\n` +
+      `Set them, or use STORAGE_DRIVER=local for development.`,
+    );
+  }
+}
+
+/**
+ * Local disk in production is data loss waiting for the next deploy. Say so
+ * loudly; do not stop the process, because an existing deployment that is
+ * merely serving pages should not be taken down by this.
+ */
+if (env.STORAGE_DRIVER === "local" && env.NODE_ENV === "production") {
+  console.error(
+    "[storage] STORAGE_DRIVER=local in production. Uploaded driver documents " +
+    "are written to this container's disk and WILL BE LOST on the next deploy. " +
+    "Set STORAGE_DRIVER=s3 with S3_BUCKET, S3_ENDPOINT and credentials.",
+  );
+}
 
 /**
  * Absolute base URL.
@@ -99,7 +156,14 @@ export const config = {
     address: env.COMPANY_ADDRESS,
   },
   routing: { provider: env.ROUTING_PROVIDER, apiKey: env.ROUTING_API_KEY },
-  storage: { driver: env.STORAGE_DRIVER },
+  storage: {
+    driver: env.STORAGE_DRIVER,
+    bucket: env.S3_BUCKET,
+    endpoint: env.S3_ENDPOINT,
+    region: env.S3_REGION,
+    accessKeyId: env.S3_ACCESS_KEY_ID,
+    secretAccessKey: env.S3_SECRET_ACCESS_KEY,
+  },
 } as const;
 
 export type AppConfig = typeof config;

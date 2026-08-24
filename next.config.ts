@@ -5,7 +5,9 @@ const CANONICAL_HOST = "routegeorgia.ge";
 const config: NextConfig = {
   reactStrictMode: true,
   poweredByHeader: false,
-  serverExternalPackages: ["postgres", "bcryptjs"],
+  // Kept out of the bundle: native or large server-only libraries that must
+  // load from node_modules at runtime rather than be traced and inlined.
+  serverExternalPackages: ["postgres", "bcryptjs", "@aws-sdk/client-s3"],
 
   /**
    * One canonical hostname.

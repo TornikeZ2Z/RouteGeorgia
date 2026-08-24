@@ -73,6 +73,58 @@ Set `SUPPORT_PHONE` in Render once the business SIM exists; the header and
 footer show it automatically. `SUPPORT_EMAIL` defaults to
 support@routegeorgia.ge — that mailbox must actually exist before launch.
 
+### File storage
+
+Driver documents — identity papers and driving licences — and vehicle
+photographs are uploaded to object storage. There are two settings:
+
+`STORAGE_DRIVER=local` writes to `.storage/` in the working directory. Fine on
+your own machine; **never in production**. A container filesystem is discarded
+on every deploy, so a driver's passport disappears the next time anyone ships a
+change. The app logs a loud error if it starts this way in production.
+
+`STORAGE_DRIVER=s3` uses any S3-compatible store. Cloudflare R2 is the cheaper
+fit: no egress charge, and files are streamed through the app rather than served
+from the bucket.
+
+**Setting up R2**, which takes about five minutes:
+
+1. Cloudflare dashboard → **R2** → *Create bucket*. Name it `routegeorgia-files`.
+   Location: automatic. Leave public access **off** — the app streams every file
+   itself, so the bucket never needs to be reachable from the internet.
+2. **R2 → Manage API tokens → Create API token**. Permission: *Object Read &
+   Write*, scoped to that one bucket. Copy the Access Key ID and Secret Access
+   Key; the secret is shown once.
+3. Note your account endpoint, shown on the bucket's settings page as
+   `https://<account-id>.r2.cloudflarestorage.com`.
+4. Put these in Render (Environment → Add environment variable):
+
+   | Name | Value |
+   |---|---|
+   | `STORAGE_DRIVER` | `s3` |
+   | `S3_BUCKET` | `routegeorgia-files` |
+   | `S3_ENDPOINT` | `https://<account-id>.r2.cloudflarestorage.com` |
+   | `S3_REGION` | `auto` |
+   | `S3_ACCESS_KEY_ID` | from step 2 |
+   | `S3_SECRET_ACCESS_KEY` | from step 2 |
+
+The app **refuses to start** if `STORAGE_DRIVER=s3` and any of the bucket or
+credentials are missing, rather than accepting an application and losing the
+documents halfway through. A wrong secret shows up as a failed upload with the
+provider's error in the server log.
+
+For AWS S3 instead of R2, omit `S3_ENDPOINT` and set `S3_REGION` to the bucket's
+real region.
+
+**Two prefixes, one bucket.** `public-media/` holds vehicle photographs;
+`restricted-kyc/` holds identity documents. They are separate so a bucket policy
+can deny everything under `restricted-kyc/` independently. Nothing is ever
+served straight from the bucket: public photos go through `/api/media/...`, and
+KYC documents only through `/api/admin/documents/[id]`, which checks the
+reviewer's permission and writes an audit entry for every single view. The
+adapter refuses to produce a signed URL for a restricted object at all — a
+presigned link is bearer access that leaves no record of being used.
+
 ### Demo data vs launch data
 
 `db:seed` builds a full synthetic marketplace — 34 fake drivers with fabricated
@@ -275,8 +327,8 @@ Every `git push` to `main` redeploys. Pull requests get their own preview URL.
 - **Delete the seeded accounts.** They are demonstration data with a
   generated password. Run `db:seed` only against a development database.
 - **Move file storage off local disk.** `STORAGE_DRIVER=local` writes to the
-  server's filesystem, which is wiped on every Vercel deploy. Driver documents
-  and vehicle photos need S3 or Cloudflare R2 first.
+  server's filesystem, which is wiped on every deploy. See "File storage"
+  below — the adapter is built, it just needs a bucket and four values.
 - **Replace the routing provider.** The bundled estimator approximates road
   distance; quoted distance is a price input and a promise to the customer.
 - **Replace the payment provider.** The sandbox settles without moving money.
@@ -288,7 +340,8 @@ You are already on a managed Postgres if you followed the recommended setup, so
 there is nothing to migrate. Before real customers:
 
 - Replace the routing provider with real road routing.
-- Replace local file storage with S3 or R2, with the KYC prefix locked down.
+- Point `STORAGE_DRIVER` at a bucket, with the `restricted-kyc/` prefix denied
+  public access.
 - Put a real secret in `SESSION_SECRET` and delete every seeded account.
 - Add MFA for staff. The schema has the column; the flow is not built.
 
