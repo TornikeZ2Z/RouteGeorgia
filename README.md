@@ -173,6 +173,25 @@ Worth trying: sign in as `support@example.com` and open a driver record. You
 can read it, but the decision panel is gone and `/admin/locations` returns an
 error. That is server-side RBAC, not a hidden button.
 
+### The lock file
+
+The deploy runs `npm ci`, which refuses to install a `package-lock.json` that
+disagrees with `package.json` — and two npm majors disagree about how this
+project's dependencies resolve. Render runs **Node 22, which ships npm 10**. A
+lock file written by npm 11 nests `esbuild` differently and npm 10 rejects it
+with `Missing: esbuild@... from lock file`, so the build fails while everything
+passes locally.
+
+If you are on Node 24 or newer, regenerate and verify with npm 10:
+
+```bash
+npx npm@10 install --package-lock-only
+npx npm@10 ci
+```
+
+Both must succeed before pushing. `npm ci` on your own npm is not evidence: it
+is a different resolver reading the same file.
+
 ### Everyday commands
 
 | Command | What it does |

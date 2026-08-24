@@ -34,7 +34,10 @@ services:
       # The service refuses to start with STORAGE_DRIVER=s3 and any of those
       # missing, so a half-configured deploy fails loudly instead of losing
       # driver documents.
+      # Must match what the live service actually runs: the npm major that
+      # ships with it decides how package-lock.json is resolved, and a lock
+      # file written by a different major is rejected by `npm ci`.
       - key: NODE_VERSION
-        value: "20"
+        value: "22"
       - key: APP_URL
         value: https://routegeorgia.ge
