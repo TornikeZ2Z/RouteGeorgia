@@ -119,28 +119,25 @@ export function GeorgiaMap({ locale, places, initialCat = "all" }: { locale: str
 
       <div
         ref={boxRef}
-        className="relative bg-[radial-gradient(120%_140%_at_50%_-20%,#123055_0%,#0b1d33_55%,#071527_100%)] p-4 pt-8 sm:p-6 sm:pt-10"
+        className="relative bg-ink-50/60 p-4 pt-8 dark:bg-[radial-gradient(120%_140%_at_50%_-20%,#123055_0%,#0b1d33_55%,#071527_100%)] sm:p-6 sm:pt-10"
       >
         <svg viewBox={`0 0 ${W} ${H}`} className="w-full" role="img" aria-label="Map of Georgia">
           <defs>
             <linearGradient id="geo-land" x1="0" y1="0" x2="0" y2="1">
-              <stop offset="0" stopColor="#1b3d63" />
-              <stop offset="1" stopColor="#122c4b" />
+              <stop offset="0" className="[stop-color:#e9f0f8] dark:[stop-color:#1b3d63]" />
+              <stop offset="1" className="[stop-color:#d4e1ef] dark:[stop-color:#122c4b]" />
             </linearGradient>
-            <filter id="geo-lift" x="-6%" y="-8%" width="112%" height="120%">
-              <feDropShadow dx="0" dy="7" stdDeviation="11" floodColor="#020a14" floodOpacity="0.55" />
-            </filter>
           </defs>
-          <text x={54} y={py(42.55)} className="fill-white/25" fontSize="13" letterSpacing="0.35em"
+          <text x={54} y={py(42.55)} className="fill-ink-400/70 dark:fill-white/25" fontSize="13" letterSpacing="0.35em"
                 fontWeight="600" transform={`rotate(-74 54 ${py(42.55)})`}>
             BLACK&#160;&#160;SEA
           </text>
-          <text x={px(43.1)} y={38} className="fill-white/20" fontSize="10.5" letterSpacing="0.3em" fontWeight="600" textAnchor="middle">RUSSIA</text>
-          <text x={px(42.35)} y={H - 14} className="fill-white/20" fontSize="10.5" letterSpacing="0.3em" fontWeight="600" textAnchor="middle">TURKEY</text>
-          <text x={px(44.65)} y={H - 14} className="fill-white/20" fontSize="10.5" letterSpacing="0.3em" fontWeight="600" textAnchor="middle">ARMENIA</text>
-          <text x={px(45.75)} y={H - 14} className="fill-white/20" fontSize="10.5" letterSpacing="0.3em" fontWeight="600" textAnchor="middle">AZERBAIJAN</text>
-          <path d={GEORGIA_PATH} fill="url(#geo-land)" stroke="var(--color-gold-400)" strokeOpacity="0.55"
-                strokeWidth="1.3" strokeLinejoin="round" filter="url(#geo-lift)" />
+          <text x={px(43.1)} y={38} className="fill-ink-400/60 dark:fill-white/20" fontSize="10.5" letterSpacing="0.3em" fontWeight="600" textAnchor="middle">RUSSIA</text>
+          <text x={px(42.35)} y={H - 14} className="fill-ink-400/60 dark:fill-white/20" fontSize="10.5" letterSpacing="0.3em" fontWeight="600" textAnchor="middle">TURKEY</text>
+          <text x={px(44.65)} y={H - 14} className="fill-ink-400/60 dark:fill-white/20" fontSize="10.5" letterSpacing="0.3em" fontWeight="600" textAnchor="middle">ARMENIA</text>
+          <text x={px(45.75)} y={H - 14} className="fill-ink-400/60 dark:fill-white/20" fontSize="10.5" letterSpacing="0.3em" fontWeight="600" textAnchor="middle">AZERBAIJAN</text>
+          <path d={GEORGIA_PATH} fill="url(#geo-land)" strokeWidth="1.3" strokeLinejoin="round"
+                className="stroke-gold-600/70 drop-shadow-[0_4px_10px_rgba(11,29,51,.18)] dark:stroke-gold-400/55 dark:drop-shadow-[0_7px_14px_rgba(2,10,20,.55)]" />
         </svg>
 
         {places.map((p) => {
@@ -159,7 +156,7 @@ export function GeorgiaMap({ locale, places, initialCat = "all" }: { locale: str
               style={{ left: `${x}%`, top: `${y}%` }}
             >
               <span
-                className={`flex size-6 items-center justify-center rounded-full shadow-[0_2px_8px_rgba(2,10,20,.55)] ring-1 transition-transform duration-200 group-hover:scale-110 sm:size-7 ${
+                className={`flex size-6 items-center justify-center rounded-full shadow-[0_2px_6px_rgba(11,29,51,.25)] dark:shadow-[0_2px_8px_rgba(2,10,20,.55)] ring-1 transition-transform duration-200 group-hover:scale-110 sm:size-7 ${
                   open === p.slug
                     ? "bg-gold-400 text-pine-900 ring-white/50"
                     : "bg-pine-800 text-white ring-gold-400/70"
@@ -171,7 +168,7 @@ export function GeorgiaMap({ locale, places, initialCat = "all" }: { locale: str
                 </svg>
               </span>
               <span
-                className={`absolute whitespace-nowrap text-[10px] font-semibold tracking-[0.01em] text-white/85 [text-shadow:0_1px_4px_rgba(2,10,20,.9)] group-hover:text-gold-400 sm:text-[11px] ${LABEL_POS[p.labelPos ?? "bottom"]}`}
+                className={`absolute whitespace-nowrap text-[10px] font-semibold tracking-[0.01em] text-ink-700 group-hover:text-gold-600 dark:text-white/85 dark:[text-shadow:0_1px_4px_rgba(2,10,20,.9)] dark:group-hover:text-gold-400 sm:text-[11px] ${LABEL_POS[p.labelPos ?? "bottom"]}`}
               >
                 {p.name}
               </span>

@@ -14,8 +14,39 @@ import { listTours } from "@/lib/tours";
 import { formatApproxDuration, formatDistance } from "@/lib/format";
 import { SearchTabs } from "@/components/search-tabs";
 import { HeroCarousel } from "@/components/hero-carousel";
+import { unstable_cache } from "next/cache";
+import { listRoutes } from "@/lib/routes-content";
+import { routePriceFrom } from "@/lib/offers";
+import { formatMoney } from "@/lib/money";
+import { CANONICAL } from "@/lib/currency";
 
 export const dynamic = "force-dynamic";
+
+/**
+ * Popular destinations: curated Tbilisi routes with a real "from" price
+ * from the pricing engine (cheapest active plan), cached for an hour so
+ * the homepage does not recompute quotes on every view.
+ */
+const POPULAR = ["kazbegi", "batumi", "borjomi", "mestia", "telavi", "sighnaghi", "gudauri", "bakhmaro"];
+
+const popularDestinations = unstable_cache(
+  async () => {
+    const routes = await listRoutes("en");
+    const fromTbilisi = routes.filter((r) => r.originSlug === "tbilisi");
+    const out: { slug: string; routeSlug: string; name: string; fromMinor: string }[] = [];
+    for (const dest of POPULAR) {
+      if (out.length >= 6) break;
+      const route = fromTbilisi.find((r) => r.destinationSlug === dest);
+      if (!route) continue;
+      const pricing = await routePriceFrom(route.slug);
+      if (!pricing) continue;
+      out.push({ slug: dest, routeSlug: route.slug, name: route.destinationName, fromMinor: pricing.fromMinor.toString() });
+    }
+    return out;
+  },
+  ["home-popular-destinations"],
+  { revalidate: 3600 },
+);
 
 export async function generateMetadata({
   params,
@@ -81,6 +112,7 @@ export default async function Home({
   if (!isLocale(locale)) notFound();
   const t = getTranslator(locale);
 
+  const popular = await popularDestinations();
   const [locations, tours, stats] = await Promise.all([
     sql<{ slug: string; name_en: string; type: string; lat: number; lon: number }[]>`
       SELECT slug,
@@ -180,7 +212,10 @@ export default async function Home({
       {/* ------------------------------------------------ categories ------ */}
       <section>
         <div className="flex flex-wrap items-end justify-between gap-3">
-          <h2 className="font-display text-3xl text-ink-900 sm:text-4xl">{t("home.catsTitle")}</h2>
+          <div>
+            <h2 className="font-display text-3xl text-ink-900 sm:text-4xl">{t("home.catsTitle")}</h2>
+            <p className="mt-2 text-ink-500">{t("home.catsSub")}</p>
+          </div>
           <a href="#explore" className="text-sm font-semibold text-ink-900 underline underline-offset-4">
             {t("home.catsAll")} →
           </a>
@@ -222,6 +257,49 @@ export default async function Home({
           })}
         </ul>
       </section>
+
+      {/* ------------------------------------------- popular destinations - */}
+      {popular.length > 0 && (
+        <section>
+          <div className="flex flex-wrap items-end justify-between gap-3">
+            <div>
+              <h2 className="font-display text-3xl text-ink-900 sm:text-4xl">{t("home.popularTitle")}</h2>
+              <p className="mt-2 text-ink-500">{t("home.popularSub")}</p>
+            </div>
+            <Link href={`/${locale}/transfers`} className="text-sm font-semibold text-ink-900 underline underline-offset-4">
+              {t("footer.allRoutes")} →
+            </Link>
+          </div>
+          <ul className="mt-8 grid grid-cols-2 gap-4 sm:grid-cols-3 xl:grid-cols-6">
+            {popular.map((d) => (
+              <li key={d.slug}>
+                <Link
+                  href={`/${locale}/transfers/${d.routeSlug}`}
+                  className="group block overflow-hidden rounded-2xl border border-ink-200 bg-white shadow-[0_1px_3px_rgba(11,29,51,.06)] transition-all duration-300 hover:-translate-y-1 hover:shadow-[var(--shadow-soft)]"
+                >
+                  <span className="block h-32 overflow-hidden">
+                    <PlaceImage
+                      imageKey={null}
+                      photoSrc={sitePhoto(`destinations/${d.slug}.jpg`)}
+                      alt=""
+                      seedText={d.slug}
+                      className="size-full transition-transform duration-500 group-hover:scale-105"
+                    />
+                  </span>
+                  <span className="block p-3.5 text-center">
+                    <span className="block font-semibold tracking-[-0.01em] text-ink-900">
+                      {locations.find((l) => l.slug === d.slug)?.name_en ?? d.name}
+                    </span>
+                    <span className="mt-0.5 block text-sm text-ink-500">
+                      {t("transfers.fromPrice", { price: formatMoney(BigInt(d.fromMinor), CANONICAL, locale) })}
+                    </span>
+                  </span>
+                </Link>
+              </li>
+            ))}
+          </ul>
+        </section>
+      )}
 
       {/* ------------------------------------------------ explore map ----- */}
       <section>

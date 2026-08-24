@@ -8,21 +8,22 @@ import { getTranslator, isLocale, type Locale } from "@/lib/i18n";
 interface LocationOption { slug: string; name_en: string; type: string }
 
 /**
- * The booking widget's mode switcher: one way, round trip, hourly, tours.
+ * The booking widget's mode switcher: Transfer, Tours, Build my route.
  *
- * One way and round trip are fully priced online. Hourly has no online
- * pricing yet, so that tab is honest about it and routes to an inquiry
- * instead of pretending. Tours points at the curated catalogue.
+ * Transfer carries a one-way / round-trip toggle inside the panel, with a
+ * quiet link to hourly hire (no online pricing yet, so it routes to an
+ * inquiry rather than pretending). Tours points at the curated catalogue;
+ * Build my route hands over to the three-question planner.
  */
 export function SearchTabs({ locale, locations }: { locale: string; locations: LocationOption[] }) {
   const t = getTranslator(isLocale(locale) ? (locale as Locale) : "en");
-  const [tab, setTab] = useState<"oneway" | "roundtrip" | "hourly" | "tours">("oneway");
+  const [tab, setTab] = useState<"transfer" | "tours" | "plan">("transfer");
+  const [roundTrip, setRoundTrip] = useState(false);
 
   const tabs = [
-    { id: "oneway" as const, label: t("home.tabOneWay"), icon: "M4 12h13m0 0-4-4m4 4-4 4" },
-    { id: "roundtrip" as const, label: t("home.tabRoundTrip"), icon: "M4 8h13m0 0-3.5-3.5M17 8l-3.5 3.5M20 16H7m0 0 3.5-3.5M7 16l3.5 3.5" },
-    { id: "hourly" as const, label: t("home.tabHourly"), icon: "M12 7v5l3.5 2M12 21a9 9 0 1 1 0-18 9 9 0 0 1 0 18Z" },
+    { id: "transfer" as const, label: t("home.tabTransfer"), icon: "M3 15h18M5 15V9a2 2 0 0 1 2-2h7l4 4h1a2 2 0 0 1 2 2v2M7.5 18a1.5 1.5 0 1 0 0-3 1.5 1.5 0 0 0 0 3Zm9 0a1.5 1.5 0 1 0 0-3 1.5 1.5 0 0 0 0 3Z" },
     { id: "tours" as const, label: t("home.tabTours"), icon: "M9 20l-5-2V5l5 2m0 13 6-2m-6 2V7m6 11 5 2V7l-5-2m0 13V5M9 7l6-2" },
+    { id: "plan" as const, label: t("nav.plan"), icon: "M9 6h11M9 12h11M9 18h11M4.5 7.5 6 6v4.5M4 13.5h3L4 17h3" },
   ];
 
   return (
@@ -47,13 +48,38 @@ export function SearchTabs({ locale, locations }: { locale: string; locations: L
       </div>
 
       <div className="pt-5">
-        {tab === "oneway" && <SearchForm locale={locale} locations={locations} />}
-        {tab === "roundtrip" && <SearchForm locale={locale} locations={locations} roundTrip />}
-        {tab === "hourly" && (
-          <TeaserPanel body={t("home.hourlyTabBody")} cta={t("home.hourlyTabCta")} href={`/${locale}/hourly`} />
+        {tab === "transfer" && (
+          <div className="space-y-4">
+            <div className="flex flex-wrap items-center justify-between gap-3">
+              <div role="radiogroup" aria-label={t("home.tabTransfer")}
+                   className="inline-flex rounded-full border border-ink-200 p-0.5 text-xs font-semibold">
+                {([false, true] as const).map((rt) => (
+                  <button
+                    key={String(rt)} type="button" role="radio" aria-checked={roundTrip === rt}
+                    onClick={() => setRoundTrip(rt)}
+                    className={`rounded-full px-3.5 py-1.5 transition-colors ${
+                      roundTrip === rt ? "bg-brand-600 text-white" : "text-ink-500 hover:text-ink-900"
+                    }`}
+                  >
+                    {rt ? t("home.tabRoundTrip") : t("home.tabOneWay")}
+                  </button>
+                ))}
+              </div>
+              <Link href={`/${locale}/hourly`}
+                    className="text-xs font-medium text-ink-500 underline-offset-2 hover:text-ink-900 hover:underline">
+                {t("home.tabHourly")} →
+              </Link>
+            </div>
+            {roundTrip
+              ? <SearchForm key="rt" locale={locale} locations={locations} roundTrip />
+              : <SearchForm key="ow" locale={locale} locations={locations} />}
+          </div>
         )}
         {tab === "tours" && (
           <TeaserPanel body={t("home.toursTabBody")} cta={t("home.toursTabCta")} href={`/${locale}/tours`} />
+        )}
+        {tab === "plan" && (
+          <TeaserPanel body={t("home.planTabBody")} cta={t("nav.plan")} href={`/${locale}/plan`} />
         )}
       </div>
     </div>
