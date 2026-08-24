@@ -58,6 +58,15 @@ const Schema = z.object({
    * while any of these is blank — a driver must never be asked to sign a
    * contract whose counterparty reads "to be completed".
    */
+  /**
+   * Transactional email. Without a key the outbox still records every
+   * message and the dispatcher still runs — it just prints to the server log
+   * instead of sending, which is the development behaviour.
+   */
+  RESEND_API_KEY: z.string().default(""),
+  /** Must be an address on a domain verified with the provider. */
+  MAIL_FROM: z.string().default("RouteGeorgia <noreply@routegeorgia.ge>"),
+
   COMPANY_LEGAL_NAME: z.string().default(""),
   COMPANY_ID_NUMBER: z.string().default(""),
   COMPANY_ADDRESS: z.string().default(""),
@@ -150,6 +159,7 @@ export const config = {
   },
 
   contact: { phone: env.SUPPORT_PHONE, email: env.SUPPORT_EMAIL },
+  mail: { resendApiKey: env.RESEND_API_KEY, from: env.MAIL_FROM },
   company: {
     legalName: env.COMPANY_LEGAL_NAME,
     idNumber: env.COMPANY_ID_NUMBER,

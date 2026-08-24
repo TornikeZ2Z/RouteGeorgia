@@ -256,9 +256,8 @@ password reset ends every existing session.
 ## What is deliberately not built
 
 The partner/affiliate programme, driver payout execution, and live trip
-tracking. Notifications print to the server
-console rather than sending email — the outbox, templates and delivery
-tracking are real, only the transport is a stub.
+tracking. SMS has no provider yet, so those messages print to the server log;
+email sends through Resend once `RESEND_API_KEY` is set, and prints otherwise.
 
 The routing and payment providers are working stubs behind adapters. Both are
 a configuration change away from real ones, and both must be replaced before

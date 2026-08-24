@@ -193,7 +193,7 @@ export async function publishDriverAction(_prev: ActionState, formData: FormData
     // Refuse to publish supply that cannot legally or safely take a booking.
     const [gate] = await sql<{ missing: number; expired: number; vehicles: number; plans: number }[]>`
       SELECT
-        (SELECT count(*) FROM (VALUES ('IDENTITY'),('DRIVING_LICENSE'),('INSURANCE')) AS req(t)
+        (SELECT count(*) FROM (VALUES ('IDENTITY'),('DRIVING_LICENSE')) AS req(t)
           WHERE NOT EXISTS (SELECT 1 FROM driver_documents dd
             WHERE dd.driver_id = ${driverId}::uuid AND dd.type::text = req.t AND dd.state = 'APPROVED'))::int AS missing,
         (SELECT count(*) FROM driver_documents
@@ -203,7 +203,11 @@ export async function publishDriverAction(_prev: ActionState, formData: FormData
         (SELECT count(*) FROM price_plans WHERE driver_id = ${driverId}::uuid AND status = 'ACTIVE')::int AS plans`;
 
     const blockers: string[] = [];
-    if ((gate?.missing ?? 1) > 0) blockers.push("identity, licence and insurance must all be approved");
+    // Insurance is deliberately not a condition of publication: the driver
+    // team dropped it from onboarding. The signed agreement still obliges a
+    // driver to hold whatever the law requires, and driving uninsured remains
+    // a serious breach — we simply no longer collect and check the policy.
+    if ((gate?.missing ?? 1) > 0) blockers.push("identity and licence must both be approved");
     if ((gate?.expired ?? 0) > 0) blockers.push("a mandatory document has expired");
     if ((gate?.vehicles ?? 0) === 0) blockers.push("at least one vehicle must be approved");
     if ((gate?.plans ?? 0) === 0) blockers.push("an active price plan is required");

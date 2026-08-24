@@ -80,8 +80,64 @@ const consoleTransport: Transport = {
   },
 };
 
+/**
+ * Resend, over its REST API.
+ *
+ * Deliberately not the SDK: this is one authenticated POST, and every
+ * dependency added to this project has to be installed on a Linux build host
+ * from a lock file resolved on Windows — a trade that has already cost more
+ * than it was worth today.
+ *
+ * Bodies are plain text. These messages are a set-password link, a booking
+ * confirmation and a contract notice; they are read on cheap Android phones,
+ * they have to survive a text-only mail client, and plain text does not land
+ * in spam the way a bare HTML template does.
+ */
+const resendTransport: Transport = {
+  name: "resend",
+  async send(message) {
+    const response = await fetch("https://api.resend.com/emails", {
+      method: "POST",
+      headers: {
+        Authorization: `Bearer ${config.mail.resendApiKey}`,
+        "Content-Type": "application/json",
+      },
+      body: JSON.stringify({
+        from: config.mail.from,
+        to: [message.to],
+        subject: message.subject,
+        text: message.body,
+      }),
+    });
+
+    if (!response.ok) {
+      // Thrown so dispatchPending records it in last_error and retries. A
+      // silent failure here is a driver who never hears from us.
+      const detail = await response.text().catch(() => "");
+      throw new Error(`resend ${response.status}: ${detail.slice(0, 200)}`);
+    }
+
+    const result = (await response.json().catch(() => ({}))) as { id?: string };
+    return { ref: result.id ?? "resend" };
+  },
+};
+
+/**
+ * Email goes to the provider once a key is configured; SMS has no provider
+ * yet and still prints to the log. Routing by channel rather than swapping
+ * the whole transport means adding an SMS provider later touches only this
+ * function.
+ */
 export function getTransport(): Transport {
-  return consoleTransport;
+  if (!config.mail.resendApiKey) return consoleTransport;
+
+  return {
+    name: "resend+console",
+    async send(message) {
+      if (message.channel === "EMAIL") return resendTransport.send(message);
+      return consoleTransport.send(message);
+    },
+  };
 }
 
 /**
