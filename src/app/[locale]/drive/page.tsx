@@ -247,10 +247,14 @@ export default async function DrivePage({
             <legend className="font-display text-lg text-ink-900">{t("drive.sec2")}</legend>
             <p className="text-sm leading-relaxed text-ink-600">{t("drive.langHint")}</p>
 
+            {/* Each row stacks the level under the language rather than sitting
+                beside it: Select carries w-full from the shared field styles, so
+                in a flex row it pushed past the card edge — and the level names
+                are long in Georgian and Russian. */}
             <ul className="grid gap-2 sm:grid-cols-2">
               {APPLICATION_LANGUAGES.map((code) => (
-                <li key={code} className="flex items-center gap-3 rounded-xl border border-ink-200 p-3">
-                  <label className="flex min-h-11 flex-1 items-center gap-2.5 text-sm font-medium text-ink-900">
+                <li key={code} className="rounded-xl border border-ink-200 p-3">
+                  <label className="flex min-h-11 items-center gap-2.5 text-sm font-medium text-ink-900">
                     <input type="checkbox" name="language" value={code}
                            className="size-5 rounded border-ink-300" />
                     {LANGUAGE_NAME[code]}
@@ -259,7 +263,7 @@ export default async function DrivePage({
                     {t("drive.levelFor", { language: LANGUAGE_NAME[code] })}
                   </label>
                   <Select id={`level_${code}`} name={`level_${code}`} defaultValue="CONVERSATIONAL"
-                          className="w-auto shrink-0 text-xs">
+                          className="mt-1 text-sm">
                     {APPLICATION_LEVELS.map((level) => (
                       <option key={level} value={level}>{t(LEVEL_KEY[level])}</option>
                     ))}
