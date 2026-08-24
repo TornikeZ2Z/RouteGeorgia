@@ -4,6 +4,7 @@ import { listBlocks } from "@/lib/availability";
 import { Alert, Badge, Card, EmptyState, Field, Input, PageHeader, Select, Table } from "@/components/ui";
 import { ActionForm } from "@/components/form-state";
 import { addAvailabilityBlockAction } from "../actions";
+import { WorkDayCalendar } from "./workdays";
 import { RemoveBlock } from "./remove";
 
 export const dynamic = "force-dynamic";
@@ -17,12 +18,42 @@ export default async function AvailabilityPage() {
   const to = new Date(Date.now() + 60 * 86_400_000);
   const blocks = await listBlocks(driver.id, from, to);
 
+  // Working-days grid, resolved in Georgian time (UTC+4, no DST).
+  const TB = 4 * 3600_000;
+  const dayKey = (d: Date) => new Date(d.getTime() + TB).toISOString().slice(0, 10);
+  const todayStart = new Date(`${dayKey(new Date())}T00:00:00+04:00`);
+  const days = Array.from({ length: 56 }, (_, i) => {
+    const start = new Date(todayStart.getTime() + i * 86_400_000);
+    const end = new Date(start.getTime() + 86_400_000);
+    // lower()/upper() of a range come back as strings from the driver.
+    const overlapping = blocks.filter((b) => new Date(b.startsAt) < end && new Date(b.endsAt) > start);
+    const state = overlapping.some((b) => b.kind === "BOOKING" || b.kind === "REST_BUFFER")
+      ? ("booked" as const)
+      : overlapping.length > 0 ? ("off" as const) : ("work" as const);
+    const inTbilisi = new Date(start.getTime() + TB);
+    return {
+      key: dayKey(start),
+      label: inTbilisi.getUTCDate(),
+      month: inTbilisi.toLocaleString("en", { month: "short", timeZone: "UTC" }),
+      state,
+    };
+  });
+
   return (
     <div className="space-y-6">
       <PageHeader
         title="Availability"
         description="You are considered available unless a block says otherwise."
       />
+
+      <Card className="p-4 sm:p-6">
+        <h2 className="font-semibold text-ink-900">Working days</h2>
+        <p className="mt-1 text-sm text-ink-500">
+          Tap a day to switch it on or off. Travellers only see you in search results on days you work.
+          Days with a confirmed booking are locked.
+        </p>
+        <WorkDayCalendar days={days} />
+      </Card>
 
       <Alert tone="info" title="How blocking works">
         A confirmed booking blocks your calendar for the driving time plus a 45-minute preparation buffer

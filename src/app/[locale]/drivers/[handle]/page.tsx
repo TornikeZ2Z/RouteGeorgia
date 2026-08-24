@@ -4,10 +4,54 @@ import { sql } from "@db/client";
 import { isLocale, getTranslator } from "@/lib/i18n";
 import { Badge, Card } from "@/components/ui";
 import { VehiclePhoto } from "@/components/vehicle-photo";
+import { formatMoney } from "@/lib/money";
+import { CANONICAL } from "@/lib/currency";
 
 export const dynamic = "force-dynamic";
 
-interface Props { params: Promise<{ locale: string; handle: string }> }
+interface Props {
+  params: Promise<{ locale: string; handle: string }>;
+  searchParams?: Promise<Record<string, string | string[] | undefined>>;
+}
+
+interface TripQuote {
+  id: string;
+  grossMinor: bigint;
+  points: string[];
+  travelAt: Date;
+  returnAt: Date | null;
+  passengers: number;
+  luggage: number;
+}
+
+/** The traveller's selection, if they arrived from a search result. */
+async function loadTripQuote(quoteId: string | undefined, driverId: string): Promise<TripQuote | null> {
+  if (!quoteId || !/^[0-9a-f-]{36}$/i.test(quoteId)) return null;
+  const [q] = await sql<{
+    id: string; gross_minor: string; travel_at: string; passengers: number;
+    luggage: number; itinerary: unknown; expires_at: string; status: string;
+  }[]>`
+    SELECT q.id, q.gross_minor, q.expires_at, q.status::text AS status,
+           s.travel_at, s.passengers, s.luggage, s.itinerary
+    FROM quotes q
+    JOIN route_searches s ON s.id = q.search_id
+    WHERE q.id = ${quoteId}::uuid AND q.driver_id = ${driverId}::uuid`;
+  if (!q || q.status === "CONSUMED" || new Date(q.expires_at) <= new Date()) return null;
+  const it = q.itinerary as { origin: string; stops?: string[]; destination: string; roundTrip?: boolean; returnAt?: string };
+  const slugs = [it.origin, ...(it.stops ?? []), it.destination];
+  const named = await sql<{ slug: string; name: string }[]>`
+    SELECT slug, name_en AS name FROM locations WHERE slug = ANY(${slugs})`;
+  const nameOf = (slug: string) => named.find((n) => n.slug === slug)?.name ?? slug;
+  return {
+    id: q.id,
+    grossMinor: BigInt(q.gross_minor),
+    points: slugs.map(nameOf),
+    travelAt: new Date(q.travel_at),
+    returnAt: it.roundTrip && it.returnAt ? new Date(it.returnAt) : null,
+    passengers: q.passengers,
+    luggage: q.luggage,
+  };
+}
 
 /** Only published data is ever selected here. */
 async function loadDriver(handle: string) {
@@ -57,7 +101,7 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
   };
 }
 
-export default async function DriverProfile({ params }: Props) {
+export default async function DriverProfile({ params, searchParams }: Props) {
   const { locale, handle } = await params;
   if (!isLocale(locale)) notFound();
   const t = getTranslator(locale);
@@ -66,8 +110,57 @@ export default async function DriverProfile({ params }: Props) {
   if (!data) notFound();
   const { driver, languages, vehicles, media, reviews } = data;
 
+  const sp = (await searchParams) ?? {};
+  const quoteParam = Array.isArray(sp.quote) ? sp.quote[0] : sp.quote;
+  const trip = await loadTripQuote(quoteParam, driver.id);
+  const fmtWhen = (d: Date) =>
+    d.toLocaleString(locale, { day: "numeric", month: "short", hour: "2-digit", minute: "2-digit", timeZone: "Asia/Tbilisi" });
+
   return (
     <div className="space-y-6">
+      {/* The booking decision travels with the reader. */}
+      {trip ? (
+        <div className="sticky top-[4.2rem] z-20 rounded-2xl border border-ink-200 bg-white/95 p-4 shadow-[var(--shadow-soft)] backdrop-blur-md dark:border-white/10 sm:px-6">
+          <div className="flex flex-wrap items-center gap-x-6 gap-y-2">
+            <div className="min-w-0">
+              <p className="text-[11px] font-semibold uppercase tracking-[0.08em] text-gold-600">{t("driver.yourTrip")}</p>
+              <p className="truncate font-semibold text-ink-900">
+                {trip.points.join(" → ")}{trip.returnAt ? " ⇄" : ""}
+              </p>
+              <p className="text-sm text-ink-500">
+                {fmtWhen(trip.travelAt)}
+                {trip.returnAt ? ` · ⇄ ${fmtWhen(trip.returnAt)}` : ""}
+                {" · "}{trip.passengers} pax · {trip.luggage} 🧳
+              </p>
+            </div>
+            <div className="ml-auto flex items-center gap-4">
+              <p className="font-display text-2xl text-ink-900">
+                {formatMoney(trip.grossMinor, CANONICAL, locale)}
+              </p>
+              <a
+                href={`/${locale}/checkout?quote=${trip.id}`}
+                className="inline-flex min-h-11 items-center rounded-lg bg-gold-400 px-6 py-2.5 font-bold tracking-[-0.01em] text-pine-900 shadow-sm transition-colors hover:bg-gold-300"
+              >
+                {t("driver.bookNow")}
+              </a>
+            </div>
+          </div>
+        </div>
+      ) : (
+        <div className="sticky top-[4.2rem] z-20 rounded-2xl border border-ink-200 bg-white/95 p-4 shadow-[var(--shadow-soft)] backdrop-blur-md dark:border-white/10 sm:px-6">
+          <div className="flex flex-wrap items-center gap-x-6 gap-y-2">
+            <p className="text-sm text-ink-600">
+              {t("driver.searchToBook", { name: driver.public_name })}
+            </p>
+            <a
+              href={`/${locale}#book`}
+              className="ml-auto inline-flex min-h-11 items-center rounded-lg bg-brand-600 px-5 py-2.5 text-sm font-semibold text-white transition-colors hover:bg-brand-700"
+            >
+              {t("driver.findDates")}
+            </a>
+          </div>
+        </div>
+      )}
       <div className="rounded-2xl border border-ink-200 bg-white p-6">
         <div className="flex flex-wrap items-center gap-3">
           <span aria-hidden className="grid size-12 shrink-0 place-items-center rounded-full bg-pine-600 text-lg font-semibold text-white">

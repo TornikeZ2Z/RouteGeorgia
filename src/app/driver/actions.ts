@@ -378,6 +378,42 @@ export async function savePricePlanAction(_prev: ActionState, formData: FormData
 }
 
 // ---------------------------------------------------------- availability ---
+/**
+ * One tap on the working-days calendar. A day is "off" when a driver-made
+ * block covers it; toggling off-state deletes the driver's own blocks that
+ * day (never booking or rest blocks), toggling on-state adds a full-day
+ * TIME_OFF block in Georgian time.
+ */
+export async function toggleWorkDayAction(formData: FormData): Promise<void> {
+  const { driver } = await myDriver();
+  if (!driver) return;
+
+  const day = String(formData.get("day") ?? "");
+  if (!/^\d{4}-\d{2}-\d{2}$/.test(day)) return;
+  // Georgia is UTC+4 year-round.
+  const startsAt = new Date(`${day}T00:00:00+04:00`);
+  const endsAt = new Date(startsAt.getTime() + 86_400_000);
+  if (startsAt.getTime() < Date.now() - 86_400_000) return;
+
+  const own = await sql<{ id: string }[]>`
+    SELECT id FROM availability_blocks
+    WHERE driver_id = ${driver.id}::uuid
+      AND kind IN ('BUSY', 'TIME_OFF')
+      AND period && tstzrange(${startsAt.toISOString()}::timestamptz, ${endsAt.toISOString()}::timestamptz, '[)')`;
+
+  if (own.length > 0) {
+    await sql`DELETE FROM availability_blocks
+      WHERE driver_id = ${driver.id}::uuid AND id = ANY(${own.map((b) => b.id)}::uuid[])`;
+  } else {
+    try {
+      await createBlock({ driverId: driver.id, startsAt, endsAt, kind: "TIME_OFF", reasonCategory: "day_off" });
+    } catch {
+      /* a booking arrived meanwhile — the calendar will show it */
+    }
+  }
+  revalidatePath("/driver/availability");
+}
+
 export async function addAvailabilityBlockAction(_prev: ActionState, formData: FormData): Promise<ActionState> {
   const { user, driver } = await myDriver();
   if (!driver) return { ok: false, message: "Create your profile first." };

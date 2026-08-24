@@ -245,16 +245,10 @@ export default async function SearchPage({ params, searchParams }: Props) {
                             )}
                             <p className="mt-0.5 text-xs text-ink-500">{t("search.priceForVehicle")}</p>
                             <Link
-                              href={`/${locale}/checkout?quote=${offer.quoteId}`}
+                              href={`/${locale}/drivers/${offer.handle}?quote=${offer.quoteId}`}
                               className="mt-4 inline-flex min-h-11 w-full items-center justify-center rounded-lg bg-brand-600 px-5 py-2.5 text-sm font-semibold text-white shadow-sm transition-colors hover:bg-brand-700"
                             >
-                              {t("search.bookThis")}
-                            </Link>
-                            <Link
-                              href={`/${locale}/drivers/${offer.handle}`}
-                              className="mt-2 block text-xs text-ink-500 underline underline-offset-2 hover:text-ink-800"
-                            >
-                              {t("card.viewProfile")}
+                              {t("search.viewBook")} →
                             </Link>
                           </div>
                         </div>
