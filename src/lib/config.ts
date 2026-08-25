@@ -25,7 +25,13 @@ const Schema = z.object({
   DRIVER_ACK_SLA_MINUTES: intFromEnv(10),
   CHILD_SEAT_FEE_MINOR: intFromEnv(2000),
 
-  ROUTING_PROVIDER: z.enum(["haversine", "google", "mapbox"]).default("haversine"),
+  /**
+   * "osrm" uses the public OSRM demo server — real road distances, free, no
+   * key — and silently falls back to the haversine estimate if it is slow or
+   * down, so a quote never fails because a free service hiccuped. Swap to
+   * google/mapbox when volume justifies a paid, SLA-backed provider.
+   */
+  ROUTING_PROVIDER: z.enum(["haversine", "osrm", "google", "mapbox"]).default("osrm"),
   ROUTING_API_KEY: z.string().default(""),
   /**
    * Where uploaded files live.

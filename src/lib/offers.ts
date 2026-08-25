@@ -3,7 +3,7 @@ import { createHash } from "node:crypto";
 import { sql } from "@db/client";
 import { config } from "@/lib/config";
 import { getRoutingProvider, type RouteEstimate } from "@/lib/routing";
-import { computeQuote, ENGINE_VERSION, type QuoteInputs, type QuoteBreakdown } from "@/lib/pricing/engine";
+import { computeQuote, DEFAULT_RATE_FLOORS, ENGINE_VERSION, type QuoteInputs, type QuoteBreakdown } from "@/lib/pricing/engine";
 
 /**
  * JSONB parameters: always write `${JSON.stringify(value)}::text::jsonb`.
@@ -319,6 +319,7 @@ export async function searchOffers(req: SearchRequest): Promise<SearchResult> {
       },
       commissionRateBps: config.policy.commissionRateBps,
       roundingStepMinor: config.policy.roundingStepMinor,
+      rateFloors: DEFAULT_RATE_FLOORS,
     };
     return { candidate: c, inputs, breakdown: computeQuote(inputs) };
   });

@@ -1,5 +1,8 @@
 import { describe, it, expect } from "vitest";
-import { computeQuote, replayQuote, validatePlanAgainstBand, ENGINE_VERSION, type QuoteInputs } from "@/lib/pricing/engine";
+import {
+  computeQuote, replayQuote, validatePlanAgainstBand,
+  DEFAULT_RATE_FLOORS, ENGINE_VERSION, type QuoteInputs,
+} from "@/lib/pricing/engine";
 
 /** Tbilisi → Kazbegi on a 4x4: the case that breaks naive per-km pricing. */
 const kazbegi = (over: Partial<QuoteInputs> = {}): QuoteInputs => ({
@@ -21,6 +24,67 @@ const kazbegi = (over: Partial<QuoteInputs> = {}): QuoteInputs => ({
   commissionRateBps: 1500,
   roundingStepMinor: 50,
   ...over,
+});
+
+describe("distance-tiered rate floors", () => {
+  /**
+   * The business rule: a short trip cannot be cheap per kilometre. Under
+   * 100 km the effective rate is at least 1.00 GEL/km, under 200 km at least
+   * 0.90, and so on — but only ever raising a rate, never cutting one.
+   */
+  const cheap = (km100: number) => kazbegi({
+    distanceKm100: km100, returnKm100: 0, deadheadRecoveryBps: 0,
+    driveMinutes: 60, riskFactorBps: 10_000, routeMinFareMinor: "0",
+    plan: { ...kazbegi().plan, ratePerKmMinor: "50" }, // 0.50 GEL — below every tier
+    band: { minFareFloorMinor: "0", maxFareCeilingMinor: "10000000" },
+    rateFloors: DEFAULT_RATE_FLOORS,
+  });
+
+  it("lifts a 0.50 rate to 1.00 on a 50 km trip", () => {
+    const q = computeQuote(cheap(5_000));
+    // 50 km at the floored 1.00 GEL/km = 50.00 GEL
+    expect(q.lines.find((l) => l.code === "distance")!.amountMinor).toBe("5000");
+    expect(q.lines.some((l) => l.code === "ratefloor")).toBe(true);
+  });
+
+  it("lifts to 0.90 between 100 and 200 km", () => {
+    const q = computeQuote(cheap(15_000));
+    expect(q.lines.find((l) => l.code === "distance")!.amountMinor).toBe("13500"); // 150 × 0.90
+  });
+
+  it("lifts to 0.80 between 200 and 300 km", () => {
+    const q = computeQuote(cheap(25_000));
+    expect(q.lines.find((l) => l.code === "distance")!.amountMinor).toBe("20000"); // 250 × 0.80
+  });
+
+  it("uses the open-ended tail tier beyond the ladder", () => {
+    const q = computeQuote(cheap(40_000));
+    expect(q.lines.find((l) => l.code === "distance")!.amountMinor).toBe("28000"); // 400 × 0.70
+  });
+
+  it("never touches a driver whose own rate beats the tier", () => {
+    const q = computeQuote(kazbegi({ rateFloors: DEFAULT_RATE_FLOORS })); // 1.50 GEL/km
+    expect(q.lines.some((l) => l.code === "ratefloor")).toBe(false);
+  });
+
+  /** A wait-and-return doubles the driven distance, so the tier follows it. */
+  it("chooses the tier by the total driven distance on a round trip", () => {
+    const oneWay = computeQuote(cheap(8_000));                       // 80 km → 1.00 tier
+    const round = computeQuote({ ...cheap(8_000), roundTrip: true }); // 160 km total → 0.90 tier
+    expect(oneWay.lines.find((l) => l.code === "distance")!.amountMinor).toBe("8000");   // 80 × 1.00
+    expect(round.lines.find((l) => l.code === "distance")!.amountMinor).toBe("14400");   // 160 × 0.90
+  });
+
+  it("applies the floored rate to the empty return leg too", () => {
+    const q = computeQuote({ ...cheap(5_000), returnKm100: 5_000, deadheadRecoveryBps: 10_000 });
+    // 50 km empty return at the floored 1.00 rate, fully recovered = 50.00
+    expect(q.lines.find((l) => l.code === "deadhead")!.amountMinor).toBe("5000");
+  });
+
+  it("changes nothing when no ladder is supplied — historic replay stays intact", () => {
+    const withOut = computeQuote({ ...cheap(5_000), rateFloors: undefined });
+    expect(withOut.lines.find((l) => l.code === "distance")!.amountMinor).toBe("2500"); // 50 × 0.50
+  });
 });
 
 describe("quote engine", () => {

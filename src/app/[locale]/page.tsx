@@ -397,19 +397,22 @@ export default async function Home({
               </li>
             ))}
           </ul>
-          <dl className="mt-8 grid grid-cols-2 gap-x-8 gap-y-6 border-t border-ink-200 pt-6 sm:grid-cols-4">
-            {([[stats[0]?.drivers ?? 0, t("home.statDrivers")],
-               [locations.length, t("home.statLocations")],
-               [tours.length, t("home.statTours")],
-               [stats[0]?.trips ?? 0, t("home.statTrips")]] as const)
-              .filter(([v]) => (v as number) > 0)
-              .map(([value, label]) => (
-              <div key={label as string}>
-                <dt className="font-display text-3xl text-brand-600">{value as number}</dt>
-                <dd className="mt-0.5 text-sm text-ink-500">{label as string}</dd>
-              </div>
-            ))}
-          </dl>
+          {/* Destinations and tour counts are catalogue size, not proof of
+              anything — dropped. Drivers and completed trips are earned
+              numbers, shown only once they exist. */}
+          {((stats[0]?.drivers ?? 0) > 0 || (stats[0]?.trips ?? 0) > 0) && (
+            <dl className="mt-8 grid grid-cols-2 gap-x-8 gap-y-6 border-t border-ink-200 pt-6">
+              {([[stats[0]?.drivers ?? 0, t("home.statDrivers")],
+                 [stats[0]?.trips ?? 0, t("home.statTrips")]] as const)
+                .filter(([v]) => (v as number) > 0)
+                .map(([value, label]) => (
+                <div key={label as string}>
+                  <dt className="font-display text-3xl text-brand-600">{value as number}</dt>
+                  <dd className="mt-0.5 text-sm text-ink-500">{label as string}</dd>
+                </div>
+              ))}
+            </dl>
+          )}
         </div>
         {config.contact.phone && (
           <div className="rounded-2xl bg-pine-800 p-6 text-white">

@@ -37,7 +37,26 @@
  */
 import { applyBps, divRound, maxMinor, minMinor, roundToStep, type Minor } from "@/lib/money";
 
-export const ENGINE_VERSION = "1.0.0";
+export const ENGINE_VERSION = "1.1.0";
+
+/**
+ * Distance-tiered minimum per-km rates (engine 1.1.0).
+ *
+ * A short trip cannot be cheap per kilometre: the driver still had to get to
+ * the pickup, wait, and find the next job. So the shorter the trip, the
+ * higher the floor under the per-km rate. A driver whose own rate is higher
+ * is untouched — this only lifts rates that would undercut the tier.
+ *
+ * Tiers are chosen by the TOTAL loaded distance (both directions on a
+ * wait-and-return), in ascending order; the first tier whose maxKm100 exceeds
+ * the trip applies. The last tier is the open-ended tail.
+ */
+export const DEFAULT_RATE_FLOORS: { maxKm100: number; minRatePerKmMinor: string }[] = [
+  { maxKm100: 10_000, minRatePerKmMinor: "100" }, // under 100 km: at least 1.00 GEL/km
+  { maxKm100: 20_000, minRatePerKmMinor: "90" },  // under 200 km: at least 0.90
+  { maxKm100: 30_000, minRatePerKmMinor: "80" },  // under 300 km: at least 0.80
+  { maxKm100: Number.MAX_SAFE_INTEGER, minRatePerKmMinor: "70" },
+];
 
 /** All money fields are decimal strings so the snapshot survives JSON. */
 export interface QuoteInputs {
@@ -73,10 +92,16 @@ export interface QuoteInputs {
   };
   commissionRateBps: number;
   roundingStepMinor: number;
+  /**
+   * Distance-tiered floors under the per-km rate. Optional and snapshotted
+   * with the quote, so a stored price replays with the ladder that priced it,
+   * not whatever the ladder says today.
+   */
+  rateFloors?: { maxKm100: number; minRatePerKmMinor: string }[];
 }
 
 export interface QuoteLine {
-  code: "distance" | "deadhead" | "time" | "stops" | "overnight" | "risk" | "season" | "floor" | "ceiling" | "rounding";
+  code: "distance" | "deadhead" | "time" | "stops" | "overnight" | "risk" | "season" | "floor" | "ceiling" | "rounding" | "ratefloor";
   label: string;
   amountMinor: string;
   /** Human-readable justification shown to drivers and support, not customers. */
@@ -106,9 +131,24 @@ export function computeQuote(inputs: QuoteInputs): QuoteBreakdown {
     );
   }
 
-  const ratePerKm = B(inputs.plan.ratePerKmMinor);
   const lines: QuoteLine[] = [];
   const directions = inputs.roundTrip ? 2n : 1n;
+
+  // Distance tier first: the floor under the per-km rate depends on how far
+  // the whole trip actually goes.
+  const driverRate = B(inputs.plan.ratePerKmMinor);
+  const billedKm100 = Number(directions) * inputs.distanceKm100;
+  const tier = (inputs.rateFloors ?? []).find((f) => billedKm100 < f.maxKm100);
+  const tierRate = tier ? B(tier.minRatePerKmMinor) : 0n;
+  const ratePerKm = driverRate >= tierRate ? driverRate : tierRate;
+  if (ratePerKm !== driverRate) {
+    lines.push({
+      code: "ratefloor",
+      label: "Distance minimum rate",
+      amountMinor: "0",
+      detail: `rate raised from ${inputs.plan.ratePerKmMinor} to ${ratePerKm} minor/km for a ${(billedKm100 / 100).toFixed(0)} km trip`,
+    });
+  }
 
   // 1. Loaded distance. km100 is hundredths of a km, so divide it back out.
   //    A round trip drives the route twice with the customer aboard.

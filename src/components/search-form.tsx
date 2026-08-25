@@ -29,6 +29,24 @@ const CELL_CONTROL =
   "w-full border-0 bg-transparent p-0 text-sm font-semibold text-ink-900 " +
   "focus:outline-none focus:ring-0";
 
+/** Selects lose the native arrow and gain ours; the wrapper draws the chevron. */
+const CELL_SELECT = CELL_CONTROL + " appearance-none cursor-pointer pr-6 truncate";
+
+function SelectWrap({ children }: { children: React.ReactNode }) {
+  return (
+    <span className="relative block">
+      {children}
+      <svg
+        viewBox="0 0 24 24" aria-hidden
+        className="pointer-events-none absolute right-0 top-1/2 size-4 -translate-y-1/2 text-ink-400"
+        fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"
+      >
+        <path d="m6 9 6 6 6-6" />
+      </svg>
+    </span>
+  );
+}
+
 function Cell({
   icon, label, htmlFor, children, className = "",
 }: { icon: string; label: string; htmlFor: string; children: React.ReactNode; className?: string }) {
@@ -39,7 +57,7 @@ function Cell({
         <path d={icon} />
       </svg>
       <span className="min-w-0 flex-1">
-        <span className="block text-[10px] font-semibold uppercase tracking-[0.08em] text-ink-400">{label}</span>
+        <span className="block truncate whitespace-nowrap text-[10px] font-semibold uppercase tracking-[0.08em] text-ink-400">{label}</span>
         {children}
       </span>
     </label>
@@ -225,16 +243,20 @@ export function SearchForm({
         <div className="flex flex-1 flex-col rounded-2xl border border-ink-200 bg-white sm:flex-row sm:flex-wrap lg:flex-nowrap lg:divide-x lg:divide-ink-200 [&>*+*]:border-t [&>*+*]:border-ink-100 sm:[&>*+*]:border-t-0 lg:[&>*+*]:border-t-0">
           {!lockRoute && (
             <Cell icon={ICONS.from} label={t("search.from")} htmlFor="from" className="sm:basis-1/2 lg:basis-auto">
-              <select id="from" name="from" value={from} onChange={(e) => setFrom(e.target.value)} className={CELL_CONTROL}>
-                {options}
-              </select>
+              <SelectWrap>
+                <select id="from" name="from" value={from} onChange={(e) => setFrom(e.target.value)} className={CELL_SELECT}>
+                  {options}
+                </select>
+              </SelectWrap>
             </Cell>
           )}
           {!lockRoute && (
             <Cell icon={ICONS.to} label={t("search.to")} htmlFor="to" className="sm:basis-1/2 lg:basis-auto">
-              <select id="to" name="to" value={to} onChange={(e) => setTo(e.target.value)} className={CELL_CONTROL}>
-                {options}
-              </select>
+              <SelectWrap>
+                <select id="to" name="to" value={to} onChange={(e) => setTo(e.target.value)} className={CELL_SELECT}>
+                  {options}
+                </select>
+              </SelectWrap>
             </Cell>
           )}
           <Cell icon={ICONS.date} label={t("search.date")} htmlFor="when" className="sm:basis-1/2 lg:basis-auto">
@@ -247,11 +269,11 @@ export function SearchForm({
                      onChange={(e) => setReturnWhen(e.target.value)} className={CELL_CONTROL} />
             </Cell>
           )}
-          <Cell icon={ICONS.pax} label={t("search.passengers")} htmlFor="pax" className="sm:basis-1/4 lg:max-w-28 lg:basis-auto">
+          <Cell icon={ICONS.pax} label={t("search.passengers")} htmlFor="pax" className="sm:basis-1/4 lg:max-w-36 lg:basis-auto">
             <input id="pax" name="passengers" type="number" min={1} max={20} value={passengers}
                    onChange={(e) => setPassengers(Number(e.target.value))} className={CELL_CONTROL} />
           </Cell>
-          <Cell icon={ICONS.bag} label={t("search.luggage")} htmlFor="bags" className="sm:basis-1/4 lg:max-w-28 lg:basis-auto">
+          <Cell icon={ICONS.bag} label={t("search.luggage")} htmlFor="bags" className="sm:basis-1/4 lg:max-w-36 lg:basis-auto">
             <input id="bags" name="luggage" type="number" min={0} max={20} value={luggage}
                    onChange={(e) => setLuggage(Number(e.target.value))} className={CELL_CONTROL} />
           </Cell>
