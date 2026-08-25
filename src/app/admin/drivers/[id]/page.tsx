@@ -4,6 +4,7 @@ import { can } from "@/lib/rbac";
 import { sql } from "@db/client";
 import { Alert, Badge, Card, PageHeader, Table } from "@/components/ui";
 import { DecisionPanel, DocumentDecision, VehicleDecision, LanguageVerification, PublishPanel, UploadDocumentPanel } from "./panels";
+import { ReadinessPanel } from "./readiness";
 import { AdminDriverProfileForm, ResetPasswordPanel, WalletPanel } from "../forms";
 import { impersonateDriverAction } from "@/app/admin/actions";
 import {
@@ -80,6 +81,14 @@ export default async function DriverDetail({ params }: { params: Promise<{ id: s
       {!mayDecide && (
         <Alert tone="info">{t("driver.supportReadOnly")}</Alert>
       )}
+
+      {/* First thing on the page: why this driver is or is not live. */}
+      <ReadinessPanel
+        driverId={driver.id}
+        status={driver.status}
+        published={driver.published}
+        locale={actor.locale}
+      />
 
       <div className="grid gap-6 lg:grid-cols-3">
         <div className="space-y-6 lg:col-span-2">
