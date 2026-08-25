@@ -58,6 +58,28 @@ const D = {
   "dash.open": { ka: "გახსნა", en: "Open" },
   "dash.supplyWarning": { ka: "პილოტის მიზანია მინიმუმ 30 გამოქვეყნებული მძღოლი. ამჟამად:", en: "The pilot target is at least 30 published drivers. Currently:" },
 
+  // ----------------------------------------------------- platform settings --
+  "settings.title": { ka: "პლატფორმის პარამეტრები", en: "Platform settings" },
+  "settings.body": {
+    ka: "ორი რიცხვი, რომელიც განსაზღვრავს რას იღებს RouteGeorgia და რა ღირს მძღოლის ერთი დღე.",
+    en: "The two numbers that decide what RouteGeorgia earns and what a driver's day is worth.",
+  },
+  "settings.commission": { ka: "საკომისიო", en: "Commission" },
+  "settings.commissionHint": {
+    ka: "ტარიფის პროცენტი, მაგ. 15 ან 12.5. მაქსიმუმ 50%.",
+    en: "Percent of the fare, e.g. 15 or 12.5. Maximum 50%.",
+  },
+  "settings.dayFare": { ka: "დღის მინიმალური საფასური", en: "Minimum fare per day" },
+  "settings.dayFareHint": {
+    ka: "ეხება მხოლოდ ტურებს და მრავალდღიან დაქირავებას — კილომეტრს არ ითვლის. 0 ნიშნავს გამორთულს. ტრანსფერზე არ მოქმედებს.",
+    en: "Applies to tours and multi-day hire only — distance is not counted. 0 disables it. Transfers are never affected.",
+  },
+  "settings.save": { ka: "შენახვა", en: "Save settings" },
+  "settings.warning": {
+    ka: "ცვლილება ეხება მხოლოდ ახალ ფასებს და ახალ ხელმოწერებს. უკვე გაცემული ფასები და უკვე ხელმოწერილი ხელშეკრულებები ინახავს იმ განაკვეთს, რომელზეც შეთანხმდნენ — ეს ცვლილება მათ არ გადაწერს.",
+    en: "A change applies to new quotes and new signatures only. Quotes already given and contracts already signed keep the rate that was agreed — this does not rewrite them.",
+  },
+
   // -------------------------------------------------------------- drivers --
   "drivers.title": { ka: "მძღოლები", en: "Drivers" },
   "drivers.records": { ka: "ჩანაწერი", en: "record(s)" },

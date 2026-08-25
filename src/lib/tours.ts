@@ -2,6 +2,7 @@ import "server-only";
 import { sql } from "@db/client";
 import { computeQuote, ENGINE_VERSION } from "@/lib/pricing/engine";
 import { config } from "@/lib/config";
+import { getCommissionRateBps, getMinimumDayFareMinor } from "@/lib/settings";
 import type { Locale } from "@/lib/i18n";
 
 /**
@@ -89,6 +90,8 @@ export async function getTour(slug: string, locale: Locale = "en"): Promise<Tour
 
 /** Cheapest published price for a tour, for the "from" label. */
 export async function tourPriceFrom(slug: string): Promise<{ fromMinor: bigint; vehicles: number } | null> {
+  const tourCommissionBps = await getCommissionRateBps();
+  const tourDayFloorMinor = await getMinimumDayFareMinor();
   const [tour] = await sql<{
     distance_km: string; drive_minutes: number; return_km: string;
     deadhead_recovery_bps: number; risk_factor_bps: number; min_fare_minor: bigint;
@@ -136,8 +139,12 @@ export async function tourPriceFrom(slug: string): Promise<{ fromMinor: bigint; 
         minFareFloorMinor: p.min_fare_floor_minor.toString(),
         maxFareCeilingMinor: p.max_fare_ceiling_minor.toString(),
       },
-      commissionRateBps: config.policy.commissionRateBps,
+      commissionRateBps: tourCommissionBps,
       roundingStepMinor: config.policy.roundingStepMinor,
+      // A tour is day-based work: duration_days of the driver's time, floored
+      // per day regardless of how far the itinerary actually drives.
+      days: Math.max(1, tour.duration_days),
+      minimumDayFareMinor: String(tourDayFloorMinor),
     });
     const value = BigInt(grossMinor);
     if (cheapest === null || value < cheapest) cheapest = value;

@@ -10,6 +10,7 @@ import { driverProfiles, vehicles, locations } from "@db/schema";
 import { requirePermission, revokeAllSessions } from "@/lib/auth/session";
 import { createImpersonationToken, IMPERSONATION_COOKIE, IMPERSONATION_TTL_MINUTES } from "@/lib/auth/impersonation";
 import { writeAudit, redact } from "@/lib/audit";
+import { getSettings, setSetting } from "@/lib/settings";
 import { randomBytes } from "node:crypto";
 import { parseMajor } from "@/lib/money";
 import { hashPassword } from "@/lib/auth/password";
@@ -1451,4 +1452,65 @@ export async function setStaffLocaleAction(formData: FormData): Promise<void> {
   if (locale !== "ka" && locale !== "en") return;
   await sql`UPDATE users SET locale = ${locale}, updated_at = now() WHERE id = ${actor.id}::uuid`;
   revalidatePath("/admin", "layout");
+}
+
+/**
+ * Platform settings: the commission RouteGeorgia takes, and the floor under a
+ * day of a driver's time.
+ *
+ * Changing the commission does NOT rewrite history. Existing quotes carry the
+ * rate that priced them, and every contract signature records the rate the
+ * driver actually read — so a change applies to new quotes and new signatures
+ * only. The form says so, because an operator who does not know that would be
+ * right to be nervous about touching it.
+ */
+export async function savePlatformSettingsAction(
+  _prev: ActionState,
+  formData: FormData,
+): Promise<ActionState> {
+  const actor = await requirePermission("admin.pricing.bands.write");
+
+  const commissionPct = Number(String(formData.get("commissionPct") ?? "").trim());
+  if (!Number.isFinite(commissionPct) || commissionPct < 0 || commissionPct > 50) {
+    return { ok: false, message: "Commission must be a percentage between 0 and 50." };
+  }
+  // Percent to basis points. Two decimals of a percent is the finest the
+  // engine can represent, so reject anything finer rather than rounding it
+  // silently into a rate the operator did not choose.
+  const commissionBps = Math.round(commissionPct * 100);
+  if (Math.abs(commissionPct * 100 - commissionBps) > 1e-9) {
+    return { ok: false, message: "Commission supports at most two decimal places, for example 15.25." };
+  }
+
+  let dayFloorMinor: bigint;
+  try {
+    dayFloorMinor = parseMajor(String(formData.get("minimumDayFare") ?? "0").trim() || "0");
+  } catch {
+    return { ok: false, message: "Enter the day minimum as a plain number, for example 150.00" };
+  }
+  if (dayFloorMinor < 0n || dayFloorMinor > 500_000n) {
+    return { ok: false, message: "The day minimum must be between 0 and 5000." };
+  }
+
+  const before = await getSettings();
+
+  const savedCommission = await setSetting("commission_rate_bps", commissionBps, actor.id);
+  const savedDayFloor = await setSetting("minimum_day_fare_minor", Number(dayFloorMinor), actor.id);
+  if (savedCommission === null || savedDayFloor === null) {
+    return { ok: false, message: "One of those values is outside the allowed range." };
+  }
+
+  await writeAudit({
+    actorUserId: actor.id,
+    actorRole: actor.roles[0] ?? null,
+    action: "platform.settings_changed",
+    objectType: "platform_settings",
+    objectId: null,
+    before: { commissionRateBps: before.commission_rate_bps, minimumDayFareMinor: before.minimum_day_fare_minor },
+    after: { commissionRateBps: savedCommission, minimumDayFareMinor: savedDayFloor },
+    reason: "platform settings updated from the console",
+  });
+
+  revalidatePath("/admin/pricing");
+  return { ok: true, message: "Saved. New quotes and new signatures use these values." };
 }

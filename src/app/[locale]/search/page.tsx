@@ -69,7 +69,11 @@ export default async function SearchPage({ params, searchParams }: Props) {
     airConditioning: on(sp.airConditioning),
     wheelchairAccess: on(sp.wheelchairAccess),
     minRating: Number(str(sp.minRating) ?? 0) || 0,
-    sort: str(sp.sort) ?? "recommended",
+    // Cheapest first by default. Price orders the classes on its own —
+    // sedan, minivan, SUV, minibus — so a traveller sees the real range
+    // immediately instead of meeting a wall of filters. Anyone who wants a
+    // particular class or a different order chooses it in the panel.
+    sort: str(sp.sort) ?? "price_asc",
   };
 
   const passengers = Number(str(sp.passengers) ?? 1) || 1;
@@ -214,6 +218,9 @@ export default async function SearchPage({ params, searchParams }: Props) {
                               <Badge tone="success">{t("card.verified")}</Badge>
                               {index === 0 && filterState.sort === "recommended" && (
                                 <Badge tone="info">{t("search.recommended")}</Badge>
+                              )}
+                              {index === 0 && filterState.sort === "price_asc" && result.offers.length > 1 && (
+                                <Badge tone="info">{t("search.cheapest")}</Badge>
                               )}
                             </div>
 

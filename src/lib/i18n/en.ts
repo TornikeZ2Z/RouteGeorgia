@@ -104,6 +104,8 @@ export const en = {
   "search.badDateBody": "Go back and pick a date and time again.",
 
   // ---- filters -----------------------------------------------------------
+  "filters.title": "Filters",
+  "search.cheapest": "Lowest price",
   "filters.sortBy": "Sort by",
   "filters.sortRecommended": "Recommended",
   "filters.sortPriceAsc": "Lowest price",
@@ -729,6 +731,7 @@ export const en = {
   "drive.step3b": "We verify your file and call you, you sign the agreement online, set your prices and working days — and travellers book you.",
   "drive.formTitle": "Driver application",
   "drive.formLead": "Everything marked * is needed to apply. No documents now — you upload them later from your own driver page.",
+  "drive.errorKept": "Your answers are still here — correct what is flagged and send it again.",
   "drive.errorTitle": "We could not accept this yet",
   "drive.sec1": "About you",
   "drive.sec2": "Languages you speak",

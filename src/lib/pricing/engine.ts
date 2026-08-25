@@ -37,7 +37,7 @@
  */
 import { applyBps, divRound, maxMinor, minMinor, roundToStep, type Minor } from "@/lib/money";
 
-export const ENGINE_VERSION = "1.1.0";
+export const ENGINE_VERSION = "1.2.0";
 
 /**
  * Distance-tiered minimum per-km rates (engine 1.1.0).
@@ -71,6 +71,18 @@ export interface QuoteInputs {
   routeMinFareMinor: string;
   extraStops: number;
   nights: number;
+  /**
+   * Days of the driver's time this booking occupies, for day-based work —
+   * tours and multi-day hire. 0 (or absent) means the booking is a transfer:
+   * it is priced by distance and the day floor never applies to it.
+   */
+  days?: number;
+  /**
+   * Floor under ONE day of a driver's time, in minor units, independent of
+   * distance. A driver who gives up a day to sit in Ushguli has earned a day
+   * whether the itinerary drove 40 km or 300. 0 disables it.
+   */
+  minimumDayFareMinor?: string;
   /**
    * Wait-and-return trip: both directions are billed at the driver's rate and
    * the deadhead line disappears (the driver comes home loaded). Optional and
@@ -215,18 +227,31 @@ export function computeQuote(inputs: QuoteInputs): QuoteBreakdown {
     });
   }
 
-  // 6. Floors: driver minimum, route minimum, and the platform band floor.
+  // 6. Floors: driver minimum, route minimum, platform band floor, and — for
+  //    day-based work only — the per-day floor, which ignores distance
+  //    entirely. A three-day tour that barely moves still owes three days.
+  const days = Math.max(0, Math.trunc(inputs.days ?? 0));
+  const dayFloor = days > 0 ? BigInt(days) * B(inputs.minimumDayFareMinor ?? "0") : 0n;
   const floor = maxMinor(
     B(inputs.plan.minimumFareMinor),
     B(inputs.routeMinFareMinor),
     B(inputs.band.minFareFloorMinor),
+    dayFloor,
   );
   const ceiling = B(inputs.band.maxFareCeilingMinor);
 
   let clampedBy: QuoteBreakdown["clampedBy"] = "none";
   let clamped = afterSeason;
   if (clamped < floor) {
-    lines.push({ code: "floor", label: "Minimum fare", amountMinor: (floor - clamped).toString(), detail: "platform or driver minimum applied" });
+    const byDay = dayFloor === floor && dayFloor > 0n;
+    lines.push({
+      code: "floor",
+      label: byDay ? "Minimum per day" : "Minimum fare",
+      amountMinor: (floor - clamped).toString(),
+      detail: byDay
+        ? `${days} day(s) at the platform day minimum, distance not counted`
+        : "platform or driver minimum applied",
+    });
     clamped = floor;
     clampedBy = "floor";
   } else if (ceiling > 0n && clamped > ceiling) {

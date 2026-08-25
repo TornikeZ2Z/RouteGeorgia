@@ -4,6 +4,7 @@ import { sql } from "@db/client";
 import { config } from "@/lib/config";
 import { getRoutingProvider, type RouteEstimate } from "@/lib/routing";
 import { computeQuote, DEFAULT_RATE_FLOORS, ENGINE_VERSION, type QuoteInputs, type QuoteBreakdown } from "@/lib/pricing/engine";
+import { getCommissionRateBps, getMinimumDayFareMinor } from "@/lib/settings";
 
 /**
  * JSONB parameters: always write `${JSON.stringify(value)}::text::jsonb`.
@@ -292,6 +293,13 @@ export async function searchOffers(req: SearchRequest): Promise<SearchResult> {
   // Price every candidate first. computeQuote is pure and fast, so this loop
   // costs nothing; what used to cost was writing each quote in its own
   // round trip. On a remote database that was one network hop per driver.
+  // Operator-editable, read once for the whole result set rather than per offer.
+  const commissionRateBps = await getCommissionRateBps();
+  const minimumDayFareMinor = await getMinimumDayFareMinor();
+  // A tour occupies whole days of the driver's time; a transfer does not.
+  // nights + 1 counts the travelling days either side of the nights away.
+  const bookedDays = tour || nights > 0 ? nights + 1 : 0;
+
   const priced_ = candidates.map((c) => {
     const inputs: QuoteInputs = {
       engineVersion: ENGINE_VERSION,
@@ -317,9 +325,12 @@ export async function searchOffers(req: SearchRequest): Promise<SearchResult> {
         minFareFloorMinor: c.min_fare_floor_minor.toString(),
         maxFareCeilingMinor: c.max_fare_ceiling_minor.toString(),
       },
-      commissionRateBps: config.policy.commissionRateBps,
+      commissionRateBps,
       roundingStepMinor: config.policy.roundingStepMinor,
       rateFloors: DEFAULT_RATE_FLOORS,
+      ...(bookedDays > 0
+        ? { days: bookedDays, minimumDayFareMinor: String(minimumDayFareMinor) }
+        : {}),
     };
     return { candidate: c, inputs, breakdown: computeQuote(inputs) };
   });
@@ -336,7 +347,7 @@ export async function searchOffers(req: SearchRequest): Promise<SearchResult> {
     SELECT ${searchId}::uuid, x.driver_id::uuid, x.vehicle_id::uuid, x.plan_id::uuid,
            ${family?.id ?? null}::uuid, ${ENGINE_VERSION},
            x.inputs::jsonb, x.breakdown::jsonb, x.currency,
-           x.gross::bigint, ${config.policy.commissionRateBps},
+           x.gross::bigint, ${commissionRateBps},
            x.commission::bigint, x.net::bigint, ${expiresAt.toISOString()}::timestamptz
     FROM unnest(
       ${priced_.map((p) => p.candidate.driver_id)}::text[],
@@ -533,6 +544,7 @@ export async function routePriceFrom(routeFamilySlug: string): Promise<{
   distanceKm: number;
   driveMinutes: number;
 } | null> {
+  const fromPriceCommissionBps = await getCommissionRateBps();
   const [family] = await sql<RouteFamilyRow[]>`
     SELECT id, slug, distance_km, drive_minutes, return_km, deadhead_recovery_bps,
            risk_factor_bps, min_fare_minor, requires_4x4
@@ -577,7 +589,7 @@ export async function routePriceFrom(routeFamilySlug: string): Promise<{
         minFareFloorMinor: p.min_fare_floor_minor.toString(),
         maxFareCeilingMinor: p.max_fare_ceiling_minor.toString(),
       },
-      commissionRateBps: config.policy.commissionRateBps,
+      commissionRateBps: fromPriceCommissionBps,
       roundingStepMinor: config.policy.roundingStepMinor,
     });
     const value = BigInt(grossMinor);

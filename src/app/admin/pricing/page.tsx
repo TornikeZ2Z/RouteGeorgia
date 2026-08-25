@@ -4,8 +4,9 @@ import { sql } from "@db/client";
 import { config } from "@/lib/config";
 import { toMajorString } from "@/lib/money";
 import { Alert, Card, PageHeader, Table } from "@/components/ui";
-import { BandForm } from "./forms";
+import { BandForm, PlatformSettingsForm } from "./forms";
 import { can } from "@/lib/rbac";
+import { getSettings } from "@/lib/settings";
 
 export const dynamic = "force-dynamic";
 
@@ -19,6 +20,8 @@ export default async function PricingBandsPage() {
            max_season_factor_bps, active
     FROM price_bands ORDER BY class`;
 
+  const settings = await getSettings();
+
   const [stats] = await sql<{ plans: number; drivers: number }[]>`
     SELECT (SELECT count(*) FROM price_plans WHERE status = 'ACTIVE')::int AS plans,
            (SELECT count(DISTINCT driver_id) FROM price_plans WHERE status = 'ACTIVE')::int AS drivers`;
@@ -29,8 +32,8 @@ export default async function PricingBandsPage() {
 
       <div className="grid gap-4 sm:grid-cols-4">
         <Card className="p-4">
-          <p className="text-sm text-ink-500">Commission</p>
-          <p className="mt-1 text-2xl font-semibold">{(config.policy.commissionRateBps / 100).toFixed(2)}%</p>
+          <p className="text-sm text-ink-500">{t("settings.commission")}</p>
+          <p className="mt-1 text-2xl font-semibold">{(settings.commission_rate_bps / 100).toFixed(2)}%</p>
         </Card>
         <Card className="p-4">
           <p className="text-sm text-ink-500">Rounding step</p>
@@ -45,6 +48,17 @@ export default async function PricingBandsPage() {
           <p className="mt-1 text-2xl font-semibold tabular-nums">{stats?.drivers ?? 0}</p>
         </Card>
       </div>
+
+      <PlatformSettingsForm
+        commissionPct={(settings.commission_rate_bps / 100).toFixed(2)}
+        minimumDayFare={toMajorString(BigInt(settings.minimum_day_fare_minor))}
+        labels={{
+          title: t("settings.title"), body: t("settings.body"),
+          commission: t("settings.commission"), commissionHint: t("settings.commissionHint"),
+          dayFare: t("settings.dayFare"), dayFareHint: t("settings.dayFareHint"),
+          save: t("settings.save"), warning: t("settings.warning"),
+        }}
+      />
 
       <Alert tone="info" title="Commission is frozen at booking time">
         Changing the rate here affects new bookings only. Every booking stores the commission version that

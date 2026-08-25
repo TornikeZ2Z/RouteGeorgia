@@ -51,8 +51,48 @@ export function OfferFiltersPanel({
   resultCount: number;
 }) {
   const t = getTranslator(isLocale(locale) ? (locale as Locale) : "en");
+
+  // Sort is not a filter — it never hides a car — so it stays out of the count.
+  const activeCount =
+    state.classes.length +
+    (state.language ? 1 : 0) +
+    (state.minRating > 0 ? 1 : 0) +
+    [
+      state.verifiedLanguageOnly, state.fourWheelDrive, state.winterTyres,
+      state.petsAllowed, state.childSeat, state.wifi,
+      state.airConditioning, state.wheelchairAccess,
+    ].filter(Boolean).length;
+
   return (
-    <Card className="p-4">
+    <>
+      {/*
+        On a phone the filter panel used to fill the first screen, so the cars
+        — the thing the traveller came for — started below the fold. It now
+        collapses behind one control in the corner and the results come first.
+        A peer checkbox rather than JavaScript, so it still opens with
+        scripting blocked, and the panel is rendered once (no duplicate ids).
+      */}
+      <input type="checkbox" id="filters-open" className="peer sr-only lg:hidden" />
+      <div className="flex items-center justify-between gap-3 lg:hidden">
+        <p className="text-sm text-ink-500">{t("filters.results", { count: resultCount })}</p>
+        <label
+          htmlFor="filters-open"
+          className="inline-flex cursor-pointer items-center gap-2 rounded-lg border border-ink-200 bg-white px-3 py-2 text-sm font-medium text-ink-800 hover:bg-ink-50"
+        >
+          <svg viewBox="0 0 24 24" className="size-4" fill="none" stroke="currentColor" strokeWidth="1.8"
+               strokeLinecap="round" aria-hidden>
+            <path d="M4 6h16M7 12h10M10 18h4" />
+          </svg>
+          {t("filters.title")}
+          {activeCount > 0 && (
+            <span className="rounded-full bg-brand-600 px-1.5 py-0.5 text-xs font-semibold text-white">
+              {activeCount}
+            </span>
+          )}
+        </label>
+      </div>
+
+      <Card className="mt-3 hidden p-4 peer-checked:block lg:mt-0 lg:block">
       <form method="get" className="space-y-5">
         {hidden.map(([k, v], i) => (
           <input key={`${k}-${i}`} type="hidden" name={k} value={v} />
@@ -171,7 +211,8 @@ export function OfferFiltersPanel({
           {t("filters.results", { count: resultCount })}
         </p>
       </form>
-    </Card>
+      </Card>
+    </>
   );
 }
 

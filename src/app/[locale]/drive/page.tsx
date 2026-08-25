@@ -9,6 +9,7 @@ import {
   APPLICATION_LANGUAGES, APPLICATION_LEVELS,
   isApplicationError, type ApplicationError,
 } from "@/lib/driver-application";
+import { RestoreApplication } from "./restore";
 
 export const dynamic = "force-dynamic";
 
@@ -94,6 +95,7 @@ export default async function DrivePage({
   if (sent === "1") {
     return (
       <div className="mx-auto max-w-2xl py-6">
+        <RestoreApplication hadError={false} sent />
         <Card className="p-8 text-center">
           <p className="eyebrow">{t("drive.eyebrow")}</p>
           <h1 className="font-display mt-2 text-3xl text-ink-900">{t("drive.sentTitle")}</h1>
@@ -142,14 +144,20 @@ export default async function DrivePage({
         <p className="mt-2 text-sm leading-relaxed text-ink-600">{t("drive.formLead")}</p>
 
         {errors.length > 0 && (
-          <div className="mt-5">
+          // Anchored and assertive: the applicant is scrolled here, and a
+          // screen reader announces it, instead of both landing at the top of
+          // a form that looks untouched.
+          <div id="apply-error" className="mt-5 scroll-mt-24" role="alert" aria-live="assertive">
             <Alert tone="danger" title={t("drive.errorTitle")}>
               <ul className="mt-1 list-inside list-disc space-y-1">
                 {errors.map((code) => <li key={code}>{t(ERROR_KEY[code])}</li>)}
               </ul>
+              <p className="mt-2 font-medium">{t("drive.errorKept")}</p>
             </Alert>
           </div>
         )}
+
+        <RestoreApplication hadError={errors.length > 0} sent={false} />
 
         <form method="post" action="/api/driver-applications" className="mt-8 space-y-10">
           <input type="hidden" name="locale" value={locale} />

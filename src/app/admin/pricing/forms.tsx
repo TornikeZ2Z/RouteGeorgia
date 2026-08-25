@@ -3,7 +3,7 @@
 import { useActionState } from "react";
 import { Alert, Field, Input } from "@/components/ui";
 import { SubmitButton } from "@/components/form-state";
-import { savePriceBandAction } from "@/app/admin/actions";
+import { savePriceBandAction, savePlatformSettingsAction } from "@/app/admin/actions";
 
 const INITIAL = { ok: false } as const;
 
@@ -54,6 +54,49 @@ export function BandForm({ band }: {
       ) : null}
 
       <SubmitButton variant="secondary">Save band</SubmitButton>
+    </form>
+  );
+}
+
+/**
+ * The two numbers that decide what RouteGeorgia earns and what a driver's day
+ * is worth. Both were environment variables until now, which meant a redeploy
+ * to change a commercial term.
+ */
+export function PlatformSettingsForm({
+  commissionPct, minimumDayFare, labels,
+}: {
+  commissionPct: string;
+  minimumDayFare: string;
+  labels: {
+    title: string; body: string; commission: string; commissionHint: string;
+    dayFare: string; dayFareHint: string; save: string; warning: string;
+  };
+}) {
+  const [state, action] = useActionState(savePlatformSettingsAction, INITIAL);
+
+  return (
+    <form action={action} className="space-y-4 rounded-xl border border-ink-200 bg-white p-4 sm:p-6">
+      <div>
+        <h3 className="font-semibold text-ink-900">{labels.title}</h3>
+        <p className="mt-1 text-sm text-ink-600">{labels.body}</p>
+      </div>
+
+      <div className="grid gap-4 sm:grid-cols-2">
+        <Field label={labels.commission} htmlFor="commissionPct" hint={labels.commissionHint}>
+          <Input id="commissionPct" name="commissionPct" inputMode="decimal" defaultValue={commissionPct} />
+        </Field>
+        <Field label={labels.dayFare} htmlFor="minimumDayFare" hint={labels.dayFareHint}>
+          <Input id="minimumDayFare" name="minimumDayFare" inputMode="decimal" defaultValue={minimumDayFare} />
+        </Field>
+      </div>
+
+      <Alert tone="warning">{labels.warning}</Alert>
+
+      {state.message && (
+        <Alert tone={state.ok ? "success" : "danger"}>{state.message}</Alert>
+      )}
+      <SubmitButton>{labels.save}</SubmitButton>
     </form>
   );
 }

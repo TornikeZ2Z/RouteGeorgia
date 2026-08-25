@@ -2,6 +2,7 @@ import "server-only";
 import { createHash } from "node:crypto";
 import { sql } from "@db/client";
 import { config } from "@/lib/config";
+import { getCommissionRateBps } from "@/lib/settings";
 import { writeAudit } from "@/lib/audit";
 import type { Locale } from "@/lib/i18n";
 
@@ -18,14 +19,20 @@ import type { Locale } from "@/lib/i18n";
  * that does.
  */
 
-/** Contract text is stored with placeholders so the entity can change without a deploy. */
-const PLACEHOLDERS = {
+/**
+ * Contract text is stored with placeholders so the entity can change without
+ * a deploy. The commission is now operator-editable, so it is passed in
+ * rather than read from the environment: the text a driver reads always shows
+ * the rate that is actually in force, and the signature records that rate in
+ * its evidence so a later change cannot rewrite what was agreed.
+ */
+const placeholdersFor = (commissionRateBps: number) => ({
   COMPANY_LEGAL_NAME: () => config.company.legalName,
   COMPANY_ID_NUMBER: () => config.company.idNumber,
   COMPANY_ADDRESS: () => config.company.address,
   SUPPORT_EMAIL: () => config.contact.email,
-  COMMISSION_PERCENT: () => (config.policy.commissionRateBps / 100).toString(),
-} as const;
+  COMMISSION_PERCENT: () => (commissionRateBps / 100).toString(),
+}) as const;
 
 export type ContractLocale = "en" | "ka";
 
@@ -67,9 +74,10 @@ export function missingCompanyDetails(): string[] {
 
 export const companyDetailsComplete = (): boolean => missingCompanyDetails().length === 0;
 
-function resolve(body: string): string {
+function resolve(body: string, commissionRateBps: number): string {
+  const placeholders = placeholdersFor(commissionRateBps);
   return body.replace(/\{\{([A-Z_]+)\}\}/g, (whole, key: string) => {
-    const value = PLACEHOLDERS[key as keyof typeof PLACEHOLDERS]?.();
+    const value = placeholders[key as keyof typeof placeholders]?.();
     return value ? value : whole;
   });
 }
@@ -96,7 +104,8 @@ export async function getActiveContract(locale: string): Promise<ContractDocumen
     LIMIT 1`;
   if (!row) return null;
 
-  const body = resolve(row.body);
+  // The rate in force right now — what the driver reads is what they sign.
+  const body = resolve(row.body, await getCommissionRateBps());
   return {
     version: row.version,
     locale: row.locale as ContractLocale,
@@ -196,6 +205,7 @@ export async function signContract(input: SignInput): Promise<SignResult> {
     return { ok: false, error: "NAME_MISMATCH" };
   }
 
+  const signedCommissionRateBps = await getCommissionRateBps();
   const inserted = await sql<{ id: string }[]>`
     INSERT INTO contract_signatures
       (driver_id, contract_version, locale, signed_name, body_hash, ip, user_agent, evidence)
@@ -205,7 +215,7 @@ export async function signContract(input: SignInput): Promise<SignResult> {
             ${JSON.stringify({
               companyLegalName: config.company.legalName,
               companyIdNumber: config.company.idNumber,
-              commissionRateBps: config.policy.commissionRateBps,
+              commissionRateBps: signedCommissionRateBps,
               titleShown: contract.title,
             })}::text::jsonb)
     ON CONFLICT (driver_id, contract_version) DO NOTHING
@@ -225,7 +235,7 @@ export async function signContract(input: SignInput): Promise<SignResult> {
       locale: contract.locale,
       signedName: input.typedName.trim(),
       bodyHash: contract.bodyHash,
-      commissionRateBps: config.policy.commissionRateBps,
+      commissionRateBps: signedCommissionRateBps,
     },
     reason: "electronic signature of the driver agreement",
   });

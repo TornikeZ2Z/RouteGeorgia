@@ -34,16 +34,29 @@ export async function POST(request: NextRequest) {
     return isLocale(value) ? value : DEFAULT_LOCALE;
   })();
 
+  // Errors land on the error itself; success has nothing to scroll to.
   const back = (query: string, extra?: Record<string, string>) =>
-    seeOther(`/${locale}/drive?${query}#apply`, extra);
+    seeOther(`/${locale}/drive?${query}`, extra);
+  const backToError = (query: string, extra?: Record<string, string>) =>
+    seeOther(`/${locale}/drive?${query}#apply-error`, extra);
   const fail = (codes: ApplicationError[], extra?: Record<string, string>) =>
-    back(`error=${[...new Set(codes)].join(",")}`, extra);
+    backToError(`error=${[...new Set(codes)].join(",")}`, extra);
 
-  // Three applications an hour from one address. A driver who mistypes their
-  // email and starts again is well within it; a script is not.
-  const limit = rateLimit(await clientKey("driver-application"), 3, 3600);
-  if (!limit.allowed) {
-    return fail(["THROTTLED"], { "Retry-After": String(limit.retryAfterSeconds) });
+  // Two limits, because the two things being limited are not the same.
+  //
+  // Georgian mobile networks put many subscribers behind one address, and a
+  // recruiter signing drivers up from an office is one address too. The old
+  // single limit of three per hour counted a mistyped date of birth the same
+  // as a created account, so an honest applicant who slipped twice was locked
+  // out for an hour and — worse — sent back to an empty form. That is what
+  // stopped a real driver from joining.
+  //
+  // So attempts are cheap and generous, while the expensive, abusable thing —
+  // actually creating a driver record — stays tight, and is only charged for
+  // once a submission has passed validation.
+  const attempts = rateLimit(await clientKey("driver-application-attempt"), 40, 3600);
+  if (!attempts.allowed) {
+    return fail(["THROTTLED"], { "Retry-After": String(attempts.retryAfterSeconds) });
   }
 
   const parsed = ApplicationSchema.safeParse(Object.fromEntries(
@@ -68,6 +81,11 @@ export async function POST(request: NextRequest) {
 
   const flags = (names: readonly string[]) =>
     Object.fromEntries(names.map((name) => [name, form.get(name) === "on"]));
+
+  const creations = rateLimit(await clientKey("driver-application"), 10, 3600);
+  if (!creations.allowed) {
+    return fail(["THROTTLED"], { "Retry-After": String(creations.retryAfterSeconds) });
+  }
 
   const h = await headers();
   const result = await submitDriverApplication(parsed.data, {

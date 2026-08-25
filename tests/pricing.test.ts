@@ -87,6 +87,61 @@ describe("distance-tiered rate floors", () => {
   });
 });
 
+describe("minimum fare per day", () => {
+  /**
+   * Day-based work — tours and multi-day hire — owes the driver a day
+   * whatever the odometer says. A transfer is not day-based and must never
+   * be touched by this floor, however short it is.
+   */
+  const dayJob = (over: Partial<QuoteInputs> = {}) => kazbegi({
+    distanceKm100: 4_000, returnKm100: 0, deadheadRecoveryBps: 0,
+    driveMinutes: 120, riskFactorBps: 10_000, routeMinFareMinor: "0",
+    plan: { ...kazbegi().plan, ratePerKmMinor: "100" }, // 40 km × 1.00 = 40 GEL
+    band: { minFareFloorMinor: "0", maxFareCeilingMinor: "10000000" },
+    minimumDayFareMinor: "15000", // 150.00 GEL a day
+    ...over,
+  });
+
+  it("lifts a low-mileage day tour to the day minimum", () => {
+    const q = computeQuote(dayJob({ days: 1 }));
+    expect(q.grossMinor).toBe("15000");
+    expect(q.clampedBy).toBe("floor");
+  });
+
+  it("charges a day minimum for every day of a multi-day trip", () => {
+    const q = computeQuote(dayJob({ days: 3 }));
+    expect(q.grossMinor).toBe("45000"); // 3 × 150.00
+  });
+
+  it("names the day minimum in the breakdown so support can explain it", () => {
+    const line = computeQuote(dayJob({ days: 2 })).lines.find((l) => l.code === "floor");
+    expect(line!.label).toBe("Minimum per day");
+    expect(line!.detail).toMatch(/2 day\(s\)/);
+  });
+
+  it("leaves a transfer alone — days 0 means the floor does not apply", () => {
+    const q = computeQuote(dayJob({ days: 0 }));
+    expect(q.grossMinor).toBe("4000"); // the honest 40 km price, not a day
+  });
+
+  it("never lowers a price that already beats the day minimum", () => {
+    const q = computeQuote(dayJob({ days: 1, distanceKm100: 30_000 })); // 300 km
+    expect(BigInt(q.grossMinor)).toBeGreaterThan(15_000n);
+    expect(q.clampedBy).toBe("none");
+  });
+
+  it("still yields to a higher route minimum", () => {
+    const q = computeQuote(dayJob({ days: 1, routeMinFareMinor: "20000" }));
+    expect(q.grossMinor).toBe("20000");
+    expect(q.lines.find((l) => l.code === "floor")!.label).toBe("Minimum fare");
+  });
+
+  it("is inert when the operator leaves the day minimum at zero", () => {
+    const q = computeQuote(dayJob({ days: 3, minimumDayFareMinor: "0" }));
+    expect(q.grossMinor).toBe("4000");
+  });
+});
+
 describe("quote engine", () => {
   it("splits commission and driver net so they always sum to gross", () => {
     const q = computeQuote(kazbegi());
