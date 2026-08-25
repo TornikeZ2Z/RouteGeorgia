@@ -1,6 +1,7 @@
 "use server";
 
 import { revalidatePath } from "next/cache";
+import { savePattern, freeRange, blockRange, PATTERN_HORIZON_DAYS } from "@/lib/availability-patterns";
 import { z } from "zod";
 import { and, eq } from "drizzle-orm";
 import { db, sql } from "@db/client";
@@ -549,3 +550,95 @@ async function uniqueHandle(name: string): Promise<string> {
 }
 
 export { requirePermission };
+
+/**
+ * Recurring days off. One statement of "I never work Sundays" replaces a
+ * block filed every week forever — the complaint that showed up in GoTrip's
+ * own support queue as a ticket titled "closed days".
+ */
+export async function saveAvailabilityPatternAction(
+  _prev: ActionState,
+  formData: FormData,
+): Promise<ActionState> {
+  const { driver } = await myDriver();
+  if (!driver) return { ok: false, message: "Create your profile first." };
+
+  const weekdays = formData.getAll("weekday").map((v) => Number(String(v)));
+  if (weekdays.length === 7) {
+    return { ok: false, message: "That would block every day. Leave at least one working day." };
+  }
+
+  const blocked = await savePattern(driver.id, weekdays);
+  revalidatePath("/driver/availability");
+  return {
+    ok: true,
+    message: weekdays.length === 0
+      ? "Weekly pattern cleared."
+      : `Saved. ${blocked} day(s) blocked over the next ${PATTERN_HORIZON_DAYS} days.`,
+  };
+}
+
+/** Block or free a whole span in one action, instead of a block per day. */
+export async function setRangeAction(_prev: ActionState, formData: FormData): Promise<ActionState> {
+  const { driver } = await myDriver();
+  if (!driver) return { ok: false, message: "Create your profile first." };
+
+  const mode = String(formData.get("mode") ?? "");
+  const fromRaw = String(formData.get("rangeFrom") ?? "");
+  const toRaw = String(formData.get("rangeTo") ?? "");
+  if (!/^\d{4}-\d{2}-\d{2}$/.test(fromRaw) || !/^\d{4}-\d{2}-\d{2}$/.test(toRaw)) {
+    return { ok: false, message: "Choose both dates." };
+  }
+
+  // Georgian local days, and the end date is inclusive — a driver picking the
+  // 3rd to the 5th means three days off, not two.
+  const from = new Date(`${fromRaw}T00:00:00+04:00`);
+  const to = new Date(new Date(`${toRaw}T00:00:00+04:00`).getTime() + 86_400_000);
+  if (to <= from) return { ok: false, message: "The last day is before the first." };
+  if (to.getTime() - from.getTime() > 366 * 86_400_000) {
+    return { ok: false, message: "Choose a span of a year or less." };
+  }
+
+  if (mode === "free") {
+    const freed = await freeRange(driver.id, from, to);
+    revalidatePath("/driver/availability");
+    return { ok: true, message: `${freed} day(s) freed.` };
+  }
+
+  const { blocked, skipped } = await blockRange(driver.id, from, to, "TIME_OFF");
+  revalidatePath("/driver/availability");
+  return {
+    ok: true,
+    message: skipped > 0
+      ? `${blocked} day(s) blocked. ${skipped} left alone — already booked or blocked.`
+      : `${blocked} day(s) blocked.`,
+  };
+}
+
+/** One tap for the most common answer of all: not today. */
+export async function toggleTodayAction(_prev: ActionState, formData: FormData): Promise<ActionState> {
+  const { driver } = await myDriver();
+  if (!driver) return { ok: false, message: "Create your profile first." };
+
+  const wantFree = String(formData.get("mode") ?? "") === "free";
+  const todayKey = new Date(Date.now() + 4 * 3600_000).toISOString().slice(0, 10);
+  const from = new Date(`${todayKey}T00:00:00+04:00`);
+  const to = new Date(from.getTime() + 86_400_000);
+
+  if (wantFree) {
+    const freed = await freeRange(driver.id, from, to);
+    revalidatePath("/driver/availability");
+    return { ok: true, message: freed > 0 ? "Today is open again." : "Today was already open." };
+  }
+
+  const { blocked, skipped } = await blockRange(driver.id, from, to, "TIME_OFF");
+  revalidatePath("/driver/availability");
+  return {
+    ok: true,
+    message: blocked > 0
+      ? "Today is blocked."
+      : skipped > 0
+        ? "Today already has a booking or a block."
+        : "Nothing to change.",
+  };
+}

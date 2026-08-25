@@ -6,16 +6,31 @@ import { driverBalance } from "@/lib/ledger";
 import { config } from "@/lib/config";
 import { Alert, Badge, Card, EmptyState, PageHeader } from "@/components/ui";
 import { OrderActions } from "./order-actions";
+import { MessageThread, type ThreadMessage } from "./thread";
+import { OrderFilters } from "./filters";
+import { guessLocale } from "@/lib/translate";
 
 export const dynamic = "force-dynamic";
 
 const LIVE = ["CONFIRMED", "DRIVER_ACKNOWLEDGED", "READY", "DRIVER_ARRIVED", "IN_PROGRESS"];
 
-export default async function DriverOrders() {
+export default async function DriverOrders({
+  searchParams,
+}: { searchParams: Promise<Record<string, string | string[] | undefined>> }) {
   const user = await requireUser();
-  const t = getTranslator(isLocale(user.locale) ? (user.locale as Locale) : "ka");
+  const locale = (isLocale(user.locale) ? user.locale : "ka") as Locale;
+  const t = getTranslator(locale);
   const [driver] = await sql<{ id: string }[]>`SELECT id FROM driver_profiles WHERE user_id = ${user.id}::uuid`;
-  if (!driver) return <EmptyState title="Create your driver profile first" />;
+  if (!driver) return <EmptyState title={t("console.noProfileT")} />;
+
+  // Sections stop working somewhere around a hundred bookings, so the list is
+  // searchable by code, route, traveller or address, and narrowable by date.
+  const sp = await searchParams;
+  const one = (v: string | string[] | undefined) => ((Array.isArray(v) ? v[0] : v) ?? "").trim();
+  const q = one(sp.q).slice(0, 80);
+  const fromDate = /^\d{4}-\d{2}-\d{2}$/.test(one(sp.from)) ? one(sp.from) : "";
+  const toDate = /^\d{4}-\d{2}-\d{2}$/.test(one(sp.to)) ? one(sp.to) : "";
+  const filtering = Boolean(q || fromDate || toDate);
 
   const [orders, balance] = await Promise.all([
     sql<Row[]>`
@@ -31,12 +46,53 @@ export default async function DriverOrders() {
       FROM bookings b
       WHERE b.driver_id = ${driver.id}::uuid
         AND b.status <> 'DRAFT'
+        AND (${q} = '' OR b.code ILIKE ${'%' + q + '%'}
+             OR coalesce(b.customer_name, '') ILIKE ${'%' + q + '%'}
+             OR coalesce(b.pickup_address, '') ILIKE ${'%' + q + '%'}
+             OR coalesce(b.dropoff_address, '') ILIKE ${'%' + q + '%'}
+             OR EXISTS (SELECT 1 FROM booking_legs l
+                        WHERE l.booking_id = b.id AND l.label ILIKE ${'%' + q + '%'}))
+        AND (${fromDate} = '' OR b.service_start_at >= ${fromDate || null}::date)
+        AND (${toDate} = '' OR b.service_start_at < (${toDate || null}::date + 1))
       ORDER BY
         CASE WHEN b.status = 'CONFIRMED' THEN 0 ELSE 1 END,
         b.service_start_at
       LIMIT 60`,
     driverBalance(driver.id),
   ]);
+
+  // One query for every thread on the page rather than one per card.
+  const threads = orders.length
+    ? await sql<{ id: string; booking_id: string; sender: string; body: string; created_at: Date }[]>`
+        SELECT id, booking_id, sender::text AS sender, body, created_at
+        FROM messages
+        WHERE booking_id = ANY(${orders.map((o) => o.id)}::uuid[])
+        ORDER BY created_at`
+    : [];
+
+  const byBooking = new Map<string, ThreadMessage[]>();
+  for (const m of threads) {
+    const list = byBooking.get(m.booking_id) ?? [];
+    list.push({
+      id: m.id,
+      sender: m.sender,
+      body: m.body,
+      createdAt: new Date(m.created_at).toLocaleString("en-GB", { dateStyle: "short", timeStyle: "short" }),
+      // Cheap script check, so the translate control only appears where it
+      // could actually help. The real decision happens server-side.
+      foreign: guessLocale(m.body) !== locale,
+    });
+    byBooking.set(m.booking_id, list);
+  }
+
+  const threadLabels = {
+    title: t("console.threadT"), empty: t("console.threadEmpty"),
+    you: t("console.threadYou"), traveller: t("console.threadTraveller"),
+    support: t("console.threadSupport"), placeholder: t("console.threadPlaceholder"),
+    send: t("console.threadSend"), sending: t("console.threadSending"),
+    translate: t("console.threadTranslate"), translating: t("console.threadTranslating"),
+    original: t("console.threadOriginal"), unavailable: t("console.threadUnavailable"),
+  };
 
   const needsAck = orders.filter((o) => o.status === "CONFIRMED");
   const live = orders.filter((o) => LIVE.includes(o.status) && o.status !== "CONFIRMED");
@@ -58,9 +114,21 @@ export default async function DriverOrders() {
         </Alert>
       )}
 
-      {orders.length === 0 && <EmptyState title={t("console.noOrdersT")}>
-        {t("console.noOrdersB")}
-      </EmptyState>}
+      <OrderFilters
+        q={q} from={fromDate} to={toDate}
+        labels={{
+          search: t("console.searchOrdersL"), searchHint: t("console.searchOrdersHint"),
+          from: t("console.fromL"), to: t("console.toL"),
+          apply: t("console.applyCta"), clear: t("console.clearCta"),
+          count: t("console.ordersFound", { count: orders.length }),
+        }}
+      />
+
+      {orders.length === 0 && (
+        <EmptyState title={filtering ? t("console.noMatchT") : t("console.noOrdersT")}>
+          {filtering ? t("console.noMatchB") : t("console.noOrdersB")}
+        </EmptyState>
+      )}
 
       {[[t("console.secNeedsAck"), needsAck], [t("console.secUpcoming"), live], [t("console.secPast"), past]].map(([title, list]) => {
         const rows = list as Row[];
@@ -114,6 +182,18 @@ export default async function DriverOrders() {
                         {o.pickup_sign_name && <div><dt className="text-ink-500">{t("console.signLabel")}</dt><dd>{o.pickup_sign_name}</dd></div>}
                         {o.notes && <div className="sm:col-span-2"><dt className="text-ink-500">{t("console.notesLabel")}</dt><dd>{o.notes}</dd></div>}
                       </dl>
+                    )}
+
+                    {/* The traveller could always write; now the driver can
+                        read it and answer. Hidden only once a trip is over
+                        and nothing was ever said. */}
+                    {(o.status !== "CANCELLED") &&
+                      (LIVE.includes(o.status) || (byBooking.get(o.id)?.length ?? 0) > 0) && (
+                      <MessageThread
+                        bookingId={o.id}
+                        messages={byBooking.get(o.id) ?? []}
+                        labels={threadLabels}
+                      />
                     )}
 
                     <div className="mt-3 border-t border-ink-100 pt-3">

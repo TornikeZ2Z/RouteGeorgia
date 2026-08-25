@@ -80,6 +80,12 @@ const D = {
     en: "A change applies to new quotes and new signatures only. Quotes already given and contracts already signed keep the rate that was agreed — this does not rewrite them.",
   },
 
+  "finance.exposureT": { ka: "აუღებელი საკომისიო", en: "Uncollected commission" },
+  "finance.exposureB": {
+    ka: "{total} გვერგება {drivers} მძღოლისგან. მათგან {blocked} ლიმიტს გადასცდა და ნაღდი ანგარიშსწორებით ვეღარ მუშაობს. ავტომატური ჩამოჭრა არ გვაქვს — თანხა ხელით უნდა აიკრიფოს.",
+    en: "{total} is owed by {drivers} driver(s). {blocked} of them are over the limit and can no longer take cash work. There is no automatic deduction — this has to be collected by hand.",
+  },
+
   // -------------------------------------------------------------- drivers --
   "drivers.title": { ka: "მძღოლები", en: "Drivers" },
   "drivers.records": { ka: "ჩანაწერი", en: "record(s)" },

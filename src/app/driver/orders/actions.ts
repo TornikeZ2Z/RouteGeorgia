@@ -1,6 +1,8 @@
 "use server";
 
 import { revalidatePath } from "next/cache";
+import { translateMessage } from "@/lib/translate";
+import { isLocale, type Locale } from "@/lib/i18n";
 import { z } from "zod";
 import { sql } from "@db/client";
 import { requireUser } from "@/lib/auth/session";
@@ -146,6 +148,37 @@ export async function sendDriverMessageAction(_prev: ActionState, formData: Form
   await sql`
     INSERT INTO messages (booking_id, sender, sender_user_id, body)
     VALUES (${booking.id}::uuid, 'DRIVER', ${user.id}::uuid, ${body})`;
+
+  // Replying is unambiguous evidence the driver read what was waiting.
+  await sql`
+    UPDATE messages SET read_at = now()
+    WHERE booking_id = ${booking.id}::uuid AND sender <> 'DRIVER' AND read_at IS NULL`;
+
   revalidatePath("/driver/orders");
   return { ok: true, message: "Sent." };
+}
+
+/**
+ * Translate one message into the driver's own language, on demand.
+ *
+ * Scoped to the driver's own bookings: a message id is not a capability, so
+ * ownership is re-checked here rather than trusted from the client.
+ */
+export async function translateMessageAction(
+  messageId: string,
+): Promise<{ ok: boolean; body?: string }> {
+  if (!/^[0-9a-f-]{36}$/i.test(messageId)) return { ok: false };
+
+  const user = await requireUser();
+  const [row] = await sql<{ id: string; body: string }[]>`
+    SELECT m.id, m.body
+    FROM messages m
+    JOIN bookings b ON b.id = m.booking_id
+    JOIN driver_profiles d ON d.id = b.driver_id
+    WHERE m.id = ${messageId}::uuid AND d.user_id = ${user.id}::uuid`;
+  if (!row) return { ok: false };
+
+  const target = (isLocale(user.locale) ? user.locale : "ka") as Locale;
+  const result = await translateMessage(row.id, row.body, target);
+  return result.translated ? { ok: true, body: result.body } : { ok: false };
 }

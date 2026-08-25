@@ -109,6 +109,7 @@ export async function createBooking(quoteId: string, details: CheckoutDetails): 
            (q.inputs->>'driveMinutes')::int  AS drive_minutes,
            (q.inputs->>'distanceKm100')::int AS distance_km100,
            d.public_name AS driver_name, u.email AS driver_email, u.locale AS driver_locale,
+           u.id AS driver_user_id,
            v.make, v.model, v.year, v.plate
     FROM quotes q
     JOIN route_searches s ON s.id = q.search_id
@@ -252,6 +253,7 @@ export async function createBooking(quoteId: string, details: CheckoutDetails): 
           kind: "booking.confirmed.driver", to: quote.driver_email,
           locale: quote.driver_locale ?? "ka", subject: driverMessage.subject,
           body: driverMessage.body, bookingId, dedupe: bookingId,
+          userId: quote.driver_user_id,
         });
       }
     });
@@ -284,6 +286,7 @@ export async function confirmCardPayment(bookingId: string, paymentId: string): 
              b.commission_minor, b.driver_net_minor, b.currency, b.customer_email,
              b.contact_locale, b.service_start_at, b.payment_mode::text AS payment_mode,
              d.public_name AS driver_name, u.email AS driver_email, u.locale AS driver_locale,
+           u.id AS driver_user_id,
              v.make, v.model, v.year, v.plate
       FROM bookings b
       JOIN driver_profiles d ON d.id = b.driver_id
@@ -322,6 +325,7 @@ export async function confirmCardPayment(bookingId: string, paymentId: string): 
       kind: "booking.confirmed.driver", to: booking.driver_email,
       locale: booking.driver_locale ?? "ka", subject: driverMessage.subject,
       body: driverMessage.body, bookingId, dedupe: bookingId,
+      userId: booking.driver_user_id,
     });
     changed = true;
   });
@@ -342,6 +346,7 @@ export async function completeBooking(bookingId: string, actorUserId?: string): 
              b.commission_minor, b.driver_net_minor, b.currency, b.customer_email,
              b.contact_locale, b.service_start_at, b.payment_mode::text AS payment_mode,
              d.public_name AS driver_name, u.email AS driver_email, u.locale AS driver_locale,
+           u.id AS driver_user_id,
              v.make, v.model, v.year, v.plate
       FROM bookings b
       JOIN driver_profiles d ON d.id = b.driver_id
@@ -444,6 +449,7 @@ export async function cancelBooking(
              b.commission_minor, b.driver_net_minor, b.currency, b.customer_email,
              b.contact_locale, b.service_start_at, b.payment_mode::text AS payment_mode,
              d.public_name AS driver_name, u.email AS driver_email, u.locale AS driver_locale,
+           u.id AS driver_user_id,
              v.make, v.model, v.year, v.plate
       FROM bookings b
       JOIN driver_profiles d ON d.id = b.driver_id
@@ -551,6 +557,7 @@ const isExclusionViolation = (e: unknown): boolean =>
   typeof e === "object" && e !== null && "code" in e && (e as { code: string }).code === "23P01";
 
 interface QuoteRow {
+  driver_user_id: string | null;
   id: string; driver_id: string; vehicle_id: string; gross_minor: string; currency: string;
   commission_rate_bps: number; commission_minor: string; driver_net_minor: string;
   status: string; expires_at: Date; travel_at: Date; service_tz: string;
@@ -560,6 +567,7 @@ interface QuoteRow {
 }
 
 interface BookingMoneyRow {
+  driver_user_id: string | null;
   id: string; code: string; status: string; driver_id: string; gross_minor: string;
   commission_minor: string; driver_net_minor: string; currency: string;
   customer_email: string; contact_locale: string; service_start_at: Date; payment_mode: string;

@@ -54,12 +54,31 @@ export default async function Finance() {
   const value = (kind: string) =>
     BigInt(balances.find((b) => b.kind === kind)?.net ?? "0");
 
+  // Commission we have earned but not collected.
+  //
+  // There is no automatic deduction: a driver running cash trips accrues debt
+  // against their credit limit, and past it cash bookings stop. That caps the
+  // loss per driver but not across the fleet, so the total is worth watching
+  // as a number rather than discovering as a problem.
+  const exposure = owing.reduce((sum, row) => sum + BigInt(row.owed), 0n);
+  const atLimit = owing.filter((row) => BigInt(row.owed) > BigInt(row.limit_minor)).length;
+
   return (
     <div className="space-y-6">
       <PageHeader
         title={t("page.finance")}
         description={t("page.financeDetail")}
       />
+
+      {owing.length > 0 && (
+        <Alert tone={atLimit > 0 ? "warning" : "info"} title={t("finance.exposureT")}>
+          {t("finance.exposureB", {
+            total: formatMoney(exposure, "GEL"),
+            drivers: owing.length,
+            blocked: atLimit,
+          })}
+        </Alert>
+      )}
 
       {integrity.balanced ? (
         <Alert tone="success" title="The ledger balances">

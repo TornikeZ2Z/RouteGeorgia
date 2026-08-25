@@ -23,7 +23,8 @@ export type NotificationKind =
   | "booking.acknowledged.customer" | "booking.driver_reassigned.customer"
   | "booking.reminder.customer" | "booking.completed.customer"
   | "review.invitation" | "message.received"
-  | "contract.ready";
+  | "contract.ready"
+  | "support.driver_ticket" | "support.driver_reply";
 
 export interface QueueInput {
   kind: NotificationKind;
@@ -33,6 +34,13 @@ export interface QueueInput {
   subject: string;
   body: string;
   bookingId?: string | null;
+  /**
+   * The account this concerns, when there is one. Email and SMS do not need
+   * it — they have an address — but the in-portal inbox does: without it a
+   * notification is something we sent into the world with nobody to show it
+   * to. Optional, because a traveller without an account still gets email.
+   */
+  userId?: string | null;
   /** Anything that makes this notification unique. Retries reuse it. */
   dedupe: string;
   payload?: Record<string, unknown>;
@@ -49,11 +57,12 @@ export async function queue(tx: Executor, input: QueueInput): Promise<string | n
     .digest("hex");
 
   const rows = await tx<{ id: string }[]>`
-    INSERT INTO notifications (kind, channel, to_address, locale, subject, body, payload, booking_id, dedupe_key)
+    INSERT INTO notifications (kind, channel, to_address, locale, subject, body, payload,
+                               booking_id, user_id, dedupe_key)
     VALUES (${input.kind}, ${input.channel ?? "EMAIL"}::notify_channel, ${input.to},
             ${input.locale ?? "en"}, ${input.subject}, ${input.body},
             ${JSON.stringify(input.payload ?? {})}::text::jsonb,
-            ${input.bookingId ?? null}::uuid, ${dedupeKey})
+            ${input.bookingId ?? null}::uuid, ${input.userId ?? null}::uuid, ${dedupeKey})
     ON CONFLICT (dedupe_key) DO NOTHING
     RETURNING id`;
   return rows[0]?.id ?? null;

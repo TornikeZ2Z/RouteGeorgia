@@ -9,6 +9,7 @@ import { getTranslator, isLocale, type Locale, type MessageKey } from "@/lib/i18
 import { adminT } from "@/lib/i18n/admin";
 import { exitImpersonationAction } from "./actions";
 import { DriverNav } from "./nav";
+import { NotificationBell } from "./notifications";
 
 /**
  * Every driver on this platform is Georgian. The console renders in the
@@ -18,6 +19,7 @@ import { DriverNav } from "./nav";
 const NAV: { href: string; label: MessageKey }[] = [
   { href: "/driver", label: "console.navOverview" },
   { href: "/driver/orders", label: "console.navOrders" },
+  { href: "/driver/support", label: "console.navSupport" },
   { href: "/driver/earnings", label: "console.navEarnings" },
   { href: "/driver/contract", label: "console.navContract" },
   { href: "/driver/application", label: "console.navProfile" },
@@ -73,6 +75,7 @@ export default async function DriverLayout({ children }: { children: React.React
           </Link>
 
           <div className="ml-auto flex shrink-0 items-center gap-2 text-sm">
+            <NotificationBell userId={user.id} locale={user.locale} />
             <span className="hidden rounded-lg bg-ink-50 px-2.5 py-1.5 text-xs text-ink-600 md:block">
               {user.email}
             </span>
