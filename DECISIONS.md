@@ -100,3 +100,22 @@ price would violate the "the price you see is the price" promise.
 The approved mockup shows hotel and airport logos. Displaying trademarks of
 companies we have no agreement with is both a legal exposure and a false
 claim, so the partners strip stays out until real agreements exist.
+
+## 2026-08-27 — Renamed to Route Planner
+
+The name RouteGeorgia was already taken, so the platform now trades as
+**Route Planner** on routeplanner.ge. Three things deliberately did not move:
+
+* **The company.** The National Agency of Public Registry has the entity
+  registered as რაუტ ჯორჯია / ROUTE GEORGIA. A contract has to name the party
+  that exists, so the driver agreement still names it and now states that it
+  trades under the name Route Planner.
+* **The old domain.** routegeorgia.ge stays ours and stays attached to the
+  service. Every link shared before the rename points there. It will redirect
+  once the new domain resolves — gated behind REDIRECT_FORMER_DOMAIN, because
+  turning it on early would send visitors from a working site to a dead one.
+* **Applied migrations.** 0010–0013 keep the old brand in their text. They are
+  the record of what ran; 0014 is what changed the database.
+
+The word "Georgia" on its own is the country and appears throughout the copy.
+Only the four brand forms were replaced.
