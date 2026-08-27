@@ -1,6 +1,17 @@
 import type { NextConfig } from "next";
 
-const CANONICAL_HOST = "routegeorgia.ge";
+const CANONICAL_HOST = "routeplanner.ge";
+
+/**
+ * The name the platform used to trade under.
+ *
+ * Every link shared before the rename points here — driver invitations,
+ * booking confirmations, anything already indexed. The domain stays ours and
+ * stays attached to this service, so it keeps answering; it just answers by
+ * sending people to the new name. Permanent, so search engines move the
+ * ranking across rather than treating the two as rivals.
+ */
+const FORMER_HOSTS = ["routegeorgia.ge", "www.routegeorgia.ge"];
 
 const config: NextConfig = {
   reactStrictMode: true,
@@ -29,6 +40,12 @@ const config: NextConfig = {
         destination: `https://${CANONICAL_HOST}/:path*`,
         permanent: true,
       },
+      ...FORMER_HOSTS.map((host) => ({
+        source: "/:path*",
+        has: [{ type: "host" as const, value: host }],
+        destination: `https://${CANONICAL_HOST}/:path*`,
+        permanent: true,
+      })),
     ];
 
     if (process.env.ENFORCE_CANONICAL_HOST === "true") {

@@ -1,5 +1,5 @@
 /**
- * The RouteGeorgia mark — the designer's actual vector from the design
+ * The Route Planner mark — the designer's actual vector from the design
  * system package (assets/logo/mark-primary.svg): a bold R whose counter
  * forms a winding road, with a dashed gold centre line. Fills are
  * parametrised so the same drawing serves the primary (navy-on-light)
@@ -51,7 +51,7 @@ export function Logo({ dark = false }: { dark?: boolean }) {
           ROUTE
         </span>
         <span className={`font-display mt-0.5 text-[8.5px] font-medium tracking-[0.55em] ${dark ? "text-[#d4af37]" : "text-[#c7992f]"}`}>
-          GEORGIA
+          PLANNER
         </span>
       </span>
     </span>

@@ -67,7 +67,7 @@ Tracking it properly was.
 
 | Question | Current default | Decide before |
 |---|---|---|
-| Legal entity name and registration | Trading as Route Georgia; entity not yet formed | Taking real payment |
+| Legal entity name and registration | Trading as Route Planner; entity not yet formed | Taking real payment |
 | Driver credit limit | 200 GEL of unpaid commission | Pilot — tune from real behaviour |
 | Payment provider | Sandbox stub behind an adapter | Taking real money |
 | Cancellation policy | Free, not yet enforced | Checkout |

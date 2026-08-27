@@ -46,4 +46,4 @@ services:
       - key: NODE_VERSION
         value: "22"
       - key: APP_URL
-        value: https://routegeorgia.ge
+        value: https://routeplanner.ge

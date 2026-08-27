@@ -75,7 +75,7 @@ export default async function TourPage({ params }: Props) {
     name: tour.title,
     description: tour.summary,
     touristType: "Private transfer with driver",
-    provider: { "@type": "Organization", name: "Route Georgia", url: config.appUrl },
+    provider: { "@type": "Organization", name: "Route Planner", url: config.appUrl },
     itinerary: {
       "@type": "ItemList",
       itemListElement: tour.stops.map((s, i) => ({

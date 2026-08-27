@@ -140,7 +140,7 @@ async function notifyContractReady(driverId: string): Promise<boolean> {
 function contractReadyMessage(locale: string, name: string) {
   if (locale === "ka") {
     return {
-      subject: "თქვენი ხელშეკრულება მზადაა — RouteGeorgia",
+      subject: "თქვენი ხელშეკრულება მზადაა — Route Planner",
       email: [
         `გამარჯობა, ${name}.`,
         ``,
@@ -153,11 +153,11 @@ function contractReadyMessage(locale: string, name: string) {
         ``,
         `თუ რაიმე გაუგებარია, გვიპასუხეთ ამ წერილზე ხელმოწერამდე.`,
       ].join("\n"),
-      sms: `RouteGeorgia: თქვენი განაცხადი დამტკიცდა. ხელშეკრულების ხელმოსაწერად: ${config.appUrl}/driver/contract`,
+      sms: `Route Planner: თქვენი განაცხადი დამტკიცდა. ხელშეკრულების ხელმოსაწერად: ${config.appUrl}/driver/contract`,
     };
   }
   return {
-    subject: "Your RouteGeorgia driver contract is ready",
+    subject: "Your Route Planner driver contract is ready",
     email: [
       `Hello ${name},`,
       ``,
@@ -170,7 +170,7 @@ function contractReadyMessage(locale: string, name: string) {
       ``,
       `If anything in it is unclear, reply to this email before you sign.`,
     ].join("\n"),
-    sms: `RouteGeorgia: your application is approved. Sign your contract here: ${config.appUrl}/driver/contract`,
+    sms: `Route Planner: your application is approved. Sign your contract here: ${config.appUrl}/driver/contract`,
   };
 }
 
@@ -1455,7 +1455,7 @@ export async function setStaffLocaleAction(formData: FormData): Promise<void> {
 }
 
 /**
- * Platform settings: the commission RouteGeorgia takes, and the floor under a
+ * Platform settings: the commission Route Planner takes, and the floor under a
  * day of a driver's time.
  *
  * Changing the commission does NOT rewrite history. Existing quotes carry the

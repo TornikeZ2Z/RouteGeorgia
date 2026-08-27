@@ -421,7 +421,7 @@ function applicantEmail(locale: string, token: string) {
   const link = `${config.appUrl}/reset-password?token=${token}`;
   const M = {
     en: {
-      subject: "One step left — set your Route Georgia password",
+      subject: "One step left — set your Route Planner password",
       lines: [
         "Thank you — your application is in.",
         "",
@@ -438,7 +438,7 @@ function applicantEmail(locale: string, token: string) {
       ],
     },
     ka: {
-      subject: "დარჩა ერთი ნაბიჯი — დააყენეთ პაროლი Route Georgia-ზე",
+      subject: "დარჩა ერთი ნაბიჯი — დააყენეთ პაროლი Route Planner-ზე",
       lines: [
         "გმადლობთ — თქვენი განაცხადი მიღებულია.",
         "",
@@ -455,7 +455,7 @@ function applicantEmail(locale: string, token: string) {
       ],
     },
     ru: {
-      subject: "Остался один шаг — задайте пароль Route Georgia",
+      subject: "Остался один шаг — задайте пароль Route Planner",
       lines: [
         "Спасибо — ваша заявка принята.",
         "",

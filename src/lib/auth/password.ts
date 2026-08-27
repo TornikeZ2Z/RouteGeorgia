@@ -20,7 +20,7 @@ export function validatePassword(pw: string): string[] {
   if (pw.length < 12) errors.push("Password must be at least 12 characters.");
   if (pw.length > 200) errors.push("Password must be under 200 characters.");
   if (/^(.)\1+$/.test(pw)) errors.push("Password cannot be a single repeated character.");
-  const common = ["password", "123456789012", "qwertyuiop", "routegeorgia123", "gotrip123456"];
+  const common = ["password", "123456789012", "qwertyuiop", "routeplanner123", "gotrip123456"];
   if (common.some((c) => pw.toLowerCase().includes(c))) errors.push("Password is too easy to guess.");
   return errors;
 }

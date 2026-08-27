@@ -1,9 +1,9 @@
-# RouteGeorgia — private-driver marketplace
+# Route Planner — private-driver marketplace
 
 Phase 0 (foundation) and Phase 1 (supply and pricing) of the Georgia Travel
 Marketplace specification, as a running application.
 
-Live at <https://routegeorgia.ge>.
+Live at <https://routeplanner.ge>.
 
 ---
 
@@ -71,7 +71,7 @@ rights to.
 
 Set `SUPPORT_PHONE` in Render once the business SIM exists; the header and
 footer show it automatically. `SUPPORT_EMAIL` defaults to
-support@routegeorgia.ge — that mailbox must actually exist before launch.
+support@routeplanner.ge — that mailbox must actually exist before launch.
 
 ### File storage
 
@@ -89,7 +89,7 @@ from the bucket.
 
 **Setting up R2**, which takes about five minutes:
 
-1. Cloudflare dashboard → **R2** → *Create bucket*. Name it `routegeorgia-files`.
+1. Cloudflare dashboard → **R2** → *Create bucket*. Name it `routeplanner-files`.
    Location: automatic. Leave public access **off** — the app streams every file
    itself, so the bucket never needs to be reachable from the internet.
 2. **R2 → Manage API tokens → Create API token**. Permission: *Object Read &
@@ -102,7 +102,7 @@ from the bucket.
    | Name | Value |
    |---|---|
    | `STORAGE_DRIVER` | `s3` |
-   | `S3_BUCKET` | `routegeorgia-files` |
+   | `S3_BUCKET` | `routeplanner-files` |
    | `S3_ENDPOINT` | `https://<account-id>.r2.cloudflarestorage.com` |
    | `S3_REGION` | `auto` |
    | `S3_ACCESS_KEY_ID` | from step 2 |

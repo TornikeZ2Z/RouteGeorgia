@@ -61,8 +61,8 @@ const D = {
   // ----------------------------------------------------- platform settings --
   "settings.title": { ka: "პლატფორმის პარამეტრები", en: "Platform settings" },
   "settings.body": {
-    ka: "ორი რიცხვი, რომელიც განსაზღვრავს რას იღებს RouteGeorgia და რა ღირს მძღოლის ერთი დღე.",
-    en: "The two numbers that decide what RouteGeorgia earns and what a driver's day is worth.",
+    ka: "ორი რიცხვი, რომელიც განსაზღვრავს რას იღებს Route Planner და რა ღირს მძღოლის ერთი დღე.",
+    en: "The two numbers that decide what Route Planner earns and what a driver's day is worth.",
   },
   "settings.commission": { ka: "საკომისიო", en: "Commission" },
   "settings.commissionHint": {

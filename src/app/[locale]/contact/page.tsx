@@ -13,7 +13,7 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
   const { locale } = await params;
   return {
     title: "Contact and support",
-    description: "How to reach Route Georgia before, during or after a trip.",
+    description: "How to reach Route Planner before, during or after a trip.",
     alternates: {
       canonical: `${config.appUrl}/${locale}/contact`,
       languages: Object.fromEntries(LOCALES.map((l) => [l, `${config.appUrl}/${l}/contact`])),
@@ -26,7 +26,7 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
  * footer, the emails and this page. Replace these with real ones before
  * launch — a support address nobody reads is worse than none.
  */
-const SUPPORT_EMAIL = "support@routegeorgia.ge";
+const SUPPORT_EMAIL = "support@routeplanner.ge";
 const SUPPORT_HOURS = "Every day, 08:00 – 22:00 Georgia time";
 
 export default async function Contact({ params }: Props) {

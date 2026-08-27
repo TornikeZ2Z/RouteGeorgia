@@ -119,11 +119,11 @@ describe("configuration", () => {
   it("starts when the credentials are present", async () => {
     vi.resetModules();
     vi.stubEnv("STORAGE_DRIVER", "s3");
-    vi.stubEnv("S3_BUCKET", "routegeorgia-files");
+    vi.stubEnv("S3_BUCKET", "routeplanner-files");
     vi.stubEnv("S3_ACCESS_KEY_ID", "test-key-id");
     vi.stubEnv("S3_SECRET_ACCESS_KEY", "test-secret");
     const { config } = await import("@/lib/config");
     expect(config.storage.driver).toBe("s3");
-    expect(config.storage.bucket).toBe("routegeorgia-files");
+    expect(config.storage.bucket).toBe("routeplanner-files");
   });
 });

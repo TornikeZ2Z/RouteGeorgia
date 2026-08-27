@@ -60,7 +60,7 @@ async function callMyMemory(text: string, from: Locale, to: Locale): Promise<str
   try {
     const response = await fetch(url, {
       signal: AbortSignal.timeout(TIMEOUT_MS),
-      headers: { "User-Agent": "RouteGeorgia/1.0 (routegeorgia.ge)" },
+      headers: { "User-Agent": "Route Planner/1.0 (routeplanner.ge)" },
     });
     if (!response.ok) return null;
     const data = (await response.json()) as {

@@ -78,5 +78,5 @@ if (push.status !== 0) process.exit(push.status ?? 1);
 console.log(`
 Pushed. Render is building it now — about two minutes.
   https://dashboard.render.com/web/srv-da24ksbncjis738h3p00
-  https://routegeorgia.ge
+  https://routeplanner.ge
 `);

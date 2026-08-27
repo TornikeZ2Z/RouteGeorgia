@@ -1,6 +1,6 @@
-# RouteGeorgia Design System
+# Route Planner Design System
 
-The single source of truth for how RouteGeorgia looks, speaks and behaves.
+The single source of truth for how Route Planner looks, speaks and behaves.
 The tokens live in `src/app/globals.css`; this document explains how to use
 them. When this document and the code disagree, fix one of them the same day.
 
@@ -134,7 +134,7 @@ load-bearing reliability, not nostalgia.
 - Real places only, on the surface that claims them: a Kazbegi card shows
   Kazbegi. Generic mood imagery is allowed only on generic surfaces (hero,
   category cards).
-- Sources: RouteGeorgia's own photos, or openly licensed (CC BY / CC BY-SA /
+- Sources: Route Planner's own photos, or openly licensed (CC BY / CC BY-SA /
   CC0 / public domain) with the author recorded in
   `src/lib/photo-credits.ts` and shown at `/credits`. Nothing else. Ever.
 - Drop-in system: `public/photos/` — `hero.jpg…hero-5.jpg`,

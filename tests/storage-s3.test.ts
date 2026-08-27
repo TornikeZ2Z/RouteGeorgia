@@ -54,7 +54,7 @@ beforeAll(async () => {
 
   vi.resetModules();
   vi.stubEnv("STORAGE_DRIVER", "s3");
-  vi.stubEnv("S3_BUCKET", "routegeorgia-files");
+  vi.stubEnv("S3_BUCKET", "routeplanner-files");
   vi.stubEnv("S3_REGION", "auto");
   vi.stubEnv("S3_ENDPOINT", `http://127.0.0.1:${port}`);
   vi.stubEnv("S3_ACCESS_KEY_ID", "AKIAEXAMPLEKEYID");
@@ -101,7 +101,7 @@ describe("s3 adapter on the wire", () => {
    */
   it("addresses the bucket by path when an endpoint is configured", () => {
     const put = captured.find((c) => c.method === "PUT")!;
-    expect(put.url).toMatch(/^\/routegeorgia-files\/restricted-kyc\//);
+    expect(put.url).toMatch(/^\/routeplanner-files\/restricted-kyc\//);
   });
 
   it("reads an object back", async () => {
@@ -122,7 +122,7 @@ describe("s3 adapter on the wire", () => {
 
   it("signs a URL for public media that carries an expiry", async () => {
     const url = await storage.signedUrl("public-media/2026/car.jpg", 300);
-    expect(url).toContain("/routegeorgia-files/public-media/2026/car.jpg");
+    expect(url).toContain("/routeplanner-files/public-media/2026/car.jpg");
     expect(url).toContain("X-Amz-Expires=300");
     expect(url).toContain("X-Amz-Signature=");
   });

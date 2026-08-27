@@ -49,7 +49,7 @@ export async function requestPasswordReset(email: string, locale: string): Promi
       kind: "message.received",
       to: user.email,
       locale: user.locale ?? locale,
-      subject: "Reset your Route Georgia password",
+      subject: "Reset your Route Planner password",
       body: [
         `Someone asked to reset the password for this address.`,
         ``,

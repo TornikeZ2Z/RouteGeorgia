@@ -55,7 +55,7 @@ const Schema = z.object({
   S3_SECRET_ACCESS_KEY: z.string().default(""),
   /** Shown in the header and footer once the business SIM exists. Hidden when empty. */
   SUPPORT_PHONE: z.string().default(""),
-  SUPPORT_EMAIL: z.string().default("support@routegeorgia.ge"),
+  SUPPORT_EMAIL: z.string().default("support@routeplanner.ge"),
 
   /**
    * The contracting entity, as it must appear in the driver agreement.
@@ -79,7 +79,7 @@ const Schema = z.object({
   SMTP_USER: z.string().default(""),
   SMTP_PASSWORD: z.string().default(""),
   /** Must be an address on a domain verified with the provider. */
-  MAIL_FROM: z.string().default("RouteGeorgia <noreply@routegeorgia.ge>"),
+  MAIL_FROM: z.string().default("Route Planner <noreply@routeplanner.ge>"),
 
   COMPANY_LEGAL_NAME: z.string().default(""),
   COMPANY_ID_NUMBER: z.string().default(""),

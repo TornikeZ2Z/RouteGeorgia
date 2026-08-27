@@ -19,8 +19,8 @@ export interface LegalDocument {
   sections: { heading: string; body: string[] }[];
 }
 
-const COMPANY = "RouteGeorgia";
-const CONTACT = "support@routegeorgia.ge";
+const COMPANY = "Route Planner";
+const CONTACT = "support@routeplanner.ge";
 
 export const LEGAL_SLUGS = ["terms", "privacy", "cancellation"] as const;
 export type LegalSlug = (typeof LEGAL_SLUGS)[number];

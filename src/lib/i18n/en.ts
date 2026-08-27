@@ -10,7 +10,7 @@
  * travellers; "console.*" is the console drivers themselves work in.
  */
 export const en = {
-  "brand.name": "RouteGeorgia",
+  "brand.name": "Route Planner",
   "brand.tagline": "Private drivers across Georgia, booked in advance.",
 
   "nav.transfers": "Transfers",
@@ -533,7 +533,7 @@ export const en = {
   "footer.langCurrency": "Language and currency",
   "footer.gelNote": "All trips are charged in Georgian lari. Other currencies are shown for guidance only.",
   "footer.support": "Support",
-  "footer.preLaunch": "Built in Tbilisi. RouteGeorgia connects travellers directly with vetted local drivers.",
+  "footer.preLaunch": "Built in Tbilisi. Route Planner connects travellers directly with vetted local drivers.",
 
   // --- Green redesign: navigation, hero, tabs, services, company pages -----
   "nav.business": "For business",
@@ -580,7 +580,7 @@ export const en = {
   "home.trust3": "Transparent pricing",
   "home.trust4": "Support every day",
   "home.trust5": "Safety is our priority",
-  "home.aboutEyebrow": "About RouteGeorgia",
+  "home.aboutEyebrow": "About Route Planner",
   "home.aboutTitle": "A local platform, built around the driver",
   "home.aboutBody": "We connect travellers, families, businesses and schools with vetted local drivers across Georgia. Every price is fixed before you book, and every driver's documents are checked by our team.",
   "home.aboutCta": "More about us",
@@ -594,9 +594,9 @@ export const en = {
   "search.outbound": "Outbound",
   "search.returnLeg": "Return",
 
-  "about.title": "About RouteGeorgia",
+  "about.title": "About Route Planner",
   "about.lead": "A Georgian company connecting travellers with the people who know these roads best.",
-  "about.body1": "RouteGeorgia is a Georgian platform for booking private drivers — airport transfers, intercity trips, multi-day tours, business travel and school transport. The price you see is for the whole vehicle, fixed before you book.",
+  "about.body1": "Route Planner is a Georgian platform for booking private drivers — airport transfers, intercity trips, multi-day tours, business travel and school transport. The price you see is for the whole vehicle, fixed before you book.",
   "about.body2": "Drivers here are not anonymous. You choose a specific person: their car, their languages, their reviews. Our team checks licences, insurance and vehicle documents before a driver can take a single booking, and they must stay valid on every travel date.",
   "about.body3": "We are at the beginning of our road. If something is not right, a real person will answer — and if you drive and know your region, we would love to meet you.",
   "about.numbersTitle": "Where we are today",
@@ -789,7 +789,7 @@ export const en = {
   "driver.findDates": "Check prices and dates",
   "home.popularTitle": "Popular destinations",
   "home.popularSub": "Fixed from-prices for the whole car, not per seat.",
-  "home.whyRG": "Why RouteGeorgia?",
+  "home.whyRG": "Why Route Planner?",
   "home.helpTitle": "Need help?",
   "home.helpBody": "Write or call us — a real person answers.",
   "home.helpWhatsApp": "WhatsApp",
@@ -798,12 +798,12 @@ export const en = {
 
   "credits.title": "Photo credits",
   "credits.lead": "Destination photography on this site comes from Wikimedia Commons photographers, used under the licenses listed below with our thanks.",
-  "credits.ours": "Photographs of Gergeti, Ushguli, Old Tbilisi and the mountain roads are RouteGeorgia's own.",
+  "credits.ours": "Photographs of Gergeti, Ushguli, Old Tbilisi and the mountain roads are Route Planner's own.",
   "footer.credits": "Photo credits",
 
   // --- driver application (public form) ---------------------------------
-  "drive.metaTitle": "Drive with RouteGeorgia — apply to join",
-  "drive.metaDesc": "Apply to drive with RouteGeorgia in five minutes — who you are, your car, how to reach you. Documents come later, from your own driver page.",
+  "drive.metaTitle": "Drive with Route Planner — apply to join",
+  "drive.metaDesc": "Apply to drive with Route Planner in five minutes — who you are, your car, how to reach you. Documents come later, from your own driver page.",
   "drive.eyebrow": "Drive with us",
   "drive.title": "Apply to drive with us",
   "drive.lead": "We work with professional drivers across Georgia — airport transfers, intercity routes and day tours. You set your own prices, you choose the days you work, and you are paid per trip.",

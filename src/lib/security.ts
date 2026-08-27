@@ -36,7 +36,7 @@ export async function assertSameOrigin(): Promise<void> {
   const forwarded = h.get("x-forwarded-host") ?? h.get("host");
 
   const allowed = new Set(
-    [expected, forwarded, "routegeorgia.ge", "www.routegeorgia.ge"].filter(Boolean) as string[],
+    [expected, forwarded, "routeplanner.ge", "www.routeplanner.ge"].filter(Boolean) as string[],
   );
 
   const sourceHost = (() => {

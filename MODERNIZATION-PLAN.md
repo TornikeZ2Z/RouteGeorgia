@@ -1,6 +1,6 @@
-# RouteGeorgia — Website Modernization Plan
+# Route Planner — Website Modernization Plan
 
-*Prepared 23 Aug 2026, against the Route Georgia Design System v1.0 ("Round 1" identity).*
+*Prepared 23 Aug 2026, against the Route Planner Design System v1.0 ("Round 1" identity).*
 
 ## Where we stand
 
@@ -61,7 +61,7 @@ Bringing the UI in line with the component guidelines:
 ## Operations backlog (you — unchanged from before, in priority order)
 
 1. **Resend account** → I wire real booking emails the same day (currently emails only log to the server console).
-2. **SUPPORT_PHONE env var + support@routegeorgia.ge mailbox** → contact page and footer become real.
+2. **SUPPORT_PHONE env var + support@routeplanner.ge mailbox** → contact page and footer become real.
 3. **Payment provider decision** (bank sit-down) → card payments; cash works today.
 4. **Render paid tier + R2 storage** when you announce launch (free tier sleeps; driver documents need durable storage).
 5. **Wipe demo data / launch seed** when the first real driver signs.
