@@ -6,10 +6,16 @@ const CANONICAL_HOST = "routeplanner.ge";
  * The name the platform used to trade under.
  *
  * Every link shared before the rename points here — driver invitations,
- * booking confirmations, anything already indexed. The domain stays ours and
- * stays attached to this service, so it keeps answering; it just answers by
- * sending people to the new name. Permanent, so search engines move the
- * ranking across rather than treating the two as rivals.
+ * booking confirmations, anything already indexed — so the old domain stays
+ * ours, stays attached to this service, and answers by sending people to the
+ * new name. Permanent, so search engines move the ranking across.
+ *
+ * Switched off until REDIRECT_FORMER_DOMAIN=true, for the same reason the
+ * canonical-host rule below is opt-in, and it is worth spelling out because
+ * the failure is silent and total: the old domain is the one that currently
+ * works. Turning this on before routeplanner.ge resolves to this service
+ * would take every visitor from a live site to an address that does not
+ * answer. Point the DNS, confirm the new domain serves, then set the flag.
  */
 const FORMER_HOSTS = ["routegeorgia.ge", "www.routegeorgia.ge"];
 
@@ -40,12 +46,14 @@ const config: NextConfig = {
         destination: `https://${CANONICAL_HOST}/:path*`,
         permanent: true,
       },
-      ...FORMER_HOSTS.map((host) => ({
-        source: "/:path*",
-        has: [{ type: "host" as const, value: host }],
-        destination: `https://${CANONICAL_HOST}/:path*`,
-        permanent: true,
-      })),
+      ...(process.env.REDIRECT_FORMER_DOMAIN === "true"
+        ? FORMER_HOSTS.map((host) => ({
+            source: "/:path*",
+            has: [{ type: "host" as const, value: host }],
+            destination: `https://${CANONICAL_HOST}/:path*`,
+            permanent: true,
+          }))
+        : []),
     ];
 
     if (process.env.ENFORCE_CANONICAL_HOST === "true") {
