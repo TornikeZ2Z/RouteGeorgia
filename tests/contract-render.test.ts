@@ -17,7 +17,6 @@ import postgres from "postgres";
 process.env.COMPANY_LEGAL_NAME ||= 'შპს "რაუტ ჯორჯია"';
 process.env.COMPANY_ID_NUMBER ||= "437377704";
 process.env.COMPANY_ADDRESS ||= "თბილისი, საქართველო";
-process.env.COMPANY_DIRECTOR ||= "Test Director";
 
 const probe = postgres(process.env.DATABASE_URL!, { max: 1, onnotice: () => {}, connect_timeout: 3 });
 

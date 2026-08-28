@@ -138,6 +138,7 @@ import { missingDriverDetails } from "@/lib/contract";
 import { settlementPeriodLabel } from "@/lib/settings";
 
 const MIGRATION = readFileSync("db/migrations/0015_contracts_v2_and_schools.sql", "utf8");
+const AMENDMENT = readFileSync("db/migrations/0016_contract_party_is_the_company.sql", "utf8");
 
 /**
  * Every placeholder the seeded contract text uses must be one the renderer
@@ -150,7 +151,7 @@ const MIGRATION = readFileSync("db/migrations/0015_contracts_v2_and_schools.sql"
  * taught to resolve it.
  */
 const RESOLVABLE = new Set([
-  "COMPANY_LEGAL_NAME", "COMPANY_ID_NUMBER", "COMPANY_ADDRESS", "COMPANY_DIRECTOR",
+  "COMPANY_LEGAL_NAME", "COMPANY_ID_NUMBER", "COMPANY_ADDRESS",
   "SUPPORT_EMAIL",
   "COMMISSION_PERCENT", "DRIVER_SHARE_PERCENT", "SETTLEMENT_PERIOD",
   "TERMINATION_NOTICE_DAYS",
@@ -159,12 +160,25 @@ const RESOLVABLE = new Set([
   "SCHOOL_NAME", "SCHOOL_ID_NUMBER", "SCHOOL_DIRECTOR", "SCHOOL_ADDRESS", "SCHOOL_PHONE",
 ]);
 
+/**
+ * Placeholders that appear in a superseded seed but no longer in the live text.
+ *
+ * Migrations are append-only history: 0015 seeded the agreements naming the
+ * director who represents the company, and 0016 removed that in favour of
+ * naming the company itself. The old file still contains the placeholder and
+ * always will, so it is listed here rather than pretended away — and the
+ * assertion inside 0016 is what proves it is gone from the live text.
+ */
+const REMOVED_BY_LATER_MIGRATION = new Set(["COMPANY_DIRECTOR"]);
+
 describe("seeded agreement text", () => {
   it("uses only placeholders the renderer can resolve", () => {
     const used = new Set(
       [...MIGRATION.matchAll(/\{\{([A-Z_]+)\}\}/g)].map((m) => m[1]!),
     );
-    const unknown = [...used].filter((key) => !RESOLVABLE.has(key));
+    const unknown = [...used].filter(
+      (key) => !RESOLVABLE.has(key) && !REMOVED_BY_LATER_MIGRATION.has(key),
+    );
     expect(unknown).toEqual([]);
   });
 
@@ -207,6 +221,24 @@ describe("seeded agreement text", () => {
       (MIGRATION.split(`$${tag}$`)[1]!.match(/^## /gm) ?? []).length;
     expect(sections("contract_ka")).toBe(sections("contract_en"));
     expect(sections("school_ka")).toBe(sections("school_en"));
+  });
+});
+
+describe("naming the counterparty", () => {
+  /**
+   * The company contracts in its own name. A director's name in standing terms
+   * signed by many people would have to be reissued whenever the post changed,
+   * and identifies nothing the registered name and code do not.
+   */
+  it("removes the director from every body, and says so if it cannot", () => {
+    expect(AMENDMENT).toContain("{{COMPANY_DIRECTOR}}");
+    // The migration refuses to finish quietly if a replace missed a body.
+    expect(AMENDMENT).toMatch(/RAISE EXCEPTION[\s\S]*COMPANY_DIRECTOR still present/);
+  });
+
+  it("refuses to rewrite text that has already been signed", () => {
+    expect(AMENDMENT).toMatch(/count\(\*\) FROM contract_signatures\) > 0/);
+    expect(AMENDMENT).toContain("publishing a new version");
   });
 });
 

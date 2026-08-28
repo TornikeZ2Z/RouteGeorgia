@@ -79,14 +79,16 @@ export interface ContractSignature {
  * Missing entity details, if any.
  *
  * The commercial terms always resolve (settings have defaults), so only the
- * company's own identification can be outstanding.
+ * company's own identification can be outstanding. The agreements name the
+ * company as the contracting party rather than the director representing it:
+ * these are standing terms signed by many people, and a director's name would
+ * mean reissuing every agreement whenever the post changed.
  */
 export function missingCompanyDetails(): string[] {
   const missing: string[] = [];
   if (!config.company.legalName.trim()) missing.push("COMPANY_LEGAL_NAME");
   if (!config.company.idNumber.trim()) missing.push("COMPANY_ID_NUMBER");
   if (!config.company.address.trim()) missing.push("COMPANY_ADDRESS");
-  if (!config.company.director.trim()) missing.push("COMPANY_DIRECTOR");
   return missing;
 }
 
@@ -127,7 +129,6 @@ async function placeholders(
     COMPANY_LEGAL_NAME: config.company.legalName,
     COMPANY_ID_NUMBER: config.company.idNumber,
     COMPANY_ADDRESS: config.company.address,
-    COMPANY_DIRECTOR: config.company.director,
     SUPPORT_EMAIL: config.contact.email,
 
     COMMISSION_PERCENT: String(commissionPercent),
@@ -352,7 +353,6 @@ export async function signContract(input: SignInput): Promise<SignResult> {
             ${JSON.stringify({
               companyLegalName: config.company.legalName,
               companyIdNumber: config.company.idNumber,
-              companyDirector: config.company.director,
               commissionRateBps: settings.commission_rate_bps,
               settlementPeriodDays: settings.settlement_period_days,
               terminationNoticeDays: settings.termination_notice_days,
