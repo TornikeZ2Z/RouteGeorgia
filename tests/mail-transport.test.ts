@@ -79,3 +79,21 @@ describe("transport selection", () => {
     expect(transport.name).toContain("console");
   });
 });
+
+describe("georgian mobile normalisation for smsoffice", () => {
+  it("adds the country code to a local mobile", async () => {
+    const { normalizeGeorgianMobile } = await import("@/lib/notifications");
+    expect(normalizeGeorgianMobile("555 12 34 56")).toBe("995555123456");
+  });
+
+  it("leaves an already-international number alone", async () => {
+    const { normalizeGeorgianMobile } = await import("@/lib/notifications");
+    expect(normalizeGeorgianMobile("+995 555 12 34 56")).toBe("995555123456");
+  });
+
+  it("strips formatting but does not guess at foreign numbers", async () => {
+    const { normalizeGeorgianMobile } = await import("@/lib/notifications");
+    // A German number is not ours to rewrite; the gateway rejects it loudly.
+    expect(normalizeGeorgianMobile("+49 151 1234567")).toBe("491511234567");
+  });
+});

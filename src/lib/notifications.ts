@@ -170,25 +170,78 @@ const smtpConfigured = () =>
   Boolean(config.mail.smtp.host && config.mail.smtp.user && config.mail.smtp.password);
 
 /**
+ * smsoffice.ge, over its v2 HTTP API.
+ *
+ * One authenticated POST per message — no SDK, same reasoning as Resend.
+ * The gateway wants numbers as 995XXXXXXXXX with no plus and no spaces, and
+ * Georgian mobiles are the only numbers this platform ever texts, so the
+ * normaliser is deliberately that narrow: a local 5XXXXXXXX gets the country
+ * code; anything else is passed through digits-only and left to the gateway
+ * to accept or reject loudly.
+ */
+export function normalizeGeorgianMobile(raw: string): string {
+  const digits = raw.replace(/\D/g, "");
+  if (digits.length === 9 && digits.startsWith("5")) return `995${digits}`;
+  return digits;
+}
+
+const smsOfficeTransport: Transport = {
+  name: "smsoffice",
+  async send(message) {
+    const params = new URLSearchParams({
+      key: config.sms.apiKey,
+      destination: normalizeGeorgianMobile(message.to),
+      sender: config.sms.sender,
+      // SMS has no subject line; the body is the whole message.
+      content: message.body,
+      urgent: "true",
+    });
+
+    const response = await fetch("https://smsoffice.ge/api/v2/send/", {
+      method: "POST",
+      headers: { "Content-Type": "application/x-www-form-urlencoded" },
+      body: params.toString(),
+      signal: AbortSignal.timeout(15_000),
+    });
+    if (!response.ok) {
+      throw new Error(`smsoffice answered ${response.status}`);
+    }
+
+    const data = (await response.json()) as {
+      Success?: boolean; Message?: string; MessageId?: string; ErrorCode?: number;
+    };
+    if (!data.Success) {
+      // The dispatcher records last_error and retries; the recipient's number
+      // is already on the row, so the message alone is enough here.
+      throw new Error(`smsoffice refused: ${data.Message ?? "no reason"} (code ${data.ErrorCode ?? "?"})`);
+    }
+    return { ref: data.MessageId ?? `smsoffice-${Date.now()}` };
+  },
+};
+
+const smsConfigured = () => Boolean(config.sms.apiKey && config.sms.sender);
+
+/**
  * Which transport actually carries a message.
  *
  * SMTP wins over Resend when both are configured, because SMTP is the one
- * someone set up deliberately for this domain. SMS has no provider yet and
- * still prints to the log — routing by channel here means adding one later
- * touches only this function.
+ * someone set up deliberately for this domain. SMS goes through smsoffice.ge
+ * once its key and sender are set, and to the log until then.
  */
 export function getTransport(): Transport {
   const email =
     smtpConfigured() ? smtpTransport
     : config.mail.resendApiKey ? resendTransport
     : null;
+  const sms = smsConfigured() ? smsOfficeTransport : null;
 
-  if (!email) return consoleTransport;
+  if (!email && !sms) return consoleTransport;
 
   return {
-    name: `${email.name}+console`,
+    name: `${email?.name ?? "console"}+${sms?.name ?? "console"}`,
     async send(message) {
-      if (message.channel === "EMAIL") return email.send(message);
+      if (message.channel === "EMAIL" && email) return email.send(message);
+      if (message.channel === "SMS" && sms) return sms.send(message);
       return consoleTransport.send(message);
     },
   };

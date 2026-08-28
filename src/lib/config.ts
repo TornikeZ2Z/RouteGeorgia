@@ -70,6 +70,15 @@ const Schema = z.object({
    * instead of sending, which is the development behaviour.
    */
   RESEND_API_KEY: z.string().default(""),
+
+  /**
+   * smsoffice.ge — the Georgian SMS gateway. Both must be set for real SMS:
+   * the key authenticates, and the sender name is what appears on the
+   * recipient's phone (it has to be registered with smsoffice first).
+   * Unset, SMS falls back to the console like email does.
+   */
+  SMSOFFICE_API_KEY: z.string().default(""),
+  SMSOFFICE_SENDER: z.string().default(""),
   /**
    * SMTP, for Google Workspace and anything else that speaks it. Takes
    * precedence over Resend when a host, user and password are all present.
@@ -173,6 +182,7 @@ export const config = {
   },
 
   contact: { phone: env.SUPPORT_PHONE, email: env.SUPPORT_EMAIL },
+  sms: { apiKey: env.SMSOFFICE_API_KEY, sender: env.SMSOFFICE_SENDER },
   mail: {
     resendApiKey: env.RESEND_API_KEY,
     from: env.MAIL_FROM,
