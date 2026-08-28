@@ -45,8 +45,9 @@ services:
       # file written by a different major is rejected by `npm ci`.
       - key: NODE_VERSION
         value: "22"
-      # Stays on the domain that actually serves until routeplanner.ge is
-      # pointed at this service. APP_URL is what goes into booking links and
-      # driver invitations, so moving it early sends people nowhere.
       - key: APP_URL
-        value: https://routegeorgia.ge
+        value: https://routeplanner.ge
+      # Both domains verified serving through Cloudflare on 2026-08-28, so the
+      # old name now forwards to the new one, path preserved.
+      - key: REDIRECT_FORMER_DOMAIN
+        value: "true"
