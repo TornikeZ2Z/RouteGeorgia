@@ -16,7 +16,19 @@ import "server-only";
 import { sql } from "@db/client";
 import { config } from "@/lib/config";
 
-export const SETTING_KEYS = ["commission_rate_bps", "minimum_day_fare_minor"] as const;
+export const SETTING_KEYS = [
+  "commission_rate_bps",
+  "minimum_day_fare_minor",
+  // Terms the two agreements leave blank. They are commercial decisions, not
+  // legal drafting, so they live here and are substituted into the contract
+  // text at render time — a change of settlement cycle must not need a lawyer.
+  "settlement_period_days",
+  "termination_notice_days",
+  "school_cancel_free_hours",
+  "school_cancel_tier_a_pct",
+  "school_cancel_tier_b_pct",
+  "school_cancel_tier_c_pct",
+] as const;
 export type SettingKey = (typeof SETTING_KEYS)[number];
 
 export interface SettingSpec {
@@ -31,6 +43,22 @@ export const SETTING_SPECS: Record<SettingKey, SettingSpec> = {
   commission_rate_bps: { min: 0, max: 5000, fallback: () => config.policy.commissionRateBps },
   // Up to 5000 GEL a day in tetri; 0 disables the floor entirely.
   minimum_day_fare_minor: { min: 0, max: 500_000, fallback: () => 0 },
+
+  // Driver agreement 6.5 — how often the driver is paid out. Held in days so
+  // the cycle can be tuned without a new enum: 1 daily, 7 weekly, 30 monthly.
+  settlement_period_days: { min: 1, max: 31, fallback: () => 7 },
+  // Driver agreement 14.2 / school agreement 16.2 — notice to walk away.
+  termination_notice_days: { min: 1, max: 180, fallback: () => 30 },
+
+  // School agreement 11.2, the cancellation ladder. Hours of notice that
+  // attract no charge, then three tiers of forfeited prepayment.
+  school_cancel_free_hours: { min: 0, max: 720, fallback: () => 72 },
+  // 72h-24h before departure.
+  school_cancel_tier_a_pct: { min: 0, max: 100, fallback: () => 25 },
+  // Under 24h.
+  school_cancel_tier_b_pct: { min: 0, max: 100, fallback: () => 50 },
+  // On the day itself.
+  school_cancel_tier_c_pct: { min: 0, max: 100, fallback: () => 100 },
 };
 
 const CACHE_MS = 5_000;
@@ -75,6 +103,25 @@ export async function getCommissionRateBps(): Promise<number> {
 /** Floor under one day of a driver's time, in minor units. 0 means no floor. */
 export async function getMinimumDayFareMinor(): Promise<number> {
   return (await getSettings()).minimum_day_fare_minor;
+}
+
+/**
+ * The settlement cycle as a word rather than a number, because that is how it
+ * reads in the agreement. Anything that is not a recognised cycle is described
+ * by its length, so an operator who sets 10 days gets a contract that says
+ * "every 10 days" rather than a blank.
+ */
+export function settlementPeriodLabel(days: number, locale: "ka" | "en"): string {
+  const known: Record<number, { ka: string; en: string }> = {
+    1: { ka: "ყოველდღიურად", en: "daily" },
+    7: { ka: "ყოველკვირეულად", en: "weekly" },
+    14: { ka: "ორ კვირაში ერთხელ", en: "every two weeks" },
+    30: { ka: "თვეში ერთხელ", en: "monthly" },
+    31: { ka: "თვეში ერთხელ", en: "monthly" },
+  };
+  const hit = known[days];
+  if (hit) return hit[locale];
+  return locale === "ka" ? `ყოველ ${days} დღეში ერთხელ` : `every ${days} days`;
 }
 
 /**

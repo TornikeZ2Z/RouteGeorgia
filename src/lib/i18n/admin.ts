@@ -26,6 +26,7 @@ const D = {
   "nav.drivers": { ka: "მძღოლები", en: "Drivers" },
   "nav.bookings": { ka: "ჯავშნები", en: "Bookings" },
   "nav.support": { ka: "მხარდაჭერა", en: "Support" },
+  "nav.schools": { ka: "სკოლები", en: "Schools" },
   "nav.media": { ka: "ავტომობილის ფოტოები", en: "Vehicle photos" },
   "nav.reviews": { ka: "შეფასებები", en: "Reviews" },
   "nav.finance": { ka: "ფინანსები", en: "Finance" },

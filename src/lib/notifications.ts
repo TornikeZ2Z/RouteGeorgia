@@ -72,7 +72,11 @@ export async function queue(tx: Executor, input: QueueInput): Promise<string | n
 
 export interface Transport {
   readonly name: string;
-  send(message: { to: string; subject: string; body: string; channel: string }): Promise<{ ref: string }>;
+  send(message: {
+    to: string; subject: string; body: string; channel: string;
+    /** Correlates a delivery receipt back to the queued row. SMS only. */
+    reference?: string;
+  }): Promise<{ ref: string }>;
 }
 
 /**
@@ -185,18 +189,74 @@ export function normalizeGeorgianMobile(raw: string): string {
   return digits;
 }
 
+/**
+ * Sender names are far more constrained than a brand name is.
+ *
+ * smsoffice allows only letters, digits, hyphen and full stop, up to eleven
+ * characters — no spaces. A brand with a space in it therefore cannot be
+ * registered as typed, so anything disallowed is stripped rather than sent to
+ * be rejected with error 110 or 150. The result must still match the sender
+ * actually registered on the account, which is why the substitution is
+ * announced in the log the first time it happens.
+ */
+let senderWarned = false;
+
+export function normalizeSender(raw: string): string {
+  const cleaned = raw.replace(/[^A-Za-z0-9.-]/g, "").slice(0, 11);
+  if (!senderWarned && cleaned !== raw) {
+    senderWarned = true;
+    console.warn(
+      `[sms] sender ${JSON.stringify(raw)} is not a legal smsoffice sender; ` +
+      `using ${JSON.stringify(cleaned)}. Register exactly this on smsoffice.ge.`,
+    );
+  }
+  return cleaned;
+}
+
+/**
+ * What the gateway's numeric replies mean, so a failure in the outbox reads as
+ * a cause rather than a number. Taken from the published table; anything not
+ * listed is reported with its code.
+ */
+const SMSOFFICE_CODES: Record<number, string> = {
+  0: "accepted for delivery",
+  10: "destination contains non-Georgian numbers",
+  20: "account balance is insufficient",
+  40: "message is longer than the gateway accepts",
+  60: "content parameter was empty",
+  70: "no destination numbers supplied",
+  75: "every number is on the stop list",
+  76: "every number was in an invalid format",
+  77: "every number is on the stop list or invalid",
+  80: "no account matches the API key",
+  110: "sender name was not understood",
+  120: "API access is not enabled on the smsoffice profile",
+  150: "sender name is not registered on the account",
+  500: "key parameter missing",
+  600: "destination parameter missing",
+  700: "sender parameter missing",
+  800: "content parameter missing",
+  [-100]: "temporary gateway fault",
+};
+
 const smsOfficeTransport: Transport = {
   name: "smsoffice",
   async send(message) {
     const params = new URLSearchParams({
       key: config.sms.apiKey,
       destination: normalizeGeorgianMobile(message.to),
-      sender: config.sms.sender,
+      sender: normalizeSender(config.sms.sender),
       // SMS has no subject line; the body is the whole message.
       content: message.body,
+      // Delivery receipts are only correlated when a reference was sent, and
+      // the gateway caps it at 20 characters.
+      ...(message.reference ? { reference: message.reference.slice(0, 20) } : {}),
+      // Reaches numbers that have blocked bulk SMS. Requires the sender to be
+      // registered and active, which is also required for any send at all.
       urgent: "true",
     });
 
+    // The trailing slash is required on POST; without it the gateway 404s.
     const response = await fetch("https://smsoffice.ge/api/v2/send/", {
       method: "POST",
       headers: { "Content-Type": "application/x-www-form-urlencoded" },
@@ -208,14 +268,24 @@ const smsOfficeTransport: Transport = {
     }
 
     const data = (await response.json()) as {
-      Success?: boolean; Message?: string; MessageId?: string; ErrorCode?: number;
+      Success?: boolean; Message?: string; Output?: unknown; ErrorCode?: number;
     };
     if (!data.Success) {
       // The dispatcher records last_error and retries; the recipient's number
-      // is already on the row, so the message alone is enough here.
-      throw new Error(`smsoffice refused: ${data.Message ?? "no reason"} (code ${data.ErrorCode ?? "?"})`);
+      // is already on the row, so the reason alone is enough here.
+      const code = data.ErrorCode;
+      const meaning = typeof code === "number" ? SMSOFFICE_CODES[code] : undefined;
+      throw new Error(
+        `smsoffice refused: ${meaning ?? data.Message ?? "no reason given"}` +
+        (typeof code === "number" ? ` (code ${code})` : ""),
+      );
     }
-    return { ref: data.MessageId ?? `smsoffice-${Date.now()}` };
+
+    // Output carries the gateway's own identifier for the batch.
+    const ref = typeof data.Output === "string" || typeof data.Output === "number"
+      ? String(data.Output)
+      : message.reference ?? `smsoffice-${Date.now()}`;
+    return { ref };
   },
 };
 
@@ -284,6 +354,9 @@ export async function dispatchPending(
     try {
       await transport.send({
         to: row.to_address, subject: row.subject ?? "", body: row.body, channel: row.channel,
+        // Hyphens stripped so a UUID still fits the gateway's 20-char cap with
+        // enough of it left to identify the row uniquely.
+        reference: row.id.replace(/-/g, "").slice(0, 20),
       });
       await rootSql`UPDATE notifications SET state='SENT', sent_at=now(), last_error=NULL WHERE id=${row.id}::uuid`;
       sent++;

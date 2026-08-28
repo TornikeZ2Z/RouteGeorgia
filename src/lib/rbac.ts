@@ -18,6 +18,7 @@ export type Permission =
   | "admin.bookings.read" | "admin.bookings.reassign"
   | "admin.locations.write" | "admin.pricing.bands.write" | "admin.pricing.approve"
   | "admin.content.write"
+  | "admin.schools.read" | "admin.schools.write" | "admin.schools.agreement"
   | "admin.finance.read" | "admin.finance.execute"
   | "admin.audit.read" | "admin.rbac.write";
 
@@ -28,12 +29,14 @@ const DRIVER: Permission[] = [
 
 const SUPPORT: Permission[] = [
   "admin.access", "admin.drivers.read", "admin.documents.read", "admin.bookings.read",
+  "admin.schools.read",
 ];
 
 const OPERATIONS: Permission[] = [
   ...SUPPORT,
   "admin.drivers.decide", "admin.drivers.publish", "admin.documents.decide",
   "admin.bookings.reassign", "admin.locations.write", "admin.pricing.approve",
+  "admin.schools.write", "admin.schools.agreement",
 ];
 
 const FINANCE: Permission[] = [
@@ -77,6 +80,7 @@ export function canAny(roles: readonly Role[], permissions: readonly Permission[
 export const REASON_REQUIRED: ReadonlySet<Permission> = new Set([
   "admin.drivers.decide", "admin.drivers.publish", "admin.documents.decide",
   "admin.bookings.reassign", "admin.finance.execute", "admin.rbac.write",
+  "admin.schools.agreement",
 ]);
 
 export class ForbiddenError extends Error {

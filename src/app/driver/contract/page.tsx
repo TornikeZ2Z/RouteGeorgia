@@ -4,8 +4,10 @@ import { getTranslator, isLocale, type Locale } from "@/lib/i18n";
 import { Alert, Badge, Card, PageHeader } from "@/components/ui";
 import {
   getActiveContract, getSignature, parseContract, companyDetailsComplete,
+  getDriverParty, missingDriverDetails,
 } from "@/lib/contract";
 import { SignContract } from "./sign";
+import { LegalDetails } from "./legal-details";
 
 export const dynamic = "force-dynamic";
 export const metadata = { robots: { index: false } };
@@ -15,12 +17,23 @@ export default async function ContractPage() {
   const locale = (isLocale(user.locale) ? user.locale : "ka") as Locale;
   const t = getTranslator(locale);
 
-  const [driver] = await sql<{ id: string; status: string; legal_first_name: string | null; legal_last_name: string | null }[]>`
-    SELECT id, status::text AS status, legal_first_name, legal_last_name
+  const [driver] = await sql<{
+    id: string; status: string; legal_first_name: string | null; legal_last_name: string | null;
+    personal_number: string | null; legal_address: string | null;
+  }[]>`
+    SELECT id, status::text AS status, legal_first_name, legal_last_name,
+           personal_number, legal_address
     FROM driver_profiles WHERE user_id = ${user.id}::uuid`;
 
+  // The driver's own copy, not the blank template: their name, personal number
+  // and address are printed in the agreement, and the hash they sign covers
+  // them. Before those details exist there is only a template to read.
+  const party = driver ? await getDriverParty(driver.id) : null;
+  const detailsMissing = party ? missingDriverDetails(party) : ["DRIVER_NAME"];
+  const detailsComplete = detailsMissing.length === 0;
+
   const [contract, signature] = await Promise.all([
-    getActiveContract(locale),
+    getActiveContract(locale, "DRIVER", detailsComplete && party ? party : undefined),
     driver ? getSignature(driver.id) : Promise.resolve(null),
   ]);
 
@@ -90,8 +103,17 @@ export default async function ContractPage() {
         </Card>
       )}
 
+      {/* Identity first: the agreement above is a template until these exist. */}
+      {ready && approved && !signature && !detailsComplete && (
+        <LegalDetails
+          locale={locale}
+          personalNumber={driver?.personal_number ?? null}
+          legalAddress={driver?.legal_address ?? null}
+        />
+      )}
+
       {/* The signing block only appears when signing is actually possible. */}
-      {ready && approved && !signature && contract && (
+      {ready && approved && !signature && detailsComplete && contract && (
         <SignContract
           locale={locale}
           bodyHash={contract.bodyHash}

@@ -484,6 +484,7 @@ const SIGN_ERROR_KEY: Record<SignError, MessageKey> = {
   NAME_MISMATCH: "contract.errNameMismatch",
   NOT_CONFIRMED: "contract.errNotConfirmed",
   STALE: "contract.errStale",
+  DETAILS_INCOMPLETE: "contract.errDetailsIncomplete",
 };
 
 /**
@@ -641,4 +642,54 @@ export async function toggleTodayAction(_prev: ActionState, formData: FormData):
         ? "Today already has a booking or a block."
         : "Nothing to change.",
   };
+}
+
+/**
+ * The personal number and registered address the agreement names the driver by.
+ *
+ * Collected here rather than during the application because until there is a
+ * contract to sign there is no reason to hold them. Editable only while the
+ * agreement is unsigned: afterwards the signed text records what was printed,
+ * and quietly changing the identity behind it would falsify the record.
+ */
+const LegalDetails = z.object({
+  personalNumber: z.string().trim().regex(/^[0-9]{11}$/, "personal number must be 11 digits"),
+  legalAddress: z.string().trim().min(6).max(240),
+});
+
+export async function saveDriverLegalDetailsAction(
+  _prev: ActionState, formData: FormData,
+): Promise<ActionState> {
+  const { user, driver } = await myDriver();
+  const locale = (isLocale(user.locale) ? user.locale : "ka") as Locale;
+  const t = getTranslator(locale);
+  if (!driver) return { ok: false, message: t("contract.errNotApproved") };
+
+  const parsed = LegalDetails.safeParse({
+    personalNumber: formData.get("personalNumber"),
+    legalAddress: formData.get("legalAddress"),
+  });
+  if (!parsed.success) return { ok: false, message: t("contract.detailsInvalid") };
+
+  const [existing] = await sql<{ n: number }[]>`
+    SELECT count(*)::int AS n FROM contract_signatures
+    WHERE driver_id = ${driver.id}::uuid
+      AND contract_version = current_contract_version('DRIVER')`;
+  if (existing && existing.n > 0) return { ok: false, message: t("contract.detailsLocked") };
+
+  await sql`
+    UPDATE driver_profiles
+    SET personal_number = ${parsed.data.personalNumber},
+        legal_address   = ${parsed.data.legalAddress},
+        updated_at      = now()
+    WHERE id = ${driver.id}::uuid`;
+
+  await writeAudit({
+    actorUserId: user.id, actorRole: "DRIVER", action: "driver.legal_details_saved",
+    objectType: "driver_profile", objectId: driver.id,
+    reason: "identity details required by the driver agreement",
+  });
+
+  revalidatePath("/driver/contract");
+  return { ok: true, message: t("contract.detailsSaved") };
 }

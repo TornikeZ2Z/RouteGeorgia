@@ -1514,3 +1514,80 @@ export async function savePlatformSettingsAction(
   revalidatePath("/admin/pricing");
   return { ok: true, message: "Saved. New quotes and new signatures use these values." };
 }
+
+/**
+ * The terms the two agreements leave blank.
+ *
+ * These are commercial decisions rather than legal drafting — how often a
+ * driver is paid, how much notice ends the relationship, what a school
+ * forfeits by cancelling late — so they live in settings and are substituted
+ * into the contract text when it is rendered. A change here shows up in the
+ * next contract anyone reads, and in nothing already signed: existing
+ * signatures carry the terms that applied at the time in their evidence.
+ */
+export async function saveAgreementTermsAction(
+  _prev: ActionState, formData: FormData,
+): Promise<ActionState> {
+  const actor = await requirePermission("admin.pricing.bands.write");
+
+  const num = (name: string) => Number(String(formData.get(name) ?? "").trim());
+  const fields = {
+    settlement_period_days: num("settlementPeriodDays"),
+    termination_notice_days: num("terminationNoticeDays"),
+    school_cancel_free_hours: num("cancelFreeHours"),
+    school_cancel_tier_a_pct: num("cancelTierA"),
+    school_cancel_tier_b_pct: num("cancelTierB"),
+    school_cancel_tier_c_pct: num("cancelTierC"),
+  } as const;
+
+  for (const [key, value] of Object.entries(fields)) {
+    if (!Number.isInteger(value)) {
+      return { ok: false, message: `Enter a whole number for ${key.replaceAll("_", " ")}.` };
+    }
+  }
+
+  // A ladder that does not climb would let a school cancel on the morning of a
+  // trip for less than it would have paid the week before.
+  if (!(fields.school_cancel_tier_a_pct <= fields.school_cancel_tier_b_pct
+        && fields.school_cancel_tier_b_pct <= fields.school_cancel_tier_c_pct)) {
+    return {
+      ok: false,
+      message: "The cancellation tiers must not decrease: later notice cannot cost a school less.",
+    };
+  }
+
+  const before = await getSettings();
+
+  for (const [key, value] of Object.entries(fields)) {
+    const saved = await setSetting(key as keyof typeof fields, value, actor.id);
+    if (saved === null) {
+      return { ok: false, message: `${key.replaceAll("_", " ")} is outside the allowed range.` };
+    }
+  }
+
+  const after = await getSettings();
+  await writeAudit({
+    actorUserId: actor.id,
+    actorRole: actor.roles[0] ?? null,
+    action: "platform.agreement_terms_changed",
+    objectType: "platform_settings",
+    objectId: null,
+    before: {
+      settlementPeriodDays: before.settlement_period_days,
+      terminationNoticeDays: before.termination_notice_days,
+      cancelFreeHours: before.school_cancel_free_hours,
+      cancelTiers: [before.school_cancel_tier_a_pct, before.school_cancel_tier_b_pct, before.school_cancel_tier_c_pct],
+    },
+    after: {
+      settlementPeriodDays: after.settlement_period_days,
+      terminationNoticeDays: after.termination_notice_days,
+      cancelFreeHours: after.school_cancel_free_hours,
+      cancelTiers: [after.school_cancel_tier_a_pct, after.school_cancel_tier_b_pct, after.school_cancel_tier_c_pct],
+    },
+    reason: "agreement terms updated from the console",
+  });
+
+  revalidatePath("/admin/pricing");
+  revalidatePath("/driver/contract");
+  return { ok: true, message: "Saved. The next contract anyone opens shows these terms." };
+}

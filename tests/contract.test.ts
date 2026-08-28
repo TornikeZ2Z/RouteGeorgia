@@ -128,3 +128,129 @@ describe("contract interface strings", () => {
     }
   });
 });
+
+// ---------------------------------------------------------------------------
+// The drafted agreements, as seeded.
+// ---------------------------------------------------------------------------
+
+import { readFileSync } from "node:fs";
+import { missingDriverDetails } from "@/lib/contract";
+import { settlementPeriodLabel } from "@/lib/settings";
+
+const MIGRATION = readFileSync("db/migrations/0015_contracts_v2_and_schools.sql", "utf8");
+
+/**
+ * Every placeholder the seeded contract text uses must be one the renderer
+ * knows how to fill.
+ *
+ * A typo here is invisible until someone reads their own contract and finds a
+ * blank where their personal number should be — or worse, does not notice.
+ * The set is written out rather than derived so that adding a placeholder to
+ * the text is a deliberate act that fails this test until the renderer is
+ * taught to resolve it.
+ */
+const RESOLVABLE = new Set([
+  "COMPANY_LEGAL_NAME", "COMPANY_ID_NUMBER", "COMPANY_ADDRESS", "COMPANY_DIRECTOR",
+  "SUPPORT_EMAIL",
+  "COMMISSION_PERCENT", "DRIVER_SHARE_PERCENT", "SETTLEMENT_PERIOD",
+  "TERMINATION_NOTICE_DAYS",
+  "CANCEL_FREE_HOURS", "CANCEL_TIER_A", "CANCEL_TIER_B", "CANCEL_TIER_C",
+  "DRIVER_NAME", "DRIVER_PERSONAL_NUMBER", "DRIVER_PHONE", "DRIVER_ADDRESS",
+  "SCHOOL_NAME", "SCHOOL_ID_NUMBER", "SCHOOL_DIRECTOR", "SCHOOL_ADDRESS", "SCHOOL_PHONE",
+]);
+
+describe("seeded agreement text", () => {
+  it("uses only placeholders the renderer can resolve", () => {
+    const used = new Set(
+      [...MIGRATION.matchAll(/\{\{([A-Z_]+)\}\}/g)].map((m) => m[1]!),
+    );
+    const unknown = [...used].filter((key) => !RESOLVABLE.has(key));
+    expect(unknown).toEqual([]);
+  });
+
+  /**
+   * The drafted document ran 8, 10, 11 — there was no Article 9. Renumbering
+   * closed the gap, and this checks it stayed closed in both languages.
+   */
+  it("numbers the driver agreement's articles consecutively", () => {
+    for (const tag of ["contract_ka", "contract_en"]) {
+      const body = MIGRATION.split(`$${tag}$`)[1]!;
+      const numbers = [...body.matchAll(/^## (?:Article|მუხლი) (\d+)\./gm)]
+        .map((m) => Number(m[1]!));
+      expect(numbers).toEqual(Array.from({ length: 15 }, (_, i) => i + 1));
+    }
+  });
+
+  it("numbers the school agreement's articles consecutively", () => {
+    for (const tag of ["school_ka", "school_en"]) {
+      const body = MIGRATION.split(`$${tag}$`)[1]!;
+      const numbers = [...body.matchAll(/^## (?:Article|მუხლი) (\d+)\./gm)]
+        .map((m) => Number(m[1]!));
+      expect(numbers).toEqual(Array.from({ length: 18 }, (_, i) => i + 1));
+    }
+  });
+
+  /**
+   * The draft numbered two different clauses 12.4. Any repeated clause number
+   * within one article is the same defect returning.
+   */
+  it("gives every clause its own number", () => {
+    for (const tag of ["contract_ka", "contract_en", "school_ka", "school_en"]) {
+      const body = MIGRATION.split(`$${tag}$`)[1]!;
+      const clauses = [...body.matchAll(/^(\d+\.\d+)\. /gm)].map((m) => m[1]!);
+      expect(new Set(clauses).size).toBe(clauses.length);
+    }
+  });
+
+  it("keeps both languages of each agreement structurally identical", () => {
+    const sections = (tag: string) =>
+      (MIGRATION.split(`$${tag}$`)[1]!.match(/^## /gm) ?? []).length;
+    expect(sections("contract_ka")).toBe(sections("contract_en"));
+    expect(sections("school_ka")).toBe(sections("school_en"));
+  });
+});
+
+describe("details required before signing", () => {
+  const complete = {
+    name: "Sandro Avsajanishvili", personalNumber: "01001000001",
+    phone: "995555123456", address: "Tbilisi, Rustaveli 1",
+  };
+
+  it("accepts a driver who has given everything the agreement prints", () => {
+    expect(missingDriverDetails(complete)).toEqual([]);
+  });
+
+  it("names what is still missing", () => {
+    expect(missingDriverDetails({ ...complete, personalNumber: null }))
+      .toEqual(["DRIVER_PERSONAL_NUMBER"]);
+    expect(missingDriverDetails({ ...complete, address: "  " }))
+      .toEqual(["DRIVER_ADDRESS"]);
+  });
+
+  /**
+   * The phone is printed but not demanded: it reaches the contract from the
+   * account the driver already signed in with, so it cannot be blank in
+   * practice, and blocking a signature on it would be a dead end.
+   */
+  it("does not block on the telephone number", () => {
+    expect(missingDriverDetails({ ...complete, phone: null })).toEqual([]);
+  });
+});
+
+describe("settlement cycle in words", () => {
+  it("names the cycles an operator is likely to choose", () => {
+    expect(settlementPeriodLabel(1, "en")).toBe("daily");
+    expect(settlementPeriodLabel(7, "en")).toBe("weekly");
+    expect(settlementPeriodLabel(30, "en")).toBe("monthly");
+    expect(settlementPeriodLabel(7, "ka")).toBe("ყოველკვირეულად");
+  });
+
+  /**
+   * An unusual number must still read as a sentence, because it is going into
+   * a signed contract where "every  days" would be a defect.
+   */
+  it("describes an unusual cycle by its length", () => {
+    expect(settlementPeriodLabel(10, "en")).toBe("every 10 days");
+    expect(settlementPeriodLabel(10, "ka")).toContain("10");
+  });
+});

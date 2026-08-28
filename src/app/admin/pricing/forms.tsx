@@ -3,7 +3,9 @@
 import { useActionState } from "react";
 import { Alert, Field, Input } from "@/components/ui";
 import { SubmitButton } from "@/components/form-state";
-import { savePriceBandAction, savePlatformSettingsAction } from "@/app/admin/actions";
+import {
+  savePriceBandAction, savePlatformSettingsAction, saveAgreementTermsAction,
+} from "@/app/admin/actions";
 
 const INITIAL = { ok: false } as const;
 
@@ -97,6 +99,86 @@ export function PlatformSettingsForm({
         <Alert tone={state.ok ? "success" : "danger"}>{state.message}</Alert>
       )}
       <SubmitButton>{labels.save}</SubmitButton>
+    </form>
+  );
+}
+
+/**
+ * The terms both agreements leave blank.
+ *
+ * They are grouped away from the pricing bands because they are not prices:
+ * they are the clauses a counterparty reads and agrees to. Changing one here
+ * changes the next contract someone opens, and nothing already signed.
+ */
+export function AgreementTermsForm({
+  settlementPeriodDays, terminationNoticeDays,
+  cancelFreeHours, cancelTierA, cancelTierB, cancelTierC,
+}: {
+  settlementPeriodDays: number; terminationNoticeDays: number;
+  cancelFreeHours: number; cancelTierA: number; cancelTierB: number; cancelTierC: number;
+}) {
+  const [state, action] = useActionState(saveAgreementTermsAction, INITIAL);
+
+  return (
+    <form action={action} className="space-y-4 rounded-xl border border-ink-200 bg-white p-5 sm:p-6">
+      <div>
+        <h2 className="font-display text-lg text-ink-900">Agreement terms</h2>
+        <p className="mt-1 text-sm leading-relaxed text-ink-600">
+          These fill the blanks in the driver and school agreements. The text a counterparty reads
+          always shows the values in force at that moment, and every signature records the values
+          that applied when it was given.
+        </p>
+      </div>
+
+      <fieldset className="space-y-3">
+        <legend className="text-sm font-semibold text-ink-900">Driver agreement</legend>
+        <div className="grid gap-3 sm:grid-cols-2">
+          <Field
+            label="Settlement cycle (days)" htmlFor="settlementPeriodDays"
+            hint="Clause 6.5. 1 reads as daily, 7 as weekly, 30 as monthly."
+          >
+            <Input id="settlementPeriodDays" name="settlementPeriodDays" type="number"
+                   min={1} max={31} defaultValue={settlementPeriodDays} />
+          </Field>
+          <Field
+            label="Notice to terminate (days)" htmlFor="terminationNoticeDays"
+            hint="Clause 13.2 of the driver agreement, 16.2 of the school one."
+          >
+            <Input id="terminationNoticeDays" name="terminationNoticeDays" type="number"
+                   min={1} max={180} defaultValue={terminationNoticeDays} />
+          </Field>
+        </div>
+      </fieldset>
+
+      <fieldset className="space-y-3">
+        <legend className="text-sm font-semibold text-ink-900">School cancellation ladder</legend>
+        <p className="text-sm text-ink-500">
+          Clause 11.2. Each tier is the share of the prepayment a school forfeits, and the tiers
+          must not decrease as the trip gets closer.
+        </p>
+        <div className="grid gap-3 sm:grid-cols-4">
+          <Field label="Free until (hours)" htmlFor="cancelFreeHours">
+            <Input id="cancelFreeHours" name="cancelFreeHours" type="number"
+                   min={0} max={720} defaultValue={cancelFreeHours} />
+          </Field>
+          <Field label="That window to 24h (%)" htmlFor="cancelTierA">
+            <Input id="cancelTierA" name="cancelTierA" type="number"
+                   min={0} max={100} defaultValue={cancelTierA} />
+          </Field>
+          <Field label="Under 24h (%)" htmlFor="cancelTierB">
+            <Input id="cancelTierB" name="cancelTierB" type="number"
+                   min={0} max={100} defaultValue={cancelTierB} />
+          </Field>
+          <Field label="On the day (%)" htmlFor="cancelTierC">
+            <Input id="cancelTierC" name="cancelTierC" type="number"
+                   min={0} max={100} defaultValue={cancelTierC} />
+          </Field>
+        </div>
+      </fieldset>
+
+      {state.message && <Alert tone={state.ok ? "success" : "danger"}>{state.message}</Alert>}
+
+      <SubmitButton variant="secondary">Save agreement terms</SubmitButton>
     </form>
   );
 }

@@ -93,6 +93,12 @@ const Schema = z.object({
   COMPANY_LEGAL_NAME: z.string().default(""),
   COMPANY_ID_NUMBER: z.string().default(""),
   COMPANY_ADDRESS: z.string().default(""),
+  /**
+   * The director who signs on the company's behalf. Both agreements name the
+   * representing director in their opening paragraph, so a blank here leaves a
+   * gap in the counterparty's own identification.
+   */
+  COMPANY_DIRECTOR: z.string().default(""),
   NODE_ENV: z.enum(["development", "test", "production"]).default("development"),
 });
 
@@ -197,6 +203,7 @@ export const config = {
     legalName: env.COMPANY_LEGAL_NAME,
     idNumber: env.COMPANY_ID_NUMBER,
     address: env.COMPANY_ADDRESS,
+    director: env.COMPANY_DIRECTOR,
   },
   routing: { provider: env.ROUTING_PROVIDER, apiKey: env.ROUTING_API_KEY },
   storage: {

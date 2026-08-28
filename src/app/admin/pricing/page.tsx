@@ -4,7 +4,7 @@ import { sql } from "@db/client";
 import { config } from "@/lib/config";
 import { toMajorString } from "@/lib/money";
 import { Alert, Card, PageHeader, Table } from "@/components/ui";
-import { BandForm, PlatformSettingsForm } from "./forms";
+import { BandForm, PlatformSettingsForm, AgreementTermsForm } from "./forms";
 import { can } from "@/lib/rbac";
 import { getSettings } from "@/lib/settings";
 
@@ -58,6 +58,15 @@ export default async function PricingBandsPage() {
           dayFare: t("settings.dayFare"), dayFareHint: t("settings.dayFareHint"),
           save: t("settings.save"), warning: t("settings.warning"),
         }}
+      />
+
+      <AgreementTermsForm
+        settlementPeriodDays={settings.settlement_period_days}
+        terminationNoticeDays={settings.termination_notice_days}
+        cancelFreeHours={settings.school_cancel_free_hours}
+        cancelTierA={settings.school_cancel_tier_a_pct}
+        cancelTierB={settings.school_cancel_tier_b_pct}
+        cancelTierC={settings.school_cancel_tier_c_pct}
       />
 
       <Alert tone="info" title="Commission is frozen at booking time">
