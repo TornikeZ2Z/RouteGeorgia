@@ -24,6 +24,7 @@ const GROUPS: { key: "shell.groupOps" | "shell.groupContent" | "shell.groupSyste
       { href: "/admin/bookings", key: "nav.bookings", permission: "admin.bookings.read" },
       { href: "/admin/support", key: "nav.support", permission: "admin.bookings.read" },
       { href: "/admin/schools", key: "nav.schools", permission: "admin.schools.read" },
+      { href: "/admin/requests", key: "nav.requests", permission: "admin.requests.read" },
       { href: "/admin/media", key: "nav.media", permission: "admin.drivers.decide" },
       { href: "/admin/reviews", key: "nav.reviews", permission: "admin.drivers.decide" },
     ],

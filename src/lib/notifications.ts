@@ -24,7 +24,8 @@ export type NotificationKind =
   | "booking.reminder.customer" | "booking.completed.customer"
   | "review.invitation" | "message.received"
   | "contract.ready"
-  | "support.driver_ticket" | "support.driver_reply";
+  | "support.driver_ticket" | "support.driver_reply"
+  | "change_request.submitted";
 
 export interface QueueInput {
   kind: NotificationKind;

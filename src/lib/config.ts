@@ -93,6 +93,17 @@ const Schema = z.object({
   COMPANY_LEGAL_NAME: z.string().default(""),
   COMPANY_ID_NUMBER: z.string().default(""),
   COMPANY_ADDRESS: z.string().default(""),
+
+  /**
+   * The unguessable segment in the change-request form's URL.
+   *
+   * The form has no login, so this is the only thing standing between it and
+   * the open internet. Empty means the form does not exist: the route answers
+   * 404 rather than 403, because confirming the path is real is most of the
+   * work of finding it. Rotate by changing this value; old links stop working
+   * immediately.
+   */
+  CHANGE_REQUEST_TOKEN: z.string().default(""),
   NODE_ENV: z.enum(["development", "test", "production"]).default("development"),
 });
 
@@ -198,6 +209,7 @@ export const config = {
     idNumber: env.COMPANY_ID_NUMBER,
     address: env.COMPANY_ADDRESS,
   },
+  changeRequestToken: env.CHANGE_REQUEST_TOKEN,
   routing: { provider: env.ROUTING_PROVIDER, apiKey: env.ROUTING_API_KEY },
   storage: {
     driver: env.STORAGE_DRIVER,

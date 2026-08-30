@@ -19,6 +19,7 @@ export type Permission =
   | "admin.locations.write" | "admin.pricing.bands.write" | "admin.pricing.approve"
   | "admin.content.write"
   | "admin.schools.read" | "admin.schools.write" | "admin.schools.agreement"
+  | "admin.requests.read" | "admin.requests.write"
   | "admin.finance.read" | "admin.finance.execute"
   | "admin.audit.read" | "admin.rbac.write";
 
@@ -29,14 +30,14 @@ const DRIVER: Permission[] = [
 
 const SUPPORT: Permission[] = [
   "admin.access", "admin.drivers.read", "admin.documents.read", "admin.bookings.read",
-  "admin.schools.read",
+  "admin.schools.read", "admin.requests.read",
 ];
 
 const OPERATIONS: Permission[] = [
   ...SUPPORT,
   "admin.drivers.decide", "admin.drivers.publish", "admin.documents.decide",
   "admin.bookings.reassign", "admin.locations.write", "admin.pricing.approve",
-  "admin.schools.write", "admin.schools.agreement",
+  "admin.schools.write", "admin.schools.agreement", "admin.requests.write",
 ];
 
 const FINANCE: Permission[] = [
