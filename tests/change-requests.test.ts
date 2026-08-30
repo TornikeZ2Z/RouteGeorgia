@@ -104,3 +104,39 @@ describe("the brief handed to Claude", () => {
     expect(brief).toContain(request.body);
   });
 });
+
+describe("screenshots in the brief", () => {
+  const base = {
+    id: "00000000-0000-0000-0000-000000000002",
+    reference: "CR-2026-0008",
+    title: "Driver list is cut off on my phone",
+    body: "The last column runs past the edge and I cannot read the status.",
+    reason: null,
+    area: "ADMIN" as const,
+    urgency: "NORMAL" as const,
+    submittedByName: "Giorgi",
+    submittedByContact: null,
+    submittedByUserId: null,
+    status: "NEW" as const,
+    resolution: null,
+    createdAt: new Date("2026-08-30T09:00:00Z"),
+    updatedAt: new Date("2026-08-30T09:00:00Z"),
+  };
+
+  /**
+   * For a visual report the screenshot IS the report, and prose alone will
+   * mislead. The brief has to say one exists or it invites working from the
+   * description and getting it wrong.
+   */
+  it("says when screenshots are attached", async () => {
+    const m = await load(TOKEN);
+    expect(m.briefFor(base, 2)).toContain("2 screenshots attached");
+    expect(m.briefFor(base, 1)).toContain("1 screenshot attached");
+  });
+
+  it("says nothing about screenshots when there are none", async () => {
+    const m = await load(TOKEN);
+    expect(m.briefFor(base, 0).toLowerCase()).not.toContain("screenshot");
+    expect(m.briefFor(base).toLowerCase()).not.toContain("screenshot");
+  });
+});

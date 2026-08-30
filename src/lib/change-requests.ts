@@ -109,6 +109,45 @@ export async function countOpen(): Promise<number> {
   return row?.n ?? 0;
 }
 
+export interface RequestImage {
+  id: string;
+  storageKey: string;
+  mimeType: string;
+  sizeBytes: number;
+}
+
+export async function listImages(requestId: string): Promise<RequestImage[]> {
+  const rows = await sql<Record<string, unknown>[]>`
+    SELECT id, storage_key, mime_type, size_bytes
+    FROM change_request_images
+    WHERE request_id = ${requestId}::uuid
+    ORDER BY created_at`;
+  return rows.map((r) => ({
+    id: r.id as string,
+    storageKey: r.storage_key as string,
+    mimeType: r.mime_type as string,
+    sizeBytes: Number(r.size_bytes),
+  }));
+}
+
+/** The storage key behind one image, for the admin-only serving route. */
+export async function imageKey(imageId: string): Promise<string | null> {
+  const [row] = await sql<{ storage_key: string }[]>`
+    SELECT storage_key FROM change_request_images WHERE id = ${imageId}::uuid`;
+  return row?.storage_key ?? null;
+}
+
+export async function attachImage(input: {
+  requestId: string; storageKey: string; mimeType: string;
+  sizeBytes: number; checksum: string;
+}): Promise<void> {
+  await sql`
+    INSERT INTO change_request_images
+      (request_id, storage_key, mime_type, size_bytes, checksum)
+    VALUES (${input.requestId}::uuid, ${input.storageKey}, ${input.mimeType},
+            ${input.sizeBytes}, ${input.checksum})`;
+}
+
 export interface CreateInput {
   title: string;
   body: string;
@@ -207,7 +246,7 @@ const AREA_POINTERS: Record<Area, string> = {
  * before any work starts. This does that restating once, at the point where
  * the area and the submitter are already known.
  */
-export function briefFor(request: ChangeRequest): string {
+export function briefFor(request: ChangeRequest, imageCount = 0): string {
   const lines = [
     `Change request ${request.reference} — ${request.title}`,
     "",
@@ -221,6 +260,15 @@ export function briefFor(request: ChangeRequest): string {
   ];
   if (request.reason?.trim()) {
     lines.push("", "Why:", request.reason.trim());
+  }
+  if (imageCount > 0) {
+    // Worth stating rather than leaving to be discovered: for a visual bug the
+    // screenshot usually IS the report, and prose alone will mislead.
+    lines.push(
+      "",
+      `${imageCount} screenshot${imageCount === 1 ? "" : "s"} attached — open the request in the`,
+      "console and look at them before working from the description alone.",
+    );
   }
   lines.push(
     "",

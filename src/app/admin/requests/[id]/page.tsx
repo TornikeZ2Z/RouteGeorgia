@@ -3,7 +3,7 @@ import Link from "next/link";
 import { requirePermission } from "@/lib/auth/session";
 import { can } from "@/lib/rbac";
 import { Alert, Badge, Card, PageHeader } from "@/components/ui";
-import { getRequest, briefFor } from "@/lib/change-requests";
+import { getRequest, briefFor, listImages } from "@/lib/change-requests";
 import { StatusForm, Brief } from "../forms";
 
 export const dynamic = "force-dynamic";
@@ -23,6 +23,8 @@ export default async function RequestPage({
 
   const request = await getRequest(id);
   if (!request) notFound();
+
+  const images = await listImages(request.id);
 
   const when = new Date(request.createdAt).toLocaleString("en-GB", {
     dateStyle: "medium", timeStyle: "short",
@@ -54,10 +56,12 @@ export default async function RequestPage({
               {request.submittedByUserId ? "Signed in" : "Self-reported, not verified"}
             </dd>
           </div>
-          <div>
-            <dt className="text-ink-500">Contact</dt>
-            <dd className="mt-0.5">{request.submittedByContact ?? "—"}</dd>
-          </div>
+          {request.submittedByContact && (
+            <div>
+              <dt className="text-ink-500">Contact</dt>
+              <dd className="mt-0.5">{request.submittedByContact}</dd>
+            </div>
+          )}
           <div>
             <dt className="text-ink-500">Filed</dt>
             <dd className="mt-0.5">{when}</dd>
@@ -85,8 +89,37 @@ export default async function RequestPage({
         </Alert>
       )}
 
+      {images.length > 0 && (
+        <Card className="p-5 sm:p-6">
+          <h2 className="font-display text-lg text-ink-900">
+            {images.length === 1 ? "Screenshot" : `Screenshots (${images.length})`}
+          </h2>
+          {/*
+            Served through an admin-gated route rather than a storage URL:
+            these routinely show real customer names and pickup addresses.
+          */}
+          <ul className="mt-3 grid gap-4 sm:grid-cols-2">
+            {images.map((img) => (
+              <li key={img.id}>
+                <a
+                  href={`/api/admin/request-images/${img.id}`}
+                  target="_blank" rel="noreferrer"
+                  className="block overflow-hidden rounded-lg border border-ink-200 hover:border-pine-800"
+                >
+                  {/* eslint-disable-next-line @next/next/no-img-element */}
+                  <img
+                    src={`/api/admin/request-images/${img.id}`} alt=""
+                    className="max-h-80 w-full bg-ink-50 object-contain"
+                  />
+                </a>
+              </li>
+            ))}
+          </ul>
+        </Card>
+      )}
+
       <Card className="p-5 sm:p-6">
-        <Brief text={briefFor(request)} />
+        <Brief text={briefFor(request, images.length)} />
       </Card>
 
       {mayWrite && (
