@@ -204,3 +204,18 @@ h1, h2, h3, h4, h5, nav, button, .font-display {
     transition-duration: 0.01ms !important;
   }
 }
+
+/*
+ * The road network drifts, slowly, so the map reads as a living network
+ * rather than a diagram. Slow enough not to pull the eye off the content,
+ * and off entirely for anyone who has asked for less motion.
+ */
+@keyframes geo-road-drift {
+  to { stroke-dashoffset: -24; }
+}
+.geo-road {
+  animation: geo-road-drift 3s linear infinite;
+}
+@media (prefers-reduced-motion: reduce) {
+  .geo-road { animation: none; }
+}
