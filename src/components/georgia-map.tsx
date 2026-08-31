@@ -54,6 +54,24 @@ const ROADS: [string, string][] = [
   ["shekvetili", "bakhmaro"],
 ];
 
+/**
+ * Where the mountains go, as [lon, lat, size].
+ *
+ * Placed by eye along the Greater Caucasus in the north and the Lesser in the
+ * south, which is the honest description: this is a schematic map, and the
+ * peaks exist to say "the north is high", not to survey anything. Sizes vary
+ * so the range does not look stamped.
+ */
+const PEAKS: [number, number, number][] = [
+  // Greater Caucasus, west to east
+  [40.9, 43.20, 13], [41.4, 43.28, 17], [41.9, 43.18, 14], [42.4, 43.05, 19],
+  [42.9, 42.92, 15], [43.4, 42.80, 20], [43.9, 42.68, 14], [44.4, 42.60, 17],
+  [44.9, 42.50, 13], [45.4, 42.36, 16], [45.9, 42.18, 12], [46.3, 41.98, 14],
+  // Lesser Caucasus, across the south
+  [41.9, 41.60, 12], [42.5, 41.52, 15], [43.1, 41.60, 11], [43.7, 41.50, 14],
+  [44.3, 41.44, 11], [44.9, 41.38, 13],
+];
+
 /** Cities the network hangs off. Drawn larger, because they are. */
 const HUBS = new Set(["tbilisi", "kutaisi", "batumi"]);
 
@@ -184,31 +202,41 @@ export function GeorgiaMap({ locale, places, initialCat = "all" }: { locale: str
 
           {/* ---------------------------------------------------- the sea -- */}
           <rect x="0" y="0" width={W} height={H} fill="url(#geo-sea)" opacity="0.55" />
-          {[0.30, 0.45, 0.60, 0.75].map((f, i) => (
+          {[0.52, 0.60, 0.68].map((f, i) => (
             <path
               key={f}
-              d={`M${8 + i * 5},${H * f} q26,-7 52,0 t52,0`}
-              fill="none" strokeWidth="1.1" strokeLinecap="round"
-              className="stroke-ink-400/25 dark:stroke-white/10"
+              d={`M${18 + i * 9},${H * f} q19,-5 38,0 t38,0`}
+              fill="none" strokeWidth="1.2" strokeLinecap="round"
+              className="stroke-ink-400/20 dark:stroke-white/8"
             />
           ))}
 
           {/* ------------------------------------------------ the country -- */}
           <path d={GEORGIA_PATH} fill="url(#geo-land)" filter="url(#geo-lift)" />
 
-          {/* Two ridges, roughly where the Caucasus actually runs: the Greater
-              range along the northern border, the Lesser across the south. Not
-              survey data — a suggestion of relief, so the land is not a flat
-              shape. */}
-          <g clipPath="url(#geo-clip)" className="stroke-ink-400/25 dark:stroke-white/12" fill="none" strokeLinecap="round">
-            {[0, 7, 14, 21].map((o) => (
-              <path key={`gc-${o}`} strokeWidth={o === 0 ? 1.5 : 1}
-                    d={`M${px(40.2)},${py(43.35) + o} C${px(41.8)},${py(43.62) + o} ${px(43.6)},${py(42.98) + o} ${px(45.0)},${py(42.72) + o} S${px(46.4)},${py(41.98) + o} ${px(46.8)},${py(41.86) + o}`} />
-            ))}
-            {[0, 6, 12].map((o) => (
-              <path key={`lc-${o}`} strokeWidth={o === 0 ? 1.3 : 0.9}
-                    d={`M${px(41.5)},${py(41.62) + o} C${px(42.8)},${py(41.34) + o} ${px(44.0)},${py(41.52) + o} ${px(45.2)},${py(41.28) + o}`} />
-            ))}
+          {/* The Caucasus, as peaks rather than contours.
+              Parallel curved lines along a ridge read as a rendering artefact
+              — the eye takes them for stray strokes, not terrain. Small peaks
+              are unmistakably mountains at a glance, which is the whole job:
+              this is a schematic, and it only has to say "the north is high". */}
+          <g clipPath="url(#geo-clip)" className="fill-ink-400/30 dark:fill-white/12">
+            {PEAKS.map(([lon, lat, size], i) => {
+              const x = px(lon), y = py(lat), w = size, h = size * 0.72;
+              return (
+                <polygon key={i} points={`${x},${y - h} ${x + w / 2},${y} ${x - w / 2},${y}`} />
+              );
+            })}
+          </g>
+          {/* A second, lighter pass offset up-left gives each peak a lit face,
+              which is enough to suggest relief without pretending to be a
+              hillshade. */}
+          <g clipPath="url(#geo-clip)" className="fill-white/45 dark:fill-white/8">
+            {PEAKS.map(([lon, lat, size], i) => {
+              const x = px(lon) - size * 0.16, y = py(lat) - size * 0.1, w = size * 0.6, h = size * 0.62;
+              return (
+                <polygon key={i} points={`${x},${y - h} ${x + w / 2},${y} ${x - w / 2},${y}`} />
+              );
+            })}
           </g>
 
           {/* -------------------------------------------------- the roads -- */}
