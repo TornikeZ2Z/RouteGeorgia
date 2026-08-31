@@ -129,7 +129,7 @@ export default async function Home({
   // Any that exist are shown, so a slide can be added by dropping the file in.
   const heroSlides = [
     "hero.jpg", "hero-2.jpg", "hero-3.jpg", "hero-4.jpg",
-    "hero-5.jpg", "hero-6.jpg", "hero-7.jpg",
+    "hero-5.jpg", "hero-6.jpg", "hero-7.jpg", "hero-8.jpg",
   ]
     .map((name) => sitePhoto(name))
     .filter((src): src is string => src !== null);
