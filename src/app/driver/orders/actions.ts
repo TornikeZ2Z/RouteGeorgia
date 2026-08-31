@@ -7,7 +7,7 @@ import { z } from "zod";
 import { sql } from "@db/client";
 import { requireUser } from "@/lib/auth/session";
 import { completeBooking, cancelBooking } from "@/lib/booking";
-import { dispatchPending } from "@/lib/notifications";
+import { dispatchInBackground } from "@/lib/notifications";
 import { writeAudit } from "@/lib/audit";
 import type { ActionState } from "@/app/driver/actions";
 
@@ -83,7 +83,7 @@ export async function milestoneAction(_prev: ActionState, formData: FormData): P
   if (parsed.data.milestone === "COMPLETED") {
     // Completion posts the ledger entries and issues the review invitation.
     await completeBooking(booking.id, user.id);
-    await dispatchPending().catch(() => {});
+    dispatchInBackground();
     revalidatePath("/driver/orders");
     return {
       ok: true,
@@ -118,7 +118,7 @@ export async function declineOrderAction(_prev: ActionState, formData: FormData)
   // A driver cancellation is never free of consequence: it is counted, and
   // operations owns finding the traveller an equivalent replacement.
   await cancelBooking(booking.id, "DRIVER", reason, user.id);
-  await dispatchPending().catch(() => {});
+  dispatchInBackground();
   revalidatePath("/driver/orders");
   return { ok: true, message: "Declined. Operations has been alerted to find a replacement." };
 }

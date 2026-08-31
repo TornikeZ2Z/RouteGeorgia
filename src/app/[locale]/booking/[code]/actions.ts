@@ -4,7 +4,7 @@ import { revalidatePath } from "next/cache";
 import { z } from "zod";
 import { sql } from "@db/client";
 import { verifyManageToken, cancelBooking } from "@/lib/booking";
-import { dispatchPending } from "@/lib/notifications";
+import { dispatchInBackground } from "@/lib/notifications";
 
 export type BookingActionState = { ok: boolean; message?: string };
 
@@ -29,7 +29,7 @@ export async function cancelBookingAction(_prev: BookingActionState, formData: F
 
   try {
     await cancelBooking(bookingId, "CUSTOMER", reason);
-    await dispatchPending().catch(() => {});
+    dispatchInBackground();
   } catch (err) {
     return { ok: false, message: (err as Error).message };
   }

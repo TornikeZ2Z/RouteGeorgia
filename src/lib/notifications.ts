@@ -159,6 +159,15 @@ const smtpTransport: Transport = {
       auth: { user: config.mail.smtp.user, pass: config.mail.smtp.password },
       pool: true,
       maxConnections: 2,
+      /*
+       * Bounded, because an unreachable SMTP port does not refuse — it hangs.
+       * Outbound 25/465/587 is blocked by a great many hosts and ISPs, and
+       * nodemailer's defaults wait minutes before admitting it. Anything that
+       * awaits a send inherits that wait.
+       */
+      connectionTimeout: 10_000,
+      greetingTimeout: 10_000,
+      socketTimeout: 20_000,
     });
 
     const info = await mailer.sendMail({
@@ -369,6 +378,30 @@ export async function dispatchPending(
     }
   }
   return { sent, failed };
+}
+
+/**
+ * Send what is queued, without making anyone wait for it.
+ *
+ * Sending belongs after the response, not inside it. The outbox exists so that
+ * a queued message is already durable by the time the user sees "sent" — and
+ * awaiting the send throws that away: the row is safe, and the reply is held
+ * hostage to a mail server that may be unreachable.
+ *
+ * That is not hypothetical. With outbound SMTP blocked, awaiting a dispatch
+ * held a form POST open until the connection timed out. The submission had
+ * already been saved; the browser just never heard so, and the person filed it
+ * again. A blocked mail port should cost an unsent email, not a duplicate
+ * booking.
+ *
+ * Deliberately returns void. Anything a caller could await here is the mistake
+ * this function exists to prevent — with one exception, the console's manual
+ * resend, which reports the outcome and so must wait for it.
+ */
+export function dispatchInBackground(limit = 25, only?: readonly string[]): void {
+  void dispatchPending(limit, only).catch(() => {
+    // Already recorded on the row as last_error, and visible in the outbox.
+  });
 }
 
 // ------------------------------------------------------------- templates ---

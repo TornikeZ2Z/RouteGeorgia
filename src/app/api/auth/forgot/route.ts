@@ -1,7 +1,7 @@
 import { NextResponse, type NextRequest } from "next/server";
 import { z } from "zod";
 import { requestPasswordReset } from "@/lib/auth/reset";
-import { dispatchPending } from "@/lib/notifications";
+import { dispatchInBackground } from "@/lib/notifications";
 import { assertSameOrigin, rateLimit, clientKey, CrossOriginError, seeOther } from "@/lib/security";
 import { config } from "@/lib/config";
 
@@ -23,7 +23,7 @@ export async function POST(request: NextRequest) {
   // which addresses are registered.
   if (limit.allowed && email.success) {
     await requestPasswordReset(email.data, locale);
-    await dispatchPending(5).catch(() => {});
+    dispatchInBackground(5);
   }
 
   return seeOther("/forgot-password?sent=1");

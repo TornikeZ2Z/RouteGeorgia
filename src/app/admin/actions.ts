@@ -17,7 +17,7 @@ import { hashPassword } from "@/lib/auth/password";
 import { config } from "@/lib/config";
 import { getStorage, assertUploadAllowed, UploadRejectedError, hashDocumentNumber } from "@/lib/storage";
 import { cancelBooking } from "@/lib/booking";
-import { dispatchPending, queue as queueNotification } from "@/lib/notifications";
+import { dispatchPending, dispatchInBackground, queue as queueNotification } from "@/lib/notifications";
 import { getActiveContract, companyDetailsComplete } from "@/lib/contract";
 import { reassignBooking, refundBooking, recordCashSettlement } from "@/lib/operations";
 import type { ActionState } from "@/app/driver/actions";
@@ -132,7 +132,7 @@ async function notifyContractReady(driverId: string): Promise<boolean> {
     }
   });
 
-  if (queued.length) await dispatchPending(queued.length, queued).catch(() => {});
+  if (queued.length) dispatchInBackground(queued.length, queued);
   return true;
 }
 
@@ -458,7 +458,7 @@ export async function reassignBookingAction(_prev: ActionState, formData: FormDa
   } catch (err) {
     return { ok: false, message: (err as Error).message };
   }
-  await dispatchPending().catch(() => {});
+  dispatchInBackground();
   revalidatePath(`/admin/bookings/${parsed.data.bookingId}`);
   return { ok: true, message: "Reassigned. Both parties have been notified." };
 }
@@ -478,7 +478,7 @@ export async function cancelBookingAdminAction(_prev: ActionState, formData: For
   } catch (err) {
     return { ok: false, message: (err as Error).message };
   }
-  await dispatchPending().catch(() => {});
+  dispatchInBackground();
   revalidatePath(`/admin/bookings/${parsed.data.bookingId}`);
   return { ok: true, message: "Cancelled. The driver's calendar has been released." };
 }
@@ -510,7 +510,7 @@ export async function refundBookingAction(_prev: ActionState, formData: FormData
   } catch (err) {
     return { ok: false, message: (err as Error).message };
   }
-  await dispatchPending().catch(() => {});
+  dispatchInBackground();
   revalidatePath(`/admin/bookings/${parsed.data.bookingId}`);
   return { ok: true, message: `Refund of ${parsed.data.amount} recorded and posted to the ledger.` };
 }

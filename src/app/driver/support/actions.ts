@@ -5,7 +5,7 @@ import { requireUser } from "@/lib/auth/session";
 import { sql } from "@db/client";
 import { writeAudit } from "@/lib/audit";
 import { assertUploadAllowed, getStorage, UploadRejectedError } from "@/lib/storage";
-import { queue, dispatchPending } from "@/lib/notifications";
+import { queue, dispatchInBackground } from "@/lib/notifications";
 import { config } from "@/lib/config";
 
 export interface ActionState {
@@ -113,7 +113,7 @@ export async function openTicketAction(_prev: ActionState, formData: FormData): 
       ].filter(Boolean).join("\n"),
       dedupe: `support-ticket-${ticket!.id}`,
     });
-    if (id) await dispatchPending(1, [id]);
+    if (id) dispatchInBackground(1, [id]);
   }
 
   revalidatePath("/driver/support");

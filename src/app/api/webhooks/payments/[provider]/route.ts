@@ -2,7 +2,7 @@ import { NextResponse, type NextRequest } from "next/server";
 import { sql } from "@db/client";
 import { getPaymentProvider, WebhookSignatureError } from "@/lib/payments";
 import { confirmCardPayment } from "@/lib/booking";
-import { dispatchPending } from "@/lib/notifications";
+import { dispatchInBackground } from "@/lib/notifications";
 
 /**
  * Payment provider callback.
@@ -63,7 +63,7 @@ export async function POST(request: NextRequest, { params }: { params: Promise<{
     }
 
     await sql`UPDATE webhook_events SET processed_at = now() WHERE id = ${webhookRowId}`;
-    await dispatchPending().catch(() => {});
+    dispatchInBackground();
     return NextResponse.json({ ok: true });
   } catch (err) {
     await sql`

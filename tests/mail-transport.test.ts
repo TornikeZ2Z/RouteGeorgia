@@ -97,3 +97,43 @@ describe("georgian mobile normalisation for smsoffice", () => {
     expect(normalizeGeorgianMobile("+49 151 1234567")).toBe("491511234567");
   });
 });
+
+/**
+ * Sending must not be able to hold a response open.
+ *
+ * A blocked outbound SMTP port does not refuse a connection, it hangs. Every
+ * request path that awaited a send inherited that wait: with 465 blocked, a
+ * form POST stayed open until the connection timed out, the submission having
+ * already been saved. The browser never heard back and the person filed it
+ * again. A blocked mail port should cost an unsent email, not a duplicate.
+ */
+describe("dispatch never blocks a response", () => {
+  it("returns immediately and swallows failure", async () => {
+    vi.resetModules();
+    vi.unstubAllEnvs();
+    // Point SMTP at an address that will not answer, the way a blocked port
+    // behaves — the call must still come straight back.
+    vi.stubEnv("SMTP_HOST", "10.255.255.1");
+    vi.stubEnv("SMTP_PORT", "465");
+    vi.stubEnv("SMTP_USER", "someone@example.com");
+    vi.stubEnv("SMTP_PASSWORD", "unused");
+
+    const { dispatchInBackground } = await import("@/lib/notifications");
+    const startedAt = Date.now();
+    const returned = dispatchInBackground(1);
+    const elapsed = Date.now() - startedAt;
+
+    expect(returned).toBeUndefined();
+    expect(elapsed).toBeLessThan(200);
+  });
+
+  /**
+   * Typed as void on purpose. Anything a caller could await is the mistake the
+   * function exists to prevent, so the type is the guard-rail.
+   */
+  it("gives a caller nothing to await", async () => {
+    const { dispatchInBackground } = await import("@/lib/notifications");
+    expect(dispatchInBackground.length).toBeLessThanOrEqual(2);
+    expect(dispatchInBackground(0)).toBeUndefined();
+  });
+});

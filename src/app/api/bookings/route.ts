@@ -5,7 +5,7 @@ import {
   createBooking, BookingConflictError, QuoteExpiredError, CashUnavailableError,
 } from "@/lib/booking";
 import { getPaymentProvider } from "@/lib/payments";
-import { dispatchPending } from "@/lib/notifications";
+import { dispatchInBackground } from "@/lib/notifications";
 import { config } from "@/lib/config";
 import type { Locale } from "@/lib/i18n";
 import { assertSameOrigin, rateLimit, clientKey, CrossOriginError, seeOther } from "@/lib/security";
@@ -113,7 +113,7 @@ export async function POST(request: NextRequest) {
         : NextResponse.redirect(target, { status: 303 });
     }
 
-    await dispatchPending().catch(() => {});
+    dispatchInBackground();
     return seeOther(`/${locale}/booking/${booking.code}?t=${booking.manageToken}`);
   } catch (err) {
     if (err instanceof BookingConflictError || err instanceof QuoteExpiredError || err instanceof CashUnavailableError) {

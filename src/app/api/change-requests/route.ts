@@ -6,7 +6,7 @@ import { config } from "@/lib/config";
 import {
   createRequest, attachImage, formTokenMatches, AREAS,
 } from "@/lib/change-requests";
-import { queue as queueNotification, dispatchPending } from "@/lib/notifications";
+import { queue as queueNotification, dispatchInBackground } from "@/lib/notifications";
 import { getStorage, assertUploadAllowed, UploadRejectedError } from "@/lib/storage";
 import { writeAudit } from "@/lib/audit";
 import {
@@ -132,7 +132,7 @@ export async function POST(request: NextRequest) {
         `${config.appUrl}/admin/requests/${created.id}`,
       dedupe: created.id,
     });
-    await dispatchPending(5).catch(() => {});
+    dispatchInBackground(5);
   }
 
   await writeAudit({
