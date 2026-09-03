@@ -347,79 +347,77 @@ export default async function Home({
       )}
 
       {/* -------------------------------------- plan your perfect trip ---- */}
-      <section className="grid gap-6 lg:grid-cols-[minmax(0,22rem)_1fr] lg:items-center">
-        <div>
-          <p className="eyebrow">{t("home.planTeaserEyebrow")}</p>
-          <h2 className="font-display mt-2 text-3xl text-ink-900 sm:text-4xl">{t("home.planTeaserTitle")}</h2>
-          <p className="mt-4 leading-relaxed text-ink-500">{t("home.planTeaserBody")}</p>
-          <Link
-            href={`/${locale}/plan`}
-            className="mt-6 inline-flex min-h-12 items-center rounded-lg bg-brand-600 px-6 py-3 font-bold tracking-[-0.02em] text-white shadow-[0_0_2px_0_rgba(0,0,0,.16)] transition-colors hover:bg-brand-700"
-          >
-            {t("home.planTeaserCta")}
-          </Link>
-        </div>
-        <div className="divide-y divide-ink-100 rounded-2xl border border-ink-200 bg-white px-6 shadow-[0_1px_3px_rgba(11,29,51,.06)] sm:px-8">
-          {/* step 1 — days */}
-          <div className="flex flex-wrap items-center gap-x-6 gap-y-3 py-5">
-            <StepBadge n={1} />
-            <p className="w-40 font-semibold text-ink-900">{t("home.planStep1")}</p>
-            <ul className="flex flex-wrap gap-2">
-              {([["1", "home.day1t"], ["3", "home.day2t"], ["5", "home.day3t"], ["7", "home.day4t"]] as const).map(([d, label]) => (
-                <li key={d}>
-                  <Link
-                    href={`/${locale}/plan?d=${d}&i=nature&p=0`}
-                    className="inline-flex rounded-full border border-ink-200 px-3.5 py-1.5 text-sm font-medium text-ink-600 transition-colors hover:border-gold-500 hover:text-ink-900"
-                  >
-                    {t(label)}
-                  </Link>
-                </li>
-              ))}
-            </ul>
+      {/*
+        Depth by surface, not by shadow. The system is flat-by-default and
+        allows exactly three shadows, so the card is raised by giving it
+        something to be raised OFF: a tinted band under the whole section, the
+        white card on the resting shadow above it, and a recessed track under
+        each question's answers. The ladder has to keep its direction in dark
+        too, which is why the track names pine-900 explicitly -- bg-white and
+        bg-ink-50 both resolve to #10233c there, so the obvious pairing would
+        have flattened to nothing.
+
+        All fifteen answers are one chip with an optional leading icon. The
+        interests row used to be an icon-above-caption stack twice the height
+        of its neighbours, which is what made the middle of the card lurch.
+        Each question's label now sits on its own full-width line, so long
+        Georgian compounds are never squeezed into a fixed-width column.
+      */}
+      <section className="rounded-2xl bg-brand-50 p-6 dark:bg-pine-800 sm:p-10">
+        <div className="grid gap-8 lg:grid-cols-[minmax(0,22rem)_minmax(0,1fr)] lg:items-center lg:gap-12">
+          <div>
+            <p className="eyebrow">{t("home.planTeaserEyebrow")}</p>
+            <h2 className="font-display mt-2 text-3xl text-ink-900 sm:text-4xl">{t("home.planTeaserTitle")}</h2>
+            <p className="mt-4 leading-relaxed text-ink-500">{t("home.planTeaserBody")}</p>
+            <Link
+              href={`/${locale}/plan`}
+              className="mt-6 inline-flex min-h-12 items-center rounded-xl bg-brand-600 px-6 py-3 font-bold tracking-[-0.02em] text-white shadow-[0_0_2px_0_rgba(0,0,0,.16)] transition-colors hover:bg-brand-700"
+            >
+              {t("home.planTeaserCta")}
+            </Link>
           </div>
-          {/* step 2 — interests */}
-          <div className="flex flex-wrap items-center gap-x-6 gap-y-3 py-5">
-            <StepBadge n={2} />
-            <p className="w-40 font-semibold text-ink-900">{t("home.planStep2")}</p>
-            <ul className="flex flex-wrap gap-4">
-              {([["nature", "nature", "plan.int1"], ["culture", "culture", "plan.int2"], ["wine", "wine", "plan.int3"],
-                 ["adventure", "mountains", "plan.int4"], ["rest", "sea", "plan.int5"]] as const).map(([interest, icon, label]) => (
-                <li key={interest}>
-                  <Link
-                    href={`/${locale}/plan?d=3&i=${interest}&p=0`}
-                    className="group flex flex-col items-center gap-1.5 text-ink-600 transition-colors hover:text-ink-900"
-                  >
-                    <span className="grid size-11 place-items-center rounded-full border border-ink-200 transition-colors group-hover:border-gold-500">
-                      <svg viewBox="0 0 24 24" className="size-5" fill="none" stroke="currentColor"
-                           strokeWidth="1.7" strokeLinecap="round" strokeLinejoin="round" aria-hidden>
-                        <path d={CATEGORY_ICONS[icon]} />
-                      </svg>
-                    </span>
-                    <span className="text-[11px] font-medium">
-                      {t(label)}
-                    </span>
-                  </Link>
-                </li>
-              ))}
-            </ul>
-          </div>
-          {/* step 3 — party */}
-          <div className="flex flex-wrap items-center gap-x-6 gap-y-3 py-5">
-            <StepBadge n={3} />
-            <p className="w-40 font-semibold text-ink-900">{t("home.planStep3")}</p>
-            <ul className="flex flex-wrap gap-2">
-              {(["plan.party1", "plan.party2", "plan.party3", "plan.party4"] as const).map((key, i) => (
-                <li key={key}>
-                  <Link
-                    href={`/${locale}/plan?d=3&i=nature&p=${i}`}
-                    className="inline-flex rounded-full border border-ink-200 px-3.5 py-1.5 text-sm font-medium text-ink-600 transition-colors hover:border-gold-500 hover:text-ink-900"
-                  >
-                    {t(key)}
-                  </Link>
-                </li>
-              ))}
-            </ul>
-          </div>
+
+          <ol className="divide-y divide-ink-200 rounded-2xl border border-ink-200 bg-white shadow-[0_1px_3px_rgba(11,29,51,.06)]">
+            {/* step 1 — days */}
+            <li className="p-5 sm:p-6">
+              <div className="flex items-center gap-3">
+                <StepBadge n={1} />
+                <p className="font-bold tracking-[-0.02em] text-ink-900">{t("home.planStep1")}</p>
+              </div>
+              <ul className="mt-3 grid grid-cols-2 gap-2 rounded-xl bg-ink-50 p-2.5 dark:bg-pine-900 lg:grid-cols-4">
+                {([["1", "home.day1t"], ["3", "home.day2t"], ["5", "home.day3t"], ["7", "home.day4t"]] as const).map(([d, label]) => (
+                  <PlanChip key={d} href={`/${locale}/plan?d=${d}&i=nature&p=0`} label={t(label)} />
+                ))}
+              </ul>
+            </li>
+
+            {/* step 2 — interests */}
+            <li className="p-5 sm:p-6">
+              <div className="flex items-center gap-3">
+                <StepBadge n={2} />
+                <p className="font-bold tracking-[-0.02em] text-ink-900">{t("home.planStep2")}</p>
+              </div>
+              <ul className="mt-3 grid gap-2 rounded-xl bg-ink-50 p-2.5 dark:bg-pine-900 sm:grid-cols-2 lg:grid-cols-3">
+                {([["nature", "nature", "plan.int1"], ["culture", "culture", "plan.int2"], ["wine", "wine", "plan.int3"],
+                   ["adventure", "mountains", "plan.int4"], ["rest", "sea", "plan.int5"]] as const).map(([interest, icon, label]) => (
+                  <PlanChip key={interest} href={`/${locale}/plan?d=3&i=${interest}&p=0`} label={t(label)} icon={CATEGORY_ICONS[icon]} />
+                ))}
+              </ul>
+            </li>
+
+            {/* step 3 — party */}
+            <li className="p-5 sm:p-6">
+              <div className="flex items-center gap-3">
+                <StepBadge n={3} />
+                <p className="font-bold tracking-[-0.02em] text-ink-900">{t("home.planStep3")}</p>
+              </div>
+              <ul className="mt-3 grid grid-cols-2 gap-2 rounded-xl bg-ink-50 p-2.5 dark:bg-pine-900 lg:grid-cols-4">
+                {(["plan.party1", "plan.party2", "plan.party3", "plan.party4"] as const).map((key, i) => (
+                  <PlanChip key={key} href={`/${locale}/plan?d=3&i=nature&p=${i}`} label={t(key)} />
+                ))}
+              </ul>
+            </li>
+          </ol>
         </div>
       </section>
 
@@ -534,6 +532,30 @@ export default async function Home({
       </section>
 
     </div>
+  );
+}
+
+/** One answer to one of the three questions. The optional leading icon is what
+    lets the interests row share a shape with days and party instead of being an
+    icon-above-caption stack twice their height. No fixed width anywhere: the
+    chip sizes to its label, so an unbreakable Georgian compound like
+    თავგადასავალი simply makes its own chip wider and wraps the line sooner. */
+function PlanChip({ href, label, icon }: { href: string; label: string; icon?: string }) {
+  return (
+    <li className="flex">
+      <Link
+        href={href}
+        className="flex min-h-11 w-full items-center justify-center gap-2 rounded-xl border border-ink-200 bg-white px-3.5 py-2 text-center text-sm font-medium text-ink-600 transition-colors hover:border-gold-500 hover:text-ink-900"
+      >
+        {icon && (
+          <svg viewBox="0 0 24 24" className="size-4 shrink-0 text-gold-600" fill="none" stroke="currentColor"
+               strokeWidth="1.7" strokeLinecap="round" strokeLinejoin="round" aria-hidden>
+            <path d={icon} />
+          </svg>
+        )}
+        <span className="min-w-0">{label}</span>
+      </Link>
+    </li>
   );
 }
 
