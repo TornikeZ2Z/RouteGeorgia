@@ -177,20 +177,39 @@ export default async function Home({
               </ul>
             </div>
 
-            {tours.length > 0 && (
-              <Link
-                href={`/${locale}/tours`}
-                className="group hidden w-80 shrink-0 rounded-2xl bg-pine-900/75 p-5 backdrop-blur-md transition-colors hover:bg-pine-900/90 lg:block"
-              >
-                <p className="eyebrow text-pine-300">{t("home.promoEyebrow")}</p>
-                <p className="font-display mt-2 text-xl">{t("home.promoTitle")}</p>
-                <p className="mt-2 text-sm leading-relaxed text-pine-100">{t("home.promoBody")}</p>
-                <span className="mt-4 inline-flex items-center gap-1.5 rounded-lg bg-white px-4 py-2 text-sm font-semibold text-pine-800 transition-colors group-hover:bg-ink-100 dark:bg-ink-900 dark:group-hover:bg-ink-800">
-                  {t("home.promoCta")}
-                  <span aria-hidden>→</span>
-                </span>
-              </Link>
-            )}
+            {/*
+              The card beside the hero used to advertise multi-day tours. It
+              now opens the route builder, because that is the thing a visitor
+              who does not yet know where they are going can actually start —
+              and it shows the three questions rather than describing them, so
+              the promise is visible before the click.
+
+              No longer gated on tours existing: the builder always does.
+            */}
+            <Link
+              href={`/${locale}/plan`}
+              className="group hidden w-80 shrink-0 rounded-2xl bg-pine-900/75 p-5 backdrop-blur-md transition-colors hover:bg-pine-900/90 lg:block"
+            >
+              <p className="eyebrow text-pine-300">{t("home.planTeaserEyebrow")}</p>
+              <p className="font-display mt-2 text-xl">{t("home.planTeaserTitle")}</p>
+              <ol className="mt-3.5 space-y-2">
+                {(["home.planStep1", "home.planStep2", "home.planStep3"] as const).map((key, i) => (
+                  <li key={key} className="flex items-start gap-2.5 text-sm text-pine-100">
+                    <span
+                      aria-hidden
+                      className="mt-0.5 flex size-5 shrink-0 items-center justify-center rounded-full bg-pine-700/70 text-[11px] font-semibold tabular-nums text-white"
+                    >
+                      {i + 1}
+                    </span>
+                    <span className="leading-snug">{t(key)}</span>
+                  </li>
+                ))}
+              </ol>
+              <span className="mt-4 inline-flex items-center gap-1.5 rounded-lg bg-white px-4 py-2 text-sm font-semibold text-pine-800 transition-colors group-hover:bg-ink-100 dark:bg-ink-900 dark:group-hover:bg-ink-800">
+                {t("home.planTeaserCta")}
+                <span aria-hidden>→</span>
+              </span>
+            </Link>
           </div>
         </div>
       </section>

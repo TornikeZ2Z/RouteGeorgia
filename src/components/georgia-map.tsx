@@ -387,7 +387,46 @@ export function GeorgiaMap({ locale, places, initialCat = "all" }: { locale: str
           </div>
         )}
       </div>
-      {season && <p className="px-4 pb-4 text-xs text-ink-500">{t("map.seasonHint")}</p>}
+      {/*
+        Picking a season used to dim the pins that did not match and stop
+        there, which asks someone to read a map to find out what changed. The
+        answer to "when are you coming" is a list of places, with photographs,
+        that they can click.
+      */}
+      {season && (
+        <div className="border-t border-ink-200 p-4">
+          <p className="font-semibold text-ink-900">
+            {t("map.seasonPicks", { season: t(SEASON_KEY[season] as never).toLowerCase() })}
+          </p>
+          <p className="mt-0.5 text-sm text-ink-500">{t("map.seasonPicksBody")}</p>
+
+          <ul className="mt-4 grid grid-cols-2 gap-3 sm:grid-cols-3 lg:grid-cols-5">
+            {places.filter((p) => p.seasons.includes(season) && (cat === "all" || p.categories.includes(cat)))
+              .map((p) => (
+                <li key={p.slug}>
+                  <button
+                    type="button"
+                    onClick={() => setOpen(p.slug)}
+                    className="group block w-full overflow-hidden rounded-xl border border-ink-200 bg-white text-left transition-all duration-300 hover:-translate-y-0.5 hover:border-ink-300 hover:shadow-[var(--shadow-soft)]"
+                  >
+                    <span className="block h-20 overflow-hidden">
+                      <PlaceImage
+                        imageKey={null}
+                        photoSrc={p.photo}
+                        alt=""
+                        seedText={p.slug}
+                        className="size-full transition-transform duration-500 group-hover:scale-105"
+                      />
+                    </span>
+                    <span className="block px-2.5 py-2 text-sm font-medium text-ink-900">{p.name}</span>
+                  </button>
+                </li>
+              ))}
+          </ul>
+
+          <p className="mt-3 text-xs text-ink-500">{t("map.seasonHint")}</p>
+        </div>
+      )}
     </div>
   );
 }

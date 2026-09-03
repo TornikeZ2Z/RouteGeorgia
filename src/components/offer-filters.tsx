@@ -11,10 +11,30 @@ const LANGUAGE_LABEL: Record<string, string> = {
   de: "German", fr: "French", ar: "Arabic", he: "Hebrew",
 };
 
+/**
+ * The three tiers a traveller chooses from, over the six classes the fleet
+ * and the price bands actually use.
+ *
+ * Six options asked a visitor to know the difference between a minivan and a
+ * minibus before they had picked a car. Three is the decision they can
+ * actually make. The classes underneath are untouched, because they are not
+ * tiers — a fifteen-seater costs more to run than a saloon whatever tier it
+ * is sold in, and collapsing them would take the price bands with it.
+ */
+export const CLASS_TIERS: { id: string; label: MessageKey; classes: string[] }[] = [
+  { id: "economy",  label: "filters.tierEconomy",  classes: ["ECONOMY"] },
+  { id: "standard", label: "filters.tierStandard", classes: ["COMFORT", "MINIVAN", "MINIBUS"] },
+  { id: "premium",  label: "filters.tierPremium",  classes: ["PREMIUM", "SUV_4X4"] },
+];
+
+/** Languages a driver can be filtered by. The fleet is Georgian. */
+export const OFFERED_LANGUAGES = ["ka", "en", "ru"] as const;
+
 export interface FilterState {
   classes: string[];
+  /** Which of the three tiers are ticked, for re-rendering the panel. */
+  tiers: string[];
   language: string;
-  verifiedLanguageOnly: boolean;
   fourWheelDrive: boolean;
   winterTyres: boolean;
   petsAllowed: boolean;
@@ -22,18 +42,21 @@ export interface FilterState {
   wifi: boolean;
   airConditioning: boolean;
   wheelchairAccess: boolean;
-  minRating: number;
   sort: string;
 }
 
+/**
+ * Two, not seven.
+ *
+ * Air conditioning, Wi-Fi and winter tyres are things a traveller assumes and
+ * a filter cannot promise; 4x4 and step-free access are worth asking about but
+ * belong in the conversation, not in a checkbox that silently hides most of
+ * the fleet. A child seat and a dog are the two that genuinely decide whether
+ * a particular car works at all.
+ */
 const TOGGLES: [keyof FilterState, MessageKey, MessageKey?][] = [
-  ["fourWheelDrive", "filters.fourByFour", "filters.fourByFourHint"],
-  ["winterTyres", "filters.winterTyres"],
-  ["airConditioning", "filters.ac"],
-  ["wifi", "filters.wifi"],
   ["childSeat", "filters.childSeat"],
   ["petsAllowed", "filters.pets"],
-  ["wheelchairAccess", "filters.stepFree"],
 ];
 
 /**
@@ -54,14 +77,11 @@ export function OfferFiltersPanel({
 
   // Sort is not a filter — it never hides a car — so it stays out of the count.
   const activeCount =
-    state.classes.length +
+    state.tiers.length +
     (state.language ? 1 : 0) +
-    (state.minRating > 0 ? 1 : 0) +
-    [
-      state.verifiedLanguageOnly, state.fourWheelDrive, state.winterTyres,
-      state.petsAllowed, state.childSeat, state.wifi,
-      state.airConditioning, state.wheelchairAccess,
-    ].filter(Boolean).length;
+    // Only what the panel can still set. The other flags remain in the state
+    // so existing links keep working, but nothing can switch them on here.
+    [state.childSeat, state.petsAllowed].filter(Boolean).length;
 
   return (
     <>
@@ -115,17 +135,24 @@ export function OfferFiltersPanel({
         <fieldset>
           <legend className="mb-1.5 text-sm font-medium text-ink-800">{t("filters.vehicleClass")}</legend>
           <div className="space-y-1">
-            {facets.classes.map((c) => (
-              <label key={c.value} className="flex items-center gap-2 text-sm text-ink-700">
-                <input
-                  type="checkbox" name="class" value={c.value}
-                  defaultChecked={state.classes.includes(c.value)}
-                  className="size-4 rounded"
-                />
-                {CLASS_LABEL[c.value] ?? c.value}
-                <span className="text-xs text-ink-400">({c.count})</span>
-              </label>
-            ))}
+            {CLASS_TIERS.map((tier) => {
+              // The count is the sum of the classes the tier covers, so the
+              // number still means "cars you can actually book".
+              const count = facets.classes
+                .filter((c) => tier.classes.includes(c.value))
+                .reduce((n, c) => n + c.count, 0);
+              return (
+                <label key={tier.id} className="flex items-center gap-2 text-sm text-ink-700">
+                  <input
+                    type="checkbox" name="tier" value={tier.id}
+                    defaultChecked={state.tiers.includes(tier.id)}
+                    className="size-4 rounded"
+                  />
+                  {t(tier.label)}
+                  <span className="text-xs text-ink-400">({count})</span>
+                </label>
+              );
+            })}
           </div>
         </fieldset>
 
@@ -138,26 +165,18 @@ export function OfferFiltersPanel({
             className="w-full rounded-lg border border-ink-300 bg-white px-3 py-2 text-sm"
           >
             <option value="">{t("filters.anyLanguage")}</option>
-            {facets.languages.map((l) => (
-              <option key={l.value} value={l.value}>
-                {LANGUAGE_LABEL[l.value] ?? l.value} ({l.count})
-              </option>
-            ))}
+            {/* Always these three, whatever the current fleet happens to
+                speak. A list that changes with whoever is free today makes the
+                filter look broken when a language disappears from it. */}
+            {OFFERED_LANGUAGES.map((code) => {
+              const count = facets.languages.find((l) => l.value === code)?.count ?? 0;
+              return (
+                <option key={code} value={code}>
+                  {LANGUAGE_LABEL[code]} ({count})
+                </option>
+              );
+            })}
           </select>
-          {/* The benchmark's most common complaint is a driver who selected a
-              language they cannot actually hold a conversation in. */}
-          <label className="mt-2 flex items-start gap-2 text-sm text-ink-700">
-            <input
-              type="checkbox" name="verifiedLanguage" value="1"
-              defaultChecked={state.verifiedLanguageOnly} className="mt-0.5 size-4 rounded"
-            />
-            <span>
-              {t("filters.verifiedOnly")}
-              <span className="block text-xs text-ink-500">
-                {t("filters.verifiedOnlyHint")}
-              </span>
-            </span>
-          </label>
         </div>
 
         <fieldset>
@@ -177,23 +196,6 @@ export function OfferFiltersPanel({
             ))}
           </div>
         </fieldset>
-
-        <div>
-          <label htmlFor="minRating" className="mb-1.5 block text-sm font-medium text-ink-800">
-            {t("filters.minRating")}
-          </label>
-          <select
-            id="minRating" name="minRating" defaultValue={String(state.minRating || "")}
-            className="w-full rounded-lg border border-ink-300 bg-white px-3 py-2 text-sm"
-          >
-            <option value="">{t("filters.ratingAny")}</option>
-            <option value="4">4.0 and above</option>
-            <option value="4.5">4.5 and above</option>
-          </select>
-          <p className="mt-1 text-xs text-ink-500">
-            {t("filters.ratingHint")}
-          </p>
-        </div>
 
         <div className="flex gap-2">
           <button className="flex-1 rounded-lg bg-brand-600 px-4 py-2 text-sm font-medium text-white hover:bg-brand-700">

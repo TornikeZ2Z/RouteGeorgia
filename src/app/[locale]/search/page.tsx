@@ -7,7 +7,7 @@ import { formatDuration } from "@/lib/format";
 import { getDisplayCurrency, getRate, convert, CANONICAL } from "@/lib/currency";
 import { Badge, Card, EmptyState } from "@/components/ui";
 import { VehiclePhoto } from "@/components/vehicle-photo";
-import { OfferFiltersPanel, CLASS_LABEL, type FilterState } from "@/components/offer-filters";
+import { OfferFiltersPanel, CLASS_LABEL, CLASS_TIERS, type FilterState } from "@/components/offer-filters";
 
 export const dynamic = "force-dynamic";
 export const metadata = { robots: { index: false } };
@@ -57,10 +57,20 @@ export default async function SearchPage({ params, searchParams }: Props) {
   const returnAt = returnRaw ? new Date(returnRaw) : null;
   const roundTrip = returnAt !== null && !Number.isNaN(returnAt.getTime()) && returnAt.getTime() > travelAt.getTime();
 
+  /*
+   * The panel offers three tiers; the fleet and the price bands still speak in
+   * six classes. Expanding here keeps that mapping in one place, and `class`
+   * is still honoured so links shared before the change keep working.
+   */
+  const tiers = list(sp.tier);
+  const tierClasses = CLASS_TIERS
+    .filter((tier) => tiers.includes(tier.id))
+    .flatMap((tier) => tier.classes);
+
   const filterState: FilterState = {
-    classes: list(sp.class),
+    classes: [...new Set([...list(sp.class), ...tierClasses])],
+    tiers,
     language: str(sp.language) ?? "",
-    verifiedLanguageOnly: on(sp.verifiedLanguage),
     fourWheelDrive: on(sp.fourWheelDrive),
     winterTyres: on(sp.winterTyres),
     petsAllowed: on(sp.petsAllowed),
@@ -68,7 +78,6 @@ export default async function SearchPage({ params, searchParams }: Props) {
     wifi: on(sp.wifi),
     airConditioning: on(sp.airConditioning),
     wheelchairAccess: on(sp.wheelchairAccess),
-    minRating: Number(str(sp.minRating) ?? 0) || 0,
     // Cheapest first by default. Price orders the classes on its own —
     // sedan, minivan, SUV, minibus — so a traveller sees the real range
     // immediately instead of meeting a wall of filters. Anyone who wants a
@@ -93,7 +102,6 @@ export default async function SearchPage({ params, searchParams }: Props) {
       filters: {
         classes: filterState.classes,
         language: filterState.language || undefined,
-        verifiedLanguageOnly: filterState.verifiedLanguageOnly,
         fourWheelDrive: filterState.fourWheelDrive,
         winterTyres: filterState.winterTyres,
         petsAllowed: filterState.petsAllowed,
@@ -101,7 +109,6 @@ export default async function SearchPage({ params, searchParams }: Props) {
         wifi: filterState.wifi,
         airConditioning: filterState.airConditioning,
         wheelchairAccess: filterState.wheelchairAccess,
-        minRating: filterState.minRating || undefined,
       },
       attribution: {
         utm_source: str(sp.utm_source) ?? "",
