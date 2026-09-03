@@ -6,8 +6,7 @@ import { isLocale, getTranslator, LOCALES } from "@/lib/i18n";
 import { Badge, Card } from "@/components/ui";
 import { PlaceImage } from "@/components/place-image";
 import { sitePhoto, listTravellerPhotos } from "@/lib/site-photos";
-import { GeorgiaMap } from "@/components/georgia-map";
-import { DESTINATIONS, type MapCategory } from "@/lib/destinations";
+import { DESTINATIONS } from "@/lib/destinations";
 import { CATEGORY_ICONS } from "@/lib/map-icons";
 import { config } from "@/lib/config";
 import { listTours } from "@/lib/tours";
@@ -99,23 +98,14 @@ const SERVICES = [
 ] as const;
 
 export default async function Home({
-  params, searchParams,
+  params,
 }: {
   params: Promise<{ locale: string }>;
-  searchParams: Promise<Record<string, string | string[] | undefined>>;
 }) {
   const { locale } = await params;
-  const sp = await searchParams;
-  const rawCat = Array.isArray(sp.cat) ? sp.cat[0] : sp.cat;
-  const CAT_LIST = ["sea", "mountains", "winter", "wine", "culture", "nature"] as const;
-  const initialCat = CAT_LIST.includes(rawCat as (typeof CAT_LIST)[number]) ? (rawCat as MapCategory) : "all";
-
-  // A season card above links here; the map opens already showing its picks.
-  const SEASON_LIST = ["spring", "summer", "autumn", "winter"] as const;
-  const rawSeason = Array.isArray(sp.season) ? sp.season[0] : sp.season;
-  const initialSeason = SEASON_LIST.includes(rawSeason as (typeof SEASON_LIST)[number])
-    ? (rawSeason as (typeof SEASON_LIST)[number])
-    : null;
+  // ?cat= and ?season= were read here to open the map on a chosen slice. The
+  // map is gone and each season now opens in place, so the page takes no
+  // query parameters at all.
   if (!isLocale(locale)) notFound();
   const t = getTranslator(locale);
 
@@ -241,62 +231,87 @@ export default async function Home({
 
       {/* --------------------------------------------------- seasons ------ */}
       {/*
-        This asked "where do you want to go?" and answered with six themes —
-        mountains, sea, wine — which a visitor can only choose between if they
-        already know the country. When they are coming is something they do
-        know, and here it decides more: the Svaneti passes are shut half the
-        year, rtveli is a fortnight, and Gudauri in August is a building site.
-        Pick a season and the map below shows what is worth the drive then.
+        When you are coming decides more than what you like: the Svaneti
+        passes are shut half the year, rtveli is a fortnight, and Gudauri in
+        August is a building site.
+
+        The map this used to drive is gone — it was a second place to browse
+        the same twenty-odd destinations. Each season now opens where it
+        stands, and nothing is open on load, which is the point: a season
+        picked for you is a recommendation nobody asked for.
+
+        <details> rather than React state, so it works before hydration and
+        the keyboard gets disclosure semantics without us writing any.
       */}
       <section>
-        <div className="flex flex-wrap items-end justify-between gap-3">
-          <div>
-            <h2 className="font-display text-3xl text-ink-900 sm:text-4xl">{t("home.catsTitle")}</h2>
-            <p className="mt-2 text-ink-500">{t("home.seasonsSub")}</p>
-          </div>
-          <a href="#explore" className="text-sm font-semibold text-ink-900 underline underline-offset-4">
-            {t("home.catsAll")} →
-          </a>
+        <div>
+          <h2 className="font-display text-3xl text-ink-900 sm:text-4xl">{t("home.catsTitle")}</h2>
+          <p className="mt-2 text-ink-500">{t("home.seasonsSub")}</p>
         </div>
-        <ul className="mt-8 grid grid-cols-2 gap-4 lg:grid-cols-4">
+        <ul className="mt-8 grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-4">
           {(["spring", "summer", "autumn", "winter"] as const).map((season, i) => {
             /*
-             * The places that are most *this* season, not the first three that
-             * happen to match. Taking them in order gave spring, summer and
-             * autumn the same three names, because the broadest destinations
-             * sort first — which makes four different cards look identical and
-             * says nothing. Fewest seasons first surfaces the specialists:
-             * Gudauri for winter, the coast for summer, Kakheti for the
-             * harvest.
+             * Fewest seasons first surfaces the specialists — Gudauri for
+             * winter, the coast for summer, Kakheti for the harvest. Taking
+             * them in table order gave three of the four cards the same
+             * opening names, because the year-round places sort first.
              */
-            const names = DESTINATIONS.filter((d) => d.seasons.includes(season))
+            const picks = DESTINATIONS.filter((d) => d.seasons.includes(season))
               .slice()
               .sort((a, b) => a.seasons.length - b.seasons.length)
-              .slice(0, 3)
-              .map((d) => locations.find((l) => l.slug === d.slug)?.name_en).filter(Boolean);
+              .flatMap((d) => {
+                const name = locations.find((l) => l.slug === d.slug)?.name_en;
+                return name ? [{ ...d, name }] : [];
+              });
             const photo = sitePhoto(`seasons/${season}.jpg`);
             return (
               <li key={season}>
-                <Link
-                  href={`/${locale}?season=${season}#explore`}
-                  className="group relative block h-56 overflow-hidden rounded-2xl shadow-[0_1px_3px_rgba(11,29,51,.08)] transition-all duration-300 hover:-translate-y-1 hover:shadow-[var(--shadow-soft)] lg:h-64"
-                >
-                  {photo ? (
-                    // eslint-disable-next-line @next/next/no-img-element
-                    <img src={photo} alt="" loading="lazy"
-                         className="absolute inset-0 size-full object-cover transition-transform duration-500 group-hover:scale-105" />
-                  ) : (
-                    <PlaceImage imageKey={null} alt="" seedText={`season-${season}`}
-                                className="absolute inset-0 size-full transition-transform duration-500 group-hover:scale-105" />
-                  )}
-                  <span className="absolute inset-0 bg-gradient-to-t from-pine-900/90 via-pine-900/35 to-pine-900/10" />
-                  <span className="absolute inset-x-0 bottom-0 p-4 text-white">
-                    <span className="font-display block text-xl">{t(`home.season${i + 1}t` as never)}</span>
-                    {names.length > 0 && (
-                      <span className="mt-1 block text-sm text-pine-100">{names.join(" · ")}</span>
+                <details className="group/season">
+                  <summary className="relative block h-56 cursor-pointer list-none overflow-hidden rounded-2xl shadow-[0_1px_3px_rgba(11,29,51,.08)] transition-all duration-300 hover:-translate-y-1 hover:shadow-[var(--shadow-soft)] lg:h-64 [&::-webkit-details-marker]:hidden">
+                    {photo ? (
+                      // eslint-disable-next-line @next/next/no-img-element
+                      <img src={photo} alt="" loading="lazy"
+                           className="absolute inset-0 size-full object-cover transition-transform duration-500 group-hover/season:scale-105" />
+                    ) : (
+                      <PlaceImage imageKey={null} alt="" seedText={`season-${season}`}
+                                  className="absolute inset-0 size-full transition-transform duration-500 group-hover/season:scale-105" />
                     )}
-                  </span>
-                </Link>
+                    <span className="absolute inset-0 bg-gradient-to-t from-pine-900/90 via-pine-900/35 to-pine-900/10" />
+                    <span className="absolute inset-x-0 bottom-0 flex items-end justify-between gap-2 p-4 text-white">
+                      <span>
+                        <span className="font-display block text-xl">{t(`home.season${i + 1}t` as never)}</span>
+                        <span className="mt-1 block text-sm text-pine-100">
+                          {picks.length} {t("home.seasonPlaces")}
+                        </span>
+                      </span>
+                      <span aria-hidden className="shrink-0 rounded-full bg-white/15 p-1.5 backdrop-blur-sm transition-transform duration-300 group-open/season:rotate-180">
+                        <svg viewBox="0 0 24 24" className="size-4" fill="none" stroke="currentColor"
+                             strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round">
+                          <path d="M6 9l6 6 6-6" />
+                        </svg>
+                      </span>
+                    </span>
+                  </summary>
+
+                  <ul className="mt-2 space-y-1 rounded-2xl border border-ink-200 bg-white p-2 shadow-[0_1px_3px_rgba(11,29,51,.06)]">
+                    {picks.map((d) => (
+                      <li key={d.slug}>
+                        <Link
+                          href={d.slug === "tbilisi"
+                            ? `/${locale}/transfers/tbilisi-airport-tbilisi`
+                            : `/${locale}/search?from=tbilisi&to=${d.slug}&when=${defaultWhen()}&passengers=2&luggage=2`}
+                          className="flex items-center gap-2 rounded-xl px-2.5 py-2 text-sm text-ink-700 transition-colors hover:bg-ink-50 hover:text-ink-900"
+                        >
+                          <svg viewBox="0 0 24 24" className="size-4 shrink-0 text-gold-600" fill="none" stroke="currentColor"
+                               strokeWidth="1.7" strokeLinecap="round" strokeLinejoin="round" aria-hidden>
+                            <path d={CATEGORY_ICONS[d.icon]} />
+                          </svg>
+                          <span className="min-w-0">{d.name}</span>
+                        </Link>
+                      </li>
+                    ))}
+                  </ul>
+                </details>
               </li>
             );
           })}
@@ -345,81 +360,6 @@ export default async function Home({
           </ul>
         </section>
       )}
-
-      {/* -------------------------------------- plan your perfect trip ---- */}
-      {/*
-        Depth by surface, not by shadow. The system is flat-by-default and
-        allows exactly three shadows, so the card is raised by giving it
-        something to be raised OFF: a tinted band under the whole section, the
-        white card on the resting shadow above it, and a recessed track under
-        each question's answers. The ladder has to keep its direction in dark
-        too, which is why the track names pine-900 explicitly -- bg-white and
-        bg-ink-50 both resolve to #10233c there, so the obvious pairing would
-        have flattened to nothing.
-
-        All fifteen answers are one chip with an optional leading icon. The
-        interests row used to be an icon-above-caption stack twice the height
-        of its neighbours, which is what made the middle of the card lurch.
-        Each question's label now sits on its own full-width line, so long
-        Georgian compounds are never squeezed into a fixed-width column.
-      */}
-      <section className="rounded-2xl bg-brand-50 p-6 dark:bg-pine-800 sm:p-10">
-        <div className="grid gap-8 lg:grid-cols-[minmax(0,22rem)_minmax(0,1fr)] lg:items-center lg:gap-12">
-          <div>
-            <p className="eyebrow">{t("home.planTeaserEyebrow")}</p>
-            <h2 className="font-display mt-2 text-3xl text-ink-900 sm:text-4xl">{t("home.planTeaserTitle")}</h2>
-            <p className="mt-4 leading-relaxed text-ink-500">{t("home.planTeaserBody")}</p>
-            <Link
-              href={`/${locale}/plan`}
-              className="mt-6 inline-flex min-h-12 items-center rounded-xl bg-brand-600 px-6 py-3 font-bold tracking-[-0.02em] text-white shadow-[0_0_2px_0_rgba(0,0,0,.16)] transition-colors hover:bg-brand-700"
-            >
-              {t("home.planTeaserCta")}
-            </Link>
-          </div>
-
-          <ol className="divide-y divide-ink-200 rounded-2xl border border-ink-200 bg-white shadow-[0_1px_3px_rgba(11,29,51,.06)]">
-            {/* step 1 — days */}
-            <li className="p-5 sm:p-6">
-              <div className="flex items-center gap-3">
-                <StepBadge n={1} />
-                <p className="font-bold tracking-[-0.02em] text-ink-900">{t("home.planStep1")}</p>
-              </div>
-              <ul className="mt-3 grid grid-cols-2 gap-2 rounded-xl bg-ink-50 p-2.5 dark:bg-pine-900 lg:grid-cols-4">
-                {([["1", "home.day1t"], ["3", "home.day2t"], ["5", "home.day3t"], ["7", "home.day4t"]] as const).map(([d, label]) => (
-                  <PlanChip key={d} href={`/${locale}/plan?d=${d}&i=nature&p=0`} label={t(label)} />
-                ))}
-              </ul>
-            </li>
-
-            {/* step 2 — interests */}
-            <li className="p-5 sm:p-6">
-              <div className="flex items-center gap-3">
-                <StepBadge n={2} />
-                <p className="font-bold tracking-[-0.02em] text-ink-900">{t("home.planStep2")}</p>
-              </div>
-              <ul className="mt-3 grid gap-2 rounded-xl bg-ink-50 p-2.5 dark:bg-pine-900 sm:grid-cols-2 lg:grid-cols-3">
-                {([["nature", "nature", "plan.int1"], ["culture", "culture", "plan.int2"], ["wine", "wine", "plan.int3"],
-                   ["adventure", "mountains", "plan.int4"], ["rest", "sea", "plan.int5"]] as const).map(([interest, icon, label]) => (
-                  <PlanChip key={interest} href={`/${locale}/plan?d=3&i=${interest}&p=0`} label={t(label)} icon={CATEGORY_ICONS[icon]} />
-                ))}
-              </ul>
-            </li>
-
-            {/* step 3 — party */}
-            <li className="p-5 sm:p-6">
-              <div className="flex items-center gap-3">
-                <StepBadge n={3} />
-                <p className="font-bold tracking-[-0.02em] text-ink-900">{t("home.planStep3")}</p>
-              </div>
-              <ul className="mt-3 grid grid-cols-2 gap-2 rounded-xl bg-ink-50 p-2.5 dark:bg-pine-900 lg:grid-cols-4">
-                {(["plan.party1", "plan.party2", "plan.party3", "plan.party4"] as const).map((key, i) => (
-                  <PlanChip key={key} href={`/${locale}/plan?d=3&i=nature&p=${i}`} label={t(key)} />
-                ))}
-              </ul>
-            </li>
-          </ol>
-        </div>
-      </section>
 
       {/* -------------------------------------------- why + contact ------- */}
       <section className={config.contact.phone ? "grid gap-4 lg:grid-cols-[1fr_20rem]" : "grid gap-4"}>
@@ -475,32 +415,6 @@ export default async function Home({
         )}
       </section>
 
-      {/* ------------------------------------------------ explore map ----- */}
-      <section>
-        <div className="text-center">
-          <p className="eyebrow">{t("home.mapEyebrow")}</p>
-          <h2 className="font-display mt-2 text-3xl text-ink-900 sm:text-4xl">{t("home.mapTitle")}</h2>
-          <p className="mx-auto mt-3 max-w-xl text-ink-500">{t("home.mapBody")}</p>
-        </div>
-        <div className="mt-8">
-          <GeorgiaMap
-            locale={locale}
-            initialCat={initialCat}
-            initialSeason={initialSeason}
-            places={DESTINATIONS.flatMap((d) => {
-              const loc = locations.find((l) => l.slug === d.slug);
-              if (!loc) return [];
-              return [{
-                slug: d.slug, name: loc.name_en, lat: Number(loc.lat), lon: Number(loc.lon),
-                categories: d.categories, seasons: d.seasons, icon: d.icon,
-                descKey: d.descKey, labelPos: d.labelPos, dx: d.dx, dy: d.dy,
-                photo: sitePhoto(`destinations/${d.slug}.jpg`),
-              }];
-            })}
-          />
-        </div>
-      </section>
-
       {/* ------------------------------------------------ travellers ------ */}
       {travellers.length > 0 && (
         <section>
@@ -535,34 +449,10 @@ export default async function Home({
   );
 }
 
-/** One answer to one of the three questions. The optional leading icon is what
-    lets the interests row share a shape with days and party instead of being an
-    icon-above-caption stack twice their height. No fixed width anywhere: the
-    chip sizes to its label, so an unbreakable Georgian compound like
-    თავგადასავალი simply makes its own chip wider and wraps the line sooner. */
-function PlanChip({ href, label, icon }: { href: string; label: string; icon?: string }) {
-  return (
-    <li className="flex">
-      <Link
-        href={href}
-        className="flex min-h-11 w-full items-center justify-center gap-2 rounded-xl border border-ink-200 bg-white px-3.5 py-2 text-center text-sm font-medium text-ink-600 transition-colors hover:border-gold-500 hover:text-ink-900"
-      >
-        {icon && (
-          <svg viewBox="0 0 24 24" className="size-4 shrink-0 text-gold-600" fill="none" stroke="currentColor"
-               strokeWidth="1.7" strokeLinecap="round" strokeLinejoin="round" aria-hidden>
-            <path d={icon} />
-          </svg>
-        )}
-        <span className="min-w-0">{label}</span>
-      </Link>
-    </li>
-  );
-}
-
-function StepBadge({ n }: { n: number }) {
-  return (
-    <span className="grid size-9 shrink-0 place-items-center rounded-full bg-brand-600 font-display text-sm font-bold text-white">
-      {n}
-    </span>
-  );
+/** Two days out, on the hour — a sane default for a link that lands on search
+    with the date already filled in. Was the map's; the season lists use it now. */
+function defaultWhen(): string {
+  const d = new Date(Date.now() + 48 * 3600_000);
+  d.setMinutes(0, 0, 0);
+  return d.toISOString().slice(0, 16);
 }

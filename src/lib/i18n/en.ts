@@ -816,6 +816,7 @@ export const en = {
   "home.catsAll": "All destinations",
   "home.catsSub": "Explore Georgia your way",
   "home.seasonsSub": "Georgia changes completely with the season. Pick when you are coming.",
+  "home.seasonPlaces": "places",
   "home.tabTransfer": "Transfer",
   "home.planTabBody": "Answer three questions — how long you are staying, what you love, who is travelling — and we sketch a bookable route.",
   "home.planStep1": "How many days do you have?",
