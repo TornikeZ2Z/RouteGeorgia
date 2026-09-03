@@ -260,8 +260,19 @@ export default async function Home({
         </div>
         <ul className="mt-8 grid grid-cols-2 gap-4 lg:grid-cols-4">
           {(["spring", "summer", "autumn", "winter"] as const).map((season, i) => {
-            // Named on the card, so the choice is concrete before it is clicked.
-            const names = DESTINATIONS.filter((d) => d.seasons.includes(season)).slice(0, 3)
+            /*
+             * The places that are most *this* season, not the first three that
+             * happen to match. Taking them in order gave spring, summer and
+             * autumn the same three names, because the broadest destinations
+             * sort first — which makes four different cards look identical and
+             * says nothing. Fewest seasons first surfaces the specialists:
+             * Gudauri for winter, the coast for summer, Kakheti for the
+             * harvest.
+             */
+            const names = DESTINATIONS.filter((d) => d.seasons.includes(season))
+              .slice()
+              .sort((a, b) => a.seasons.length - b.seasons.length)
+              .slice(0, 3)
               .map((d) => locations.find((l) => l.slug === d.slug)?.name_en).filter(Boolean);
             const photo = sitePhoto(`seasons/${season}.jpg`);
             return (
