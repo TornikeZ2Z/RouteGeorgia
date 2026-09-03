@@ -11,6 +11,7 @@
  *   npm run requests -- --start CR-2026-3
  *   npm run requests -- --done CR-2026-3 "what changed"
  *   npm run requests -- --decline CR-2026-3 "why not"
+ *   npm run requests -- --images CR-2026-3   save its screenshots locally
  */
 import "dotenv/config";
 import postgres from "postgres";
@@ -76,12 +77,64 @@ async function setStatus(ref: string, status: string, note: string | null) {
   console.log(`${updated[0]!.reference} is now ${status.toLowerCase().replace("_", " ")}.`);
 }
 
+/**
+ * Pull a request's screenshots down to disk so they can be looked at.
+ *
+ * They live in the restricted bucket and are served only behind the console's
+ * permission, so there is no URL to open — which leaves whoever is working the
+ * request describing a picture they cannot see. This needs the S3 credentials
+ * in .env; without them it says so rather than failing obscurely.
+ */
+async function saveImages(ref: string) {
+  if (!process.env.S3_BUCKET) {
+    console.error(
+      [
+        "Object storage is not configured locally, so the screenshots cannot",
+        "be fetched. Add these to .env, with the same values the deployment",
+        "uses: S3_BUCKET, S3_ENDPOINT, S3_REGION, S3_ACCESS_KEY_ID and",
+        "S3_SECRET_ACCESS_KEY.",
+      ].join("\n"),
+    );
+    process.exitCode = 1;
+    return;
+  }
+
+  const rows = await sql<{ id: string; storage_key: string; mime_type: string }[]>`
+    SELECT i.id, i.storage_key, i.mime_type
+    FROM change_request_images i
+    JOIN change_requests r ON r.id = i.request_id
+    WHERE upper(r.reference) = upper(${ref})
+    ORDER BY i.created_at`;
+
+  if (rows.length === 0) {
+    console.log(`No screenshots on ${ref}.`);
+    return;
+  }
+
+  const { mkdirSync, writeFileSync } = await import("node:fs");
+  const { getStorage } = await import("../src/lib/storage/index.js");
+  const dir = `.request-images/${ref.toUpperCase()}`;
+  mkdirSync(dir, { recursive: true });
+
+  const storage = getStorage();
+  for (const [i, row] of rows.entries()) {
+    const ext = row.mime_type.split("/")[1] ?? "png";
+    const out = `${dir}/${String(i + 1).padStart(2, "0")}.${ext}`;
+    writeFileSync(out, await storage.get(row.storage_key));
+    console.log("saved", out);
+  }
+  console.log("");
+  console.log(`${rows.length} screenshot(s) in ${dir}/ — open them before working from the text alone.`);
+}
+
 const args = process.argv.slice(2);
 const flag = args.find((a) => a.startsWith("--"));
 const rest = args.filter((a) => !a.startsWith("--"));
 
 try {
-  if (flag === "--start" || flag === "--done" || flag === "--decline") {
+  if (flag === "--images") {
+    await saveImages(rest[0] ?? "");
+  } else if (flag === "--start" || flag === "--done" || flag === "--decline") {
     const status = flag === "--start" ? "IN_PROGRESS" : flag === "--done" ? "DONE" : "DECLINED";
     await setStatus(rest[0] ?? "", status, rest.slice(1).join(" ") || null);
   } else if (rest.length > 0) {

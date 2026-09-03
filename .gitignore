@@ -14,3 +14,6 @@ coverage
 # Photo import bundles — processed crops live in public/photos
 routeplanner-photos*.zip
 wetransfer_*.zip
+
+# Screenshots pulled from change requests. Restricted: they show customer data.
+/.request-images/
