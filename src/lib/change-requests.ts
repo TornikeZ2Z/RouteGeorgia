@@ -86,6 +86,14 @@ export async function countOpen(): Promise<number> {
   return row?.n ?? 0;
 }
 
+/** Requests nobody has looked at yet. Deliberately narrower than countOpen():
+    the console badge answers "has something arrived", not "how much is open". */
+export async function countNew(): Promise<number> {
+  const [row] = await sql<{ n: number }[]>`
+    SELECT count(*)::int AS n FROM change_requests WHERE status = 'NEW'`;
+  return row?.n ?? 0;
+}
+
 export interface RequestImage {
   id: string;
   storageKey: string;

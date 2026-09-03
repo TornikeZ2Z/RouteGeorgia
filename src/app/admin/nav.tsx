@@ -5,7 +5,7 @@ import { usePathname } from "next/navigation";
 
 export interface AdminNavGroup {
   label: string;
-  items: { href: string; label: string }[];
+  items: { href: string; label: string; badge?: number }[];
 }
 
 /**
@@ -43,6 +43,7 @@ export function AdminNav({ groups }: { groups: AdminNavGroup[] }) {
                     }
                   >
                     {item.label}
+                    {item.badge ? <NavBadge n={item.badge} active={isActive(item.href)} /> : null}
                   </Link>
                 </li>
               ))}
@@ -65,9 +66,25 @@ export function AdminNav({ groups }: { groups: AdminNavGroup[] }) {
             }
           >
             {item.label}
+            {item.badge ? <NavBadge n={item.badge} active={isActive(item.href)} /> : null}
           </Link>
         ))}
       </nav>
     </>
+  );
+}
+
+/** The count of things waiting. Reads as a number to a screen reader, not as
+    decoration, because it is the only signal that anything has arrived. */
+function NavBadge({ n, active }: { n: number; active: boolean }) {
+  return (
+    <span
+      className={
+        "ml-2 inline-flex min-w-5 items-center justify-center rounded-full px-1.5 py-0.5 text-[11px] font-semibold tabular-nums " +
+        (active ? "bg-white text-pine-800" : "bg-pine-800 text-white")
+      }
+    >
+      {n > 99 ? "99+" : n}
+    </span>
   );
 }

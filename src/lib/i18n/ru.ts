@@ -702,7 +702,7 @@ export const ru: Partial<Dictionary> = {
   "tours.catMountains": "Горы",
   "tours.catWinter": "Зимние курорты",
   "tours.catCulture": "Культура и история",
-  "tours.catWine": "Вино и еда",
+  "tours.catWine": "Вино и кухня",
 
   "plan.title": "Собери мой маршрут",
   "plan.lead": "Три вопроса — и мы набросаем поездку, которую можно изменить, сохранить и забронировать.",
@@ -711,7 +711,7 @@ export const ru: Partial<Dictionary> = {
   "plan.qParty": "Кто едет?",
   "plan.int1": "Природа и горы",
   "plan.int2": "Культура и история",
-  "plan.int3": "Вино и еда",
+  "plan.int3": "Вино и кухня",
   "plan.int4": "Приключения",
   "plan.int5": "Спокойный отдых",
   "plan.party1": "Я один",

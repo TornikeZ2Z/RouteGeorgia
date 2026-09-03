@@ -118,20 +118,6 @@ export function OfferFiltersPanel({
           <input key={`${k}-${i}`} type="hidden" name={k} value={v} />
         ))}
 
-        <div>
-          <label htmlFor="sort" className="mb-1.5 block text-sm font-medium text-ink-800">{t("filters.sortBy")}</label>
-          <select
-            id="sort" name="sort" defaultValue={state.sort}
-            className="w-full rounded-lg border border-ink-300 bg-white px-3 py-2 text-sm"
-          >
-            <option value="recommended">{t("filters.sortRecommended")}</option>
-            <option value="price_asc">{t("filters.sortPriceAsc")}</option>
-            <option value="price_desc">{t("filters.sortPriceDesc")}</option>
-            <option value="rating">{t("filters.sortRating")}</option>
-            <option value="reviews">{t("filters.sortReviews")}</option>
-          </select>
-        </div>
-
         <fieldset>
           <legend className="mb-1.5 text-sm font-medium text-ink-800">{t("filters.vehicleClass")}</legend>
           <div className="space-y-1">

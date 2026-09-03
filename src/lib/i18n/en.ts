@@ -721,7 +721,7 @@ export const en = {
   "tours.catMountains": "Mountains",
   "tours.catWinter": "Winter resorts",
   "tours.catCulture": "Culture & history",
-  "tours.catWine": "Wine & food",
+  "tours.catWine": "Wine & cuisine",
 
   "plan.title": "Build my route",
   "plan.lead": "Three questions, and we will sketch a trip you can adjust, share and book.",
@@ -730,7 +730,7 @@ export const en = {
   "plan.qParty": "Who is travelling?",
   "plan.int1": "Nature & mountains",
   "plan.int2": "Culture & history",
-  "plan.int3": "Wine & food",
+  "plan.int3": "Wine & cuisine",
   "plan.int4": "Adventure",
   "plan.int5": "Slow & restful",
   "plan.party1": "Just me",

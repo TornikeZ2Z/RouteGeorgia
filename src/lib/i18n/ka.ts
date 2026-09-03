@@ -702,7 +702,7 @@ export const ka: Partial<Dictionary> = {
   "tours.catMountains": "მთები",
   "tours.catWinter": "ზამთრის კურორტები",
   "tours.catCulture": "კულტურა და ისტორია",
-  "tours.catWine": "ღვინო და საჭმელი",
+  "tours.catWine": "ღვინო და კულინარია",
 
   "plan.title": "ამიწყვე მარშრუტი",
   "plan.lead": "სამი კითხვა — და დაგიხატავთ მოგზაურობას, რომელსაც შეცვლი, გააზიარებ და დაჯავშნი.",
@@ -711,7 +711,7 @@ export const ka: Partial<Dictionary> = {
   "plan.qParty": "ვინ მოგზაურობს?",
   "plan.int1": "ბუნება და მთები",
   "plan.int2": "კულტურა და ისტორია",
-  "plan.int3": "ღვინო და საჭმელი",
+  "plan.int3": "ღვინო და კულინარია",
   "plan.int4": "თავგადასავალი",
   "plan.int5": "მშვიდი დასვენება",
   "plan.party1": "მარტო ვარ",

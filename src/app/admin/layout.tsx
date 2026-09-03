@@ -3,6 +3,7 @@ import { redirect } from "next/navigation";
 import { getSessionUser } from "@/lib/auth/session";
 import { can, type Permission } from "@/lib/rbac";
 import { adminT, adminLocale } from "@/lib/i18n/admin";
+import { countNew } from "@/lib/change-requests";
 import { setStaffLocaleAction } from "./actions";
 import { AdminNav, type AdminNavGroup } from "./nav";
 
@@ -62,12 +63,20 @@ export default async function AdminLayout({ children }: { children: React.ReactN
   const t = adminT(user.locale);
   const locale = adminLocale(user.locale);
 
+  // Nothing else tells anyone a change request has arrived: the notification
+  // email cannot send while SMTP is blocked, so this badge is the only signal.
+  const newRequests = can(user.roles, "admin.requests.read") ? await countNew() : 0;
+
   const groups: AdminNavGroup[] = GROUPS
     .map((group) => ({
       label: t(group.key),
       items: group.items
         .filter((item) => can(user.roles, item.permission))
-        .map((item) => ({ href: item.href, label: t(item.key) })),
+        .map((item) => ({
+          href: item.href,
+          label: t(item.key),
+          badge: item.href === "/admin/requests" && newRequests > 0 ? newRequests : undefined,
+        })),
     }))
     .filter((group) => group.items.length > 0);
 
