@@ -2,7 +2,7 @@
 
 import { useState } from "react";
 import { useRouter } from "next/navigation";
-import { Button, Field, Input, Select } from "@/components/ui";
+import { Button, Field, Input } from "@/components/ui";
 import { getTranslator, isLocale, type Locale } from "@/lib/i18n";
 
 interface LocationOption { slug: string; name_en: string; type: string }
@@ -29,23 +29,7 @@ const CELL_CONTROL =
   "w-full border-0 bg-transparent p-0 text-sm font-semibold text-ink-900 " +
   "focus:outline-none focus:ring-0";
 
-/** Selects lose the native arrow and gain ours; the wrapper draws the chevron. */
-const CELL_SELECT = CELL_CONTROL + " appearance-none cursor-pointer pr-6 truncate";
-
-function SelectWrap({ children }: { children: React.ReactNode }) {
-  return (
-    <span className="relative block">
-      {children}
-      <svg
-        viewBox="0 0 24 24" aria-hidden
-        className="pointer-events-none absolute right-0 top-1/2 size-4 -translate-y-1/2 text-ink-400"
-        fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"
-      >
-        <path d="m6 9 6 6 6-6" />
-      </svg>
-    </span>
-  );
-}
+const CELL_INPUT = CELL_CONTROL + " truncate placeholder:font-normal placeholder:text-ink-400";
 
 function Cell({
   icon, label, htmlFor, children, className = "",
@@ -79,8 +63,11 @@ export function SearchForm({
   const t = getTranslator(isLocale(locale) ? (locale as Locale) : "en");
   const router = useRouter();
   const has = (slug: string) => locations.some((l) => l.slug === slug);
-  const [from, setFrom] = useState(initial?.from ?? (has("tbilisi-airport") ? "tbilisi-airport" : locations[0]?.slug ?? ""));
-  const [to, setTo] = useState(initial?.to ?? (has("tbilisi") ? "tbilisi" : locations[1]?.slug ?? ""));
+  /* The visible value is the place's name in the reader's language. The search
+     page resolves a name or a slug, so a link built with slugs still opens. */
+  const nameOf = (slug: string) => locations.find((l) => l.slug === slug)?.name_en ?? slug;
+  const [from, setFrom] = useState(nameOf(initial?.from ?? (has("tbilisi-airport") ? "tbilisi-airport" : locations[0]?.slug ?? "")));
+  const [to, setTo] = useState(nameOf(initial?.to ?? (has("tbilisi") ? "tbilisi" : locations[1]?.slug ?? "")));
   const [stops, setStops] = useState<string[]>([]);
   const [when, setWhen] = useState(defaultWhen());
   const [returnWhen, setReturnWhen] = useState(defaultReturnWhen());
@@ -122,9 +109,20 @@ export function SearchForm({
     router.push(`/${locale}/search?${q}`);
   }
 
-  const options = locations.map((l) => (
-    <option key={l.slug} value={l.slug}>{l.name_en}</option>
-  ));
+  /*
+     A datalist rather than a select: CR-2026-0006 asked not to corral people
+     into a fixed list. Typing filters natively, in every browser, with no
+     geocoder and no key — and because we still price against places we serve,
+     the suggestions remain the truthful set. The input is not readonly, so an
+     unknown place submits and the search says plainly that it has no route
+     there, instead of the field silently refusing the keystroke.
+  */
+  const LIST_ID = "rp-places";
+  const placeList = (
+    <datalist id={LIST_ID}>
+      {locations.map((l) => <option key={l.slug} value={l.name_en} />)}
+    </datalist>
+  );
 
   const stopsEditor = !lockRoute && stops.length > 0 && (
     <ul className="space-y-2">
@@ -132,13 +130,11 @@ export function SearchForm({
         <li key={i} className="flex items-end gap-2">
           <div className="flex-1">
             <Field label={t("search.stop", { n: i + 1 })} htmlFor={`stop-${i}`}>
-              <Select
-                id={`stop-${i}`} name="stop" value={stop}
+              <Input
+                id={`stop-${i}`} name="stop" value={stop} list={LIST_ID} autoComplete="off"
+                placeholder={t("search.choosePlace")}
                 onChange={(e) => setStops(stops.map((s, j) => (j === i ? e.target.value : s)))}
-              >
-                <option value="">{t("search.choosePlace")}</option>
-                {options}
-              </Select>
+              />
             </Field>
           </div>
           <Button type="button" variant="secondary"
@@ -154,6 +150,7 @@ export function SearchForm({
   if (compact) {
     return (
       <form onSubmit={submit} action={`/${locale}/search`} method="get" className="space-y-4">
+        {placeList}
         {tourSlug && <input type="hidden" name="tour" value={tourSlug} />}
         {lockRoute && (
           <>
@@ -164,10 +161,12 @@ export function SearchForm({
         {!lockRoute && (
           <>
             <Field label={t("search.from")} htmlFor="from" required>
-              <Select id="from" name="from" value={from} onChange={(e) => setFrom(e.target.value)}>{options}</Select>
+              <Input id="from" name="from" value={from} list={LIST_ID} autoComplete="off"
+                     onChange={(e) => setFrom(e.target.value)} />
             </Field>
             <Field label={t("search.to")} htmlFor="to" required>
-              <Select id="to" name="to" value={to} onChange={(e) => setTo(e.target.value)}>{options}</Select>
+              <Input id="to" name="to" value={to} list={LIST_ID} autoComplete="off"
+                     onChange={(e) => setTo(e.target.value)} />
             </Field>
           </>
         )}
@@ -231,6 +230,7 @@ export function SearchForm({
 
   return (
     <form onSubmit={submit} action={`/${locale}/search`} method="get" className="space-y-4">
+      {placeList}
       {tourSlug && <input type="hidden" name="tour" value={tourSlug} />}
       {lockRoute && (
         <>
@@ -243,20 +243,14 @@ export function SearchForm({
         <div className="flex flex-1 flex-col rounded-2xl border border-ink-200 bg-white sm:flex-row sm:flex-wrap lg:flex-nowrap lg:divide-x lg:divide-ink-200 [&>*+*]:border-t [&>*+*]:border-ink-100 sm:[&>*+*]:border-t-0 lg:[&>*+*]:border-t-0">
           {!lockRoute && (
             <Cell icon={ICONS.from} label={t("search.from")} htmlFor="from" className="sm:basis-1/2 lg:basis-auto">
-              <SelectWrap>
-                <select id="from" name="from" value={from} onChange={(e) => setFrom(e.target.value)} className={CELL_SELECT}>
-                  {options}
-                </select>
-              </SelectWrap>
+              <input id="from" name="from" value={from} list={LIST_ID} autoComplete="off"
+                     onChange={(e) => setFrom(e.target.value)} className={CELL_INPUT} />
             </Cell>
           )}
           {!lockRoute && (
             <Cell icon={ICONS.to} label={t("search.to")} htmlFor="to" className="sm:basis-1/2 lg:basis-auto">
-              <SelectWrap>
-                <select id="to" name="to" value={to} onChange={(e) => setTo(e.target.value)} className={CELL_SELECT}>
-                  {options}
-                </select>
-              </SelectWrap>
+              <input id="to" name="to" value={to} list={LIST_ID} autoComplete="off"
+                     onChange={(e) => setTo(e.target.value)} className={CELL_INPUT} />
             </Cell>
           )}
           <Cell icon={ICONS.date} label={t("search.date")} htmlFor="when" className="sm:basis-1/2 lg:basis-auto">

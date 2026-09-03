@@ -24,7 +24,7 @@ export const en = {
 
   // ---- homepage ----------------------------------------------------------
   "home.heroEyebrow": "Georgia · private drivers",
-  "home.heroTitle": "Your journey.",
+  "home.heroTitle": "Let's",
   "home.heroSubtitle": "Reliable, comfortable and safe transfers, tours and group transportation across Georgia — with a named local driver and a fixed price.",
   "home.searchCta": "Find a driver",
   "home.statDrivers": "verified drivers",
@@ -100,6 +100,8 @@ export const en = {
   "search.rateNote": "{currency} shown for guidance · rate of {date}",
   "search.startTitle": "Start a search",
   "search.startBody": "Choose a pickup, destination and time on the home page.",
+  "search.noPlaceTitle": "We could not find that place",
+  "search.noPlaceBody": "We do not serve “{place}” yet. Start typing and pick from the list — or tell us and we will add it.",
   "search.badDateTitle": "That date could not be read",
   "search.badDateBody": "Go back and pick a date and time again.",
 
@@ -806,7 +808,7 @@ export const en = {
 
 
   // --- Navy & gold identity ------------------------------------------------
-  "home.heroTitle2": "Our route.",
+  "home.heroTitle2": "go.",
   "home.chip1s": "agreed before you travel",
   "home.chip2s": "vetted drivers and cars",
   "home.chip3s": "free cancellation 24h before",

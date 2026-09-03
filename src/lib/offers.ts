@@ -508,6 +508,29 @@ const emptyResult = (reason: SearchResult["emptyReason"]): SearchResult => ({
   emptyReason: reason,
 });
 
+/**
+ * A place as typed in the search bar, resolved to a slug.
+ *
+ * The field became a text input (CR-2026-0006), so it now arrives as a name in
+ * whichever language the reader is using. Every link this site generates still
+ * carries a slug, and so do links people have already shared, so both are
+ * accepted. Returns null when we do not serve the place — the caller says so
+ * plainly rather than pretending the search was never started.
+ */
+export async function resolvePlace(token: string | undefined): Promise<string | null> {
+  const t = (token ?? "").trim();
+  if (!t) return null;
+  const [row] = await sql<{ slug: string }[]>`
+    SELECT slug FROM locations
+    WHERE slug = lower(${t})
+       OR lower(name_en) = lower(${t})
+       OR lower(name_ka) = lower(${t})
+       OR lower(name_ru) = lower(${t})
+    ORDER BY (slug = lower(${t})) DESC
+    LIMIT 1`;
+  return row?.slug ?? null;
+}
+
 interface LocationRow { id: string; slug: string; name_en: string; lat: number; lon: number; timezone: string }
 interface TourPricingRow {
   id: string; slug: string; distance_km: string; drive_minutes: number; return_km: string;

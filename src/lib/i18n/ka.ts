@@ -18,7 +18,7 @@ export const ka: Partial<Dictionary> = {
   "nav.myDriving": "ჩემი კაბინეტი",
 
   "home.heroEyebrow": "საქართველო · კერძო მძღოლები",
-  "home.heroTitle": "თქვენი მოგზაურობა.",
+  "home.heroTitle": "Let's",
   "home.heroSubtitle": "საიმედო, კომფორტული და უსაფრთხო ტრანსფერები, ტურები და ჯგუფური გადაყვანა მთელ საქართველოში — კონკრეტული ადგილობრივი მძღოლით და ფიქსირებული ფასით.",
   "home.searchCta": "მოძებნე მძღოლი",
   "home.statDrivers": "ვერიფიცირებული მძღოლი",
@@ -92,6 +92,8 @@ export const ka: Partial<Dictionary> = {
   "search.rateNote": "{currency} საორიენტაციოდ · კურსი {date}",
   "search.startTitle": "დაიწყე ძებნა",
   "search.startBody": "აირჩიე დასაწყისი, დანიშნულება და დრო მთავარ გვერდზე.",
+  "search.noPlaceTitle": "ასეთი მიმართულება ვერ ვიპოვეთ",
+  "search.noPlaceBody": "„{place}“ ჯერ არ გვაქვს. აკრიფეთ და აირჩიეთ სიიდან — ან მოგვწერეთ და დავამატებთ.",
   "search.badDateTitle": "თარიღი ვერ წავიკითხეთ",
   "search.badDateBody": "დაბრუნდი და აირჩიე თარიღი და დრო თავიდან.",
 
@@ -787,7 +789,7 @@ export const ka: Partial<Dictionary> = {
 
 
   // --- ლურჯი-ოქროსფერი იდენტობა -------------------------------------------
-  "home.heroTitle2": "ჩვენი გზა.",
+  "home.heroTitle2": "go.",
   "home.chip1s": "შეთანხმებული მგზავრობამდე",
   "home.chip2s": "გადამოწმებული მძღოლები და მანქანები",
   "home.chip3s": "უფასო გაუქმება 24 საათით ადრე",

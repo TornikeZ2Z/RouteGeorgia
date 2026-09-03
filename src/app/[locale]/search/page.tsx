@@ -1,7 +1,7 @@
 import Link from "next/link";
 import { notFound } from "next/navigation";
 import { isLocale, getTranslator } from "@/lib/i18n";
-import { searchOffers, availableFacets, type SortKey } from "@/lib/offers";
+import { searchOffers, availableFacets, resolvePlace, type SortKey } from "@/lib/offers";
 import { formatMoney } from "@/lib/money";
 import { formatDuration } from "@/lib/format";
 import { getDisplayCurrency, getRate, convert, CANONICAL } from "@/lib/currency";
@@ -42,12 +42,29 @@ export default async function SearchPage({ params, searchParams }: Props) {
   if (one(sp.dd).trim()) addressParams.set("dd", one(sp.dd).trim().slice(0, 300));
   const addressThread = addressParams.size > 0 ? `&${addressParams}` : "";
 
-  const from = str(sp.from), to = str(sp.to), when = str(sp.when);
-  const stops = list(sp.stop).filter(Boolean);
+  const fromRaw = str(sp.from), toRaw = str(sp.to), when = str(sp.when);
+  const stopsRaw = list(sp.stop).filter(Boolean);
 
-  if (!from || !to || !when) {
+  if (!fromRaw || !toRaw || !when) {
     return <EmptyState title={t("search.startTitle")}>{t("search.startBody")}</EmptyState>;
   }
+
+  // The bar submits a typed name; older links submit a slug. Either resolves.
+  const tokens = [fromRaw, toRaw, ...stopsRaw];
+  const resolved = await Promise.all(tokens.map((token) => resolvePlace(token)));
+  const firstUnknown = tokens.find((_, i) => resolved[i] === null);
+  if (firstUnknown !== undefined) {
+    return (
+      <EmptyState title={t("search.noPlaceTitle")}>
+        {t("search.noPlaceBody", { place: firstUnknown })}
+      </EmptyState>
+    );
+  }
+  // Past the guard every token resolved, and the first two are the required
+  // origin and destination checked above.
+  const from = resolved[0] as string;
+  const to = resolved[1] as string;
+  const stops = resolved.slice(2) as string[];
 
   const travelAt = new Date(when);
   if (Number.isNaN(travelAt.getTime())) {
@@ -125,7 +142,7 @@ export default async function SearchPage({ params, searchParams }: Props) {
 
   // Preserved across filter submissions so the trip itself never changes.
   const hidden: [string, string][] = [
-    ["from", from], ["to", to], ["when", when],
+    ["from", fromRaw], ["to", toRaw], ["when", when],
     ...(roundTrip ? [["return", returnRaw!] as [string, string]] : []),
     ...(str(sp.tour) ? [["tour", str(sp.tour)!] as [string, string]] : []),
     ["passengers", String(passengers)], ["luggage", String(luggage)],
@@ -142,7 +159,7 @@ export default async function SearchPage({ params, searchParams }: Props) {
     <div className="space-y-6">
       <div className="rounded-xl border border-ink-200 bg-white p-5">
         <h1 className="font-display text-2xl text-ink-900 sm:text-3xl">
-          {result.route.originName || from}
+          {result.route.originName || fromRaw}
           <span className="mx-2 text-ink-400" aria-hidden>{roundTrip ? "⇄" : "→"}</span>
           {result.route.destinationName || to}
           {roundTrip && <span className="ml-3 align-middle"><Badge tone="success">{t("search.roundTripBadge")}</Badge></span>}

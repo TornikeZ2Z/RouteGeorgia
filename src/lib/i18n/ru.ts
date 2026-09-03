@@ -18,7 +18,7 @@ export const ru: Partial<Dictionary> = {
   "nav.myDriving": "Мой кабинет",
 
   "home.heroEyebrow": "Грузия · частные водители",
-  "home.heroTitle": "Ваше путешествие.",
+  "home.heroTitle": "Let's",
   "home.heroSubtitle": "Надёжные, комфортные и безопасные трансферы, туры и групповые перевозки по всей Грузии — с конкретным местным водителем и фиксированной ценой.",
   "home.searchCta": "Найти водителя",
   "home.statDrivers": "проверенных водителей",
@@ -92,6 +92,8 @@ export const ru: Partial<Dictionary> = {
   "search.rateNote": "{currency} для ориентира · курс от {date}",
   "search.startTitle": "Начните поиск",
   "search.startBody": "Выберите отправление, назначение и время на главной странице.",
+  "search.noPlaceTitle": "Мы не нашли это место",
+  "search.noPlaceBody": "Мы пока не обслуживаем «{place}». Начните вводить и выберите из списка — или напишите нам, и мы его добавим.",
   "search.badDateTitle": "Не удалось прочитать дату",
   "search.badDateBody": "Вернитесь и выберите дату и время заново.",
 
@@ -787,7 +789,7 @@ export const ru: Partial<Dictionary> = {
 
 
   // --- Сине-золотая айдентика ----------------------------------------------
-  "home.heroTitle2": "Наш маршрут.",
+  "home.heroTitle2": "go.",
   "home.chip1s": "согласованы до поездки",
   "home.chip2s": "проверенные водители и машины",
   "home.chip3s": "бесплатная отмена за 24 часа",
