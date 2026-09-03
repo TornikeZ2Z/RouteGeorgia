@@ -109,6 +109,13 @@ export default async function Home({
   const rawCat = Array.isArray(sp.cat) ? sp.cat[0] : sp.cat;
   const CAT_LIST = ["sea", "mountains", "winter", "wine", "culture", "nature"] as const;
   const initialCat = CAT_LIST.includes(rawCat as (typeof CAT_LIST)[number]) ? (rawCat as MapCategory) : "all";
+
+  // A season card above links here; the map opens already showing its picks.
+  const SEASON_LIST = ["spring", "summer", "autumn", "winter"] as const;
+  const rawSeason = Array.isArray(sp.season) ? sp.season[0] : sp.season;
+  const initialSeason = SEASON_LIST.includes(rawSeason as (typeof SEASON_LIST)[number])
+    ? (rawSeason as (typeof SEASON_LIST)[number])
+    : null;
   if (!isLocale(locale)) notFound();
   const t = getTranslator(locale);
 
@@ -232,47 +239,51 @@ export default async function Home({
         </Card>
       </div>
 
-      {/* ------------------------------------------------ categories ------ */}
+      {/* --------------------------------------------------- seasons ------ */}
+      {/*
+        This asked "where do you want to go?" and answered with six themes —
+        mountains, sea, wine — which a visitor can only choose between if they
+        already know the country. When they are coming is something they do
+        know, and here it decides more: the Svaneti passes are shut half the
+        year, rtveli is a fortnight, and Gudauri in August is a building site.
+        Pick a season and the map below shows what is worth the drive then.
+      */}
       <section>
         <div className="flex flex-wrap items-end justify-between gap-3">
           <div>
             <h2 className="font-display text-3xl text-ink-900 sm:text-4xl">{t("home.catsTitle")}</h2>
-            <p className="mt-2 text-ink-500">{t("home.catsSub")}</p>
+            <p className="mt-2 text-ink-500">{t("home.seasonsSub")}</p>
           </div>
           <a href="#explore" className="text-sm font-semibold text-ink-900 underline underline-offset-4">
             {t("home.catsAll")} →
           </a>
         </div>
-        <ul className="mt-8 grid grid-cols-2 gap-4 lg:grid-cols-3 xl:grid-cols-6">
-          {(["mountains", "nature", "sea", "wine", "culture", "winter"] as const).map((cat) => {
-            const names = DESTINATIONS.filter((d) => d.categories.includes(cat)).slice(0, 3)
+        <ul className="mt-8 grid grid-cols-2 gap-4 lg:grid-cols-4">
+          {(["spring", "summer", "autumn", "winter"] as const).map((season, i) => {
+            // Named on the card, so the choice is concrete before it is clicked.
+            const names = DESTINATIONS.filter((d) => d.seasons.includes(season)).slice(0, 3)
               .map((d) => locations.find((l) => l.slug === d.slug)?.name_en).filter(Boolean);
-            const photo = sitePhoto(`categories/${cat}.jpg`);
-            const KEY: Record<string, string> = {
-              sea: "tours.catSea", mountains: "tours.catMountains", winter: "tours.catWinter",
-              wine: "tours.catWine", culture: "tours.catCulture", nature: "map.catNature",
-            };
+            const photo = sitePhoto(`seasons/${season}.jpg`);
             return (
-              <li key={cat}>
-                <Link href={`/${locale}?cat=${cat}#explore`} className="group relative block h-56 overflow-hidden rounded-2xl shadow-[0_1px_3px_rgba(11,29,51,.08)] transition-all duration-300 hover:-translate-y-1 hover:shadow-[var(--shadow-soft)] lg:h-64">
+              <li key={season}>
+                <Link
+                  href={`/${locale}?season=${season}#explore`}
+                  className="group relative block h-56 overflow-hidden rounded-2xl shadow-[0_1px_3px_rgba(11,29,51,.08)] transition-all duration-300 hover:-translate-y-1 hover:shadow-[var(--shadow-soft)] lg:h-64"
+                >
                   {photo ? (
                     // eslint-disable-next-line @next/next/no-img-element
                     <img src={photo} alt="" loading="lazy"
                          className="absolute inset-0 size-full object-cover transition-transform duration-500 group-hover:scale-105" />
                   ) : (
-                    <PlaceImage imageKey={null} alt="" seedText={`cat-${cat}`}
+                    <PlaceImage imageKey={null} alt="" seedText={`season-${season}`}
                                 className="absolute inset-0 size-full transition-transform duration-500 group-hover:scale-105" />
                   )}
                   <span className="absolute inset-0 bg-gradient-to-t from-pine-900/90 via-pine-900/35 to-pine-900/10" />
                   <span className="absolute inset-x-0 bottom-0 p-4 text-white">
-                    <span className="grid size-10 place-items-center rounded-full border border-gold-400/70 text-gold-400">
-                      <svg viewBox="0 0 24 24" className="size-5" fill="none" stroke="currentColor"
-                           strokeWidth="1.7" strokeLinecap="round" strokeLinejoin="round" aria-hidden>
-                        <path d={CATEGORY_ICONS[cat]} />
-                      </svg>
-                    </span>
-                    <span className="mt-2 block text-lg font-bold tracking-[-0.01em]">{t(KEY[cat] as never)}</span>
-                    <span className="mt-0.5 block truncate text-xs text-pine-200">{names.join(", ")}</span>
+                    <span className="font-display block text-xl">{t(`home.season${i + 1}t` as never)}</span>
+                    {names.length > 0 && (
+                      <span className="mt-1 block text-sm text-pine-100">{names.join(" · ")}</span>
+                    )}
                   </span>
                 </Link>
               </li>
@@ -466,6 +477,7 @@ export default async function Home({
           <GeorgiaMap
             locale={locale}
             initialCat={initialCat}
+            initialSeason={initialSeason}
             places={DESTINATIONS.flatMap((d) => {
               const loc = locations.find((l) => l.slug === d.slug);
               if (!loc) return [];

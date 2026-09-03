@@ -112,10 +112,18 @@ const TOUR_CAT: Partial<Record<MapCategory, string>> = {
   sea: "sea", mountains: "mountains", winter: "winter", wine: "wine", culture: "culture",
 };
 
-export function GeorgiaMap({ locale, places, initialCat = "all" }: { locale: string; places: MapPlace[]; initialCat?: MapCategory | "all" }) {
+export function GeorgiaMap({
+  locale, places, initialCat = "all", initialSeason = null,
+}: {
+  locale: string;
+  places: MapPlace[];
+  initialCat?: MapCategory | "all";
+  /** Set from ?season= so the season cards above land on their own picks. */
+  initialSeason?: Season | null;
+}) {
   const t = getTranslator(isLocale(locale) ? (locale as Locale) : "en");
   const [cat, setCat] = useState<MapCategory | "all">(initialCat);
-  const [season, setSeason] = useState<Season | null>(null);
+  const [season, setSeason] = useState<Season | null>(initialSeason);
   const [open, setOpen] = useState<string | null>(null);
   const [weather, setWeather] = useState<Record<string, { temperatureC: number; bucket: string } | null>>({});
   const boxRef = useRef<HTMLDivElement>(null);
