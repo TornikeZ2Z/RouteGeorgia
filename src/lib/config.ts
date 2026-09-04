@@ -88,7 +88,7 @@ const Schema = z.object({
   SMTP_USER: z.string().default(""),
   SMTP_PASSWORD: z.string().default(""),
   /** Must be an address on a domain verified with the provider. */
-  MAIL_FROM: z.string().default("Route Planner <noreply@routeplanner.ge>"),
+  MAIL_FROM: z.string().default("RoutePlanner <noreply@routeplanner.ge>"),
 
   COMPANY_LEGAL_NAME: z.string().default(""),
   COMPANY_ID_NUMBER: z.string().default(""),

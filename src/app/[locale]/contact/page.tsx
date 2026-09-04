@@ -13,7 +13,7 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
   const { locale } = await params;
   return {
     title: "Contact and support",
-    description: "How to reach Route Planner before, during or after a trip.",
+    description: "How to reach RoutePlanner before, during or after a trip.",
     alternates: {
       canonical: `${config.appUrl}/${locale}/contact`,
       languages: Object.fromEntries(LOCALES.map((l) => [l, `${config.appUrl}/${l}/contact`])),

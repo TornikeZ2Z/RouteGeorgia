@@ -19,7 +19,7 @@ export interface LegalDocument {
   sections: { heading: string; body: string[] }[];
 }
 
-const COMPANY = "Route Planner";
+const COMPANY = "RoutePlanner";
 const CONTACT = "support@routeplanner.ge";
 
 export const LEGAL_SLUGS = ["terms", "privacy", "cancellation"] as const;

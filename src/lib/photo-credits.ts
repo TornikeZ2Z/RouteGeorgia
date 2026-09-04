@@ -3,7 +3,7 @@
  *
  * Destination and category photography sourced from Wikimedia Commons under
  * the licenses listed here — attribution is the price of free, and it is
- * cheap. Every entry links to the original file page. Route Planner's own
+ * cheap. Every entry links to the original file page. RoutePlanner's own
  * photographs (Gergeti, Ushguli, Old Tbilisi, the mountain roads) are noted
  * on the credits page separately. Generated from the import manifest; edit
  * deliberately.

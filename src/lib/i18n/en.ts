@@ -10,7 +10,7 @@
  * travellers; "console.*" is the console drivers themselves work in.
  */
 export const en = {
-  "brand.name": "Route Planner",
+  "brand.name": "RoutePlanner",
   "brand.tagline": "Private drivers across Georgia, booked in advance.",
 
   "nav.transfers": "Transfers",
@@ -24,8 +24,8 @@ export const en = {
 
   // ---- homepage ----------------------------------------------------------
   "home.heroEyebrow": "Georgia · private drivers",
-  "home.heroTitle": "Let's",
-  "home.heroSubtitle": "Reliable, comfortable and safe transfers, tours and group transportation across Georgia — with a named local driver and a fixed price.",
+  "home.heroTitle": "Book a private driver",
+  "home.heroSubtitle": "Transfers, tours and custom routes across Georgia — with a named driver, a specific car and a price agreed in advance.",
   "home.searchCta": "Find a driver",
   "home.statDrivers": "verified drivers",
   "home.statRoutes": "priced routes",
@@ -34,14 +34,14 @@ export const en = {
   "home.planTitle": "Where are you going?",
   "home.whyEyebrow": "Why book ahead",
   "home.whyTitle": "Everything agreed before you land",
-  "home.why1t": "Fixed price, agreed up front",
-  "home.why1b": "You see the final price for the whole vehicle before you book. It does not move afterwards unless you change the trip.",
-  "home.why2t": "A named driver and car",
-  "home.why2b": "You choose a specific driver and see their car, languages and reviews — not an anonymous vehicle class.",
-  "home.why3t": "Stops are included",
-  "home.why3b": "Add stops when you book. Waiting at them is not charged extra.",
-  "home.why4t": "Checked documents",
-  "home.why4b": "Licence, insurance and vehicle papers are reviewed by us and must be valid on your travel date.",
+  "home.why1t": "Fixed price",
+  "home.why1b": "You see the final price up front.",
+  "home.why2t": "A named driver",
+  "home.why2b": "You know who is driving you, and in what car.",
+  "home.why3t": "A flexible route",
+  "home.why3b": "Planned stops and waiting are included in the price. You pay nothing extra.",
+  "home.why4t": "Verified drivers",
+  "home.why4b": "The driver's and the vehicle's required details are checked.",
   "home.toursEyebrow": "Tours",
   "home.toursTitle": "Routes worth taking",
   "home.seeAllTours": "See all tours",
@@ -244,7 +244,7 @@ export const en = {
   "contact.ruleCancel": "Cancellation policy — currently free of charge",
 
   // ---- cookie notice -----------------------------------------------------
-  "cookie.body": "We set three cookies: your sign-in session, your language and your currency. Nothing that tracks you, and nothing shared with anyone.",
+  "cookie.body": "We use only the cookies the site needs to work, and to remember your language and currency.",
   "cookie.link": "How we handle your data",
   "cookie.accept": "Got it",
 
@@ -538,7 +538,7 @@ export const en = {
   "footer.langCurrency": "Language and currency",
   "footer.gelNote": "All trips are charged in Georgian lari. Other currencies are shown for guidance only.",
   "footer.support": "Support",
-  "footer.preLaunch": "Built in Tbilisi. Route Planner connects travellers directly with vetted local drivers.",
+  "footer.preLaunch": "Built in Tbilisi. RoutePlanner connects travellers directly with vetted local drivers.",
 
   // --- Green redesign: navigation, hero, tabs, services, company pages -----
   "nav.business": "For business",
@@ -548,10 +548,10 @@ export const en = {
   "nav.hourly": "Hourly hire",
   "footer.company": "Company",
 
-  "home.chip1": "Fixed prices",
-  "home.chip2": "Safe & reliable",
-  "home.chip3": "Flexible booking",
-  "home.chip4": "Support every day",
+  "home.chip1": "Fixed price",
+  "home.chip2": "Your driver",
+  "home.chip3": "Your route",
+  "home.chip4": "Verified drivers",
   "home.promoEyebrow": "Multi-day tours",
   "home.promoTitle": "See the whole country",
   "home.promoBody": "Curated loops from Tbilisi with the same driver from start to finish.",
@@ -583,9 +583,9 @@ export const en = {
   "home.trust1": "Professional local drivers",
   "home.trust2": "Clean, comfortable vehicles",
   "home.trust3": "Transparent pricing",
-  "home.trust4": "Support every day",
+  "home.trust4": "Support every day, 08:00–22:00",
   "home.trust5": "Safety is our priority",
-  "home.aboutEyebrow": "About Route Planner",
+  "home.aboutEyebrow": "About RoutePlanner",
   "home.aboutTitle": "A local platform, built around the driver",
   "home.aboutBody": "We connect travellers, families, businesses and schools with vetted local drivers across Georgia. Every price is fixed before you book, and every driver's documents are checked by our team.",
   "home.aboutCta": "More about us",
@@ -599,9 +599,9 @@ export const en = {
   "search.outbound": "Outbound",
   "search.returnLeg": "Return",
 
-  "about.title": "About Route Planner",
+  "about.title": "About RoutePlanner",
   "about.lead": "A Georgian company connecting travellers with the people who know these roads best.",
-  "about.body1": "Route Planner is a Georgian platform for booking private drivers — airport transfers, intercity trips, multi-day tours, business travel and school transport. The price you see is for the whole vehicle, fixed before you book.",
+  "about.body1": "RoutePlanner is a Georgian platform for booking private drivers — airport transfers, intercity trips, multi-day tours, business travel and school transport. The price you see is for the whole vehicle, fixed before you book.",
   "about.body2": "Drivers here are not anonymous. You choose a specific person: their car, their languages, their reviews. Our team checks licences, insurance and vehicle documents before a driver can take a single booking, and they must stay valid on every travel date.",
   "about.body3": "We are at the beginning of our road. If something is not right, a real person will answer — and if you drive and know your region, we would love to meet you.",
   "about.numbersTitle": "Where we are today",
@@ -714,9 +714,9 @@ export const en = {
   "home.travellersEyebrow": "Travellers",
   "home.travellersTitle": "Real trips, real people",
   "home.travellersBody": "Photos shared by our travellers, with their permission.",
-  "home.closingTitle": "Ready to see Georgia?",
-  "home.closingBody": "Fixed prices, named drivers, free cancellation 24 hours before pickup.",
-  "home.closingCta": "Book a ride",
+  "home.closingTitle": "Plan your journey across Georgia",
+  "home.closingBody": "Pick a transfer, a ready-made tour, or build your own route.",
+  "home.closingCta": "Start",
 
   "tours.catAll": "All tours",
   "tours.catSea": "Sea",
@@ -808,11 +808,11 @@ export const en = {
 
 
   // --- Navy & gold identity ------------------------------------------------
-  "home.heroTitle2": "go.",
-  "home.chip1s": "agreed before you travel",
-  "home.chip2s": "vetted drivers and cars",
-  "home.chip3s": "free cancellation 24h before",
-  "home.chip4s": "a real person answers",
+  "home.heroTitle2": "and discover Georgia your way.",
+  "home.chip1s": "You see the final price up front — no hidden charges.",
+  "home.chip2s": "You see the driver, the car, the languages and the reviews before you book.",
+  "home.chip3s": "Add stops and plan the journey the way you want it.",
+  "home.chip4s": "The driving licence and the car's required documents are checked in advance.",
   "nav.plan": "Build my route",
   "home.catsTitle": "Where do you want to go?",
   "home.catsAll": "All destinations",
@@ -831,7 +831,7 @@ export const en = {
   "driver.findDates": "Check prices and dates",
   "home.popularTitle": "Popular destinations",
   "home.popularSub": "Fixed from-prices for the whole car, not per seat.",
-  "home.whyRG": "Why Route Planner?",
+  "home.whyRG": "Why RoutePlanner?",
   "home.helpTitle": "Need help?",
   "home.helpBody": "Write or call us — a real person answers.",
   "home.helpWhatsApp": "WhatsApp",
@@ -840,12 +840,12 @@ export const en = {
 
   "credits.title": "Photo credits",
   "credits.lead": "Destination photography on this site comes from Wikimedia Commons photographers, used under the licenses listed below with our thanks.",
-  "credits.ours": "Photographs of Gergeti, Ushguli, Old Tbilisi and the mountain roads are Route Planner's own.",
+  "credits.ours": "Photographs of Gergeti, Ushguli, Old Tbilisi and the mountain roads are RoutePlanner's own.",
   "footer.credits": "Photo credits",
 
   // --- driver application (public form) ---------------------------------
-  "drive.metaTitle": "Drive with Route Planner — apply to join",
-  "drive.metaDesc": "Apply to drive with Route Planner in five minutes — who you are, your car, how to reach you. Documents come later, from your own driver page.",
+  "drive.metaTitle": "Drive with RoutePlanner — apply to join",
+  "drive.metaDesc": "Apply to drive with RoutePlanner in five minutes — who you are, your car, how to reach you. Documents come later, from your own driver page.",
   "drive.eyebrow": "Drive with us",
   "drive.title": "Apply to drive with us",
   "drive.lead": "We work with professional drivers across Georgia — airport transfers, intercity routes and day tours. You set your own prices, you choose the days you work, and you are paid per trip.",

@@ -93,7 +93,7 @@ async function osrmLeg(waypoints: LatLon[]): Promise<{ km: number; minutes: numb
   try {
     const response = await fetch(`${OSRM_BASE}/${coords}?overview=false&alternatives=false`, {
       signal: AbortSignal.timeout(OSRM_TIMEOUT_MS),
-      headers: { "User-Agent": "Route Planner/1.0 (routeplanner.ge)" },
+      headers: { "User-Agent": "RoutePlanner/1.0 (routeplanner.ge)" },
     });
     if (!response.ok) return null;
     const data = (await response.json()) as { code?: string; routes?: { distance: number; duration: number }[] };

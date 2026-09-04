@@ -61,7 +61,7 @@ export function BandForm({ band }: {
 }
 
 /**
- * The two numbers that decide what Route Planner earns and what a driver's day
+ * The two numbers that decide what RoutePlanner earns and what a driver's day
  * is worth. Both were environment variables until now, which meant a redeploy
  * to change a commercial term.
  */

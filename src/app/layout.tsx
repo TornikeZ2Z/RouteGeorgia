@@ -29,19 +29,19 @@ export const metadata: Metadata = {
   // server's internal host (localhost:10000 on Render) instead of the site.
   metadataBase: new URL(config.appUrl),
   title: {
-    default: "Route Planner — private drivers and tours across Georgia",
-    template: "%s · Route Planner",
+    default: "RoutePlanner — private drivers and tours across Georgia",
+    template: "%s · RoutePlanner",
   },
   description:
     "Book a verified private driver and vehicle in Georgia at a fixed price. " +
     "Airport transfers, intercity routes and curated day trips.",
-  applicationName: "Route Planner",
-  authors: [{ name: "Route Planner" }],
+  applicationName: "RoutePlanner",
+  authors: [{ name: "RoutePlanner" }],
   openGraph: {
-    siteName: "Route Planner",
+    siteName: "RoutePlanner",
     locale: "en_GE",
     type: "website",
-    images: [{ url: "/og.jpg", width: 1200, height: 630, alt: "Route Planner — private drivers across Georgia" }],
+    images: [{ url: "/og.jpg", width: 1200, height: 630, alt: "RoutePlanner — private drivers across Georgia" }],
   },
   twitter: { card: "summary_large_image", images: ["/og.jpg"] },
   robots: { index: true, follow: true },

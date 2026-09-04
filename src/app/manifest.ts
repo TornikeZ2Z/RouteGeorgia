@@ -6,8 +6,8 @@ import type { MetadataRoute } from "next";
  */
 export default function manifest(): MetadataRoute.Manifest {
   return {
-    name: "Route Planner",
-    short_name: "Route Planner",
+    name: "RoutePlanner",
+    short_name: "RoutePlanner",
     description: "Private drivers across Georgia, booked in advance.",
     start_url: "/",
     display: "standalone",
