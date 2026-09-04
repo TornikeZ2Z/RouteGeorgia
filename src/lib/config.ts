@@ -90,7 +90,14 @@ const Schema = z.object({
   /** Must be an address on a domain verified with the provider. */
   MAIL_FROM: z.string().default("RoutePlanner <noreply@routeplanner.ge>"),
 
-  COMPANY_LEGAL_NAME: z.string().default(""),
+  /*
+   * The trading entity named in the driver and school agreements. It is not a
+   * secret, and leaving it to an unset environment variable rendered every
+   * contract with a blank where the company should be — so it defaults here
+   * and the env var still overrides. ID number and address are still blank:
+   * a contract needs both, and nobody has supplied them yet.
+   */
+  COMPANY_LEGAL_NAME: z.string().default("LVL Route Georgia"),
   COMPANY_ID_NUMBER: z.string().default(""),
   COMPANY_ADDRESS: z.string().default(""),
 

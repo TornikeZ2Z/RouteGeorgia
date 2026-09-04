@@ -143,9 +143,16 @@ export default async function Home({
         </div>
 
         <div className="relative z-[2] mx-auto max-w-[1400px] 2xl:max-w-[1680px] px-4 pb-32 pt-14 sm:px-6 sm:pb-44 sm:pt-20 lg:px-10">
+          {/*
+            The headline is sized for a sentence, not a slogan. It ran at
+            text-7xl when it read "Let's go." — two words, five characters.
+            The same size under a full Georgian sentence wrapped to five lines
+            and swallowed the hero, which is what CR-2026-0016 reported. If it
+            ever goes back to two words, it can go back up.
+          */}
           <div className="flex flex-wrap items-start justify-between gap-8">
             <div className="max-w-2xl">
-              <h1 className="font-display max-w-3xl text-[2.6rem] leading-[1.07] sm:text-6xl xl:text-7xl">
+              <h1 className="font-display max-w-2xl text-3xl leading-[1.12] sm:text-4xl lg:text-5xl">
                 {t("home.heroTitle")}
                 <span className="block text-gold-400">{t("home.heroTitle2")}</span>
               </h1>
