@@ -508,6 +508,13 @@ export const ru: Partial<Dictionary> = {
   "auth.invalid": "Неверная почта или пароль.",
 
   "footer.travel": "Путешествия",
+  "flow.label": "Шаги бронирования",
+  "flow.step1": "Маршрут",
+  "flow.step2": "Водитель",
+  "flow.step3": "Детали и оплата",
+  "flow.step4": "Подтверждение",
+  "flow.done": "завершено",
+  "flow.current": "текущий шаг",
   "footer.allRoutes": "Все маршруты",
   "footer.dayTrips": "Однодневные туры",
   "footer.faqLink": "Частые вопросы",

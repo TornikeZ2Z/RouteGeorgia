@@ -6,6 +6,7 @@ import { Badge, Card } from "@/components/ui";
 import { VehiclePhoto } from "@/components/vehicle-photo";
 import { formatMoney } from "@/lib/money";
 import { CANONICAL } from "@/lib/currency";
+import { BookingSteps } from "@/components/booking-steps";
 
 export const dynamic = "force-dynamic";
 
@@ -125,6 +126,8 @@ export default async function DriverProfile({ params, searchParams }: Props) {
 
   return (
     <div className="space-y-6">
+      {trip && <BookingSteps locale={locale} current={2} />}
+
       {/* The booking decision travels with the reader. */}
       {trip ? (
         <div className="sticky top-[4.2rem] z-20 rounded-2xl border border-ink-200 bg-white/95 p-4 shadow-[var(--shadow-soft)] backdrop-blur-md dark:border-white/10 sm:px-6">

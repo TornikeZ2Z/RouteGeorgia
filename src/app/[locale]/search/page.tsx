@@ -7,6 +7,7 @@ import { formatDuration } from "@/lib/format";
 import { getDisplayCurrency, getRate, convert, CANONICAL } from "@/lib/currency";
 import { Badge, Card, EmptyState } from "@/components/ui";
 import { VehiclePhoto } from "@/components/vehicle-photo";
+import { BookingSteps } from "@/components/booking-steps";
 import { OfferFiltersPanel, CLASS_LABEL, CLASS_TIERS, type FilterState } from "@/components/offer-filters";
 
 export const dynamic = "force-dynamic";
@@ -157,6 +158,8 @@ export default async function SearchPage({ params, searchParams }: Props) {
 
   return (
     <div className="space-y-6">
+      <BookingSteps locale={locale} current={1} />
+
       <div className="rounded-xl border border-ink-200 bg-white p-5">
         <h1 className="font-display text-2xl text-ink-900 sm:text-3xl">
           {result.route.originName || fromRaw}

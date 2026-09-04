@@ -9,6 +9,7 @@ import { driverBalance } from "@/lib/ledger";
 import { humanise } from "@/lib/booking";
 import { Alert, Card, EmptyState } from "@/components/ui";
 import { CheckoutForm } from "./form";
+import { BookingSteps } from "@/components/booking-steps";
 
 export const dynamic = "force-dynamic";
 export const metadata = { robots: { index: false } };
@@ -65,7 +66,10 @@ export default async function CheckoutPage({ params, searchParams }: Props) {
   const breakdown = quote.breakdown as { lines: { label: string; detail?: string; amountMinor: string }[] };
 
   return (
-    <div className="grid gap-8 lg:grid-cols-[1fr_360px]">
+    <div>
+      <BookingSteps locale={locale} current={3} />
+
+      <div className="grid gap-8 lg:grid-cols-[1fr_360px]">
       <div>
         <h1 className="font-display text-3xl text-ink-900">{t("checkout.title")}</h1>
         <p className="mt-1 text-sm text-ink-600">
@@ -161,6 +165,7 @@ export default async function CheckoutPage({ params, searchParams }: Props) {
           </p>
         </Card>
       </aside>
+      </div>
     </div>
   );
 }

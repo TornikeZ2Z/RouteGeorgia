@@ -527,6 +527,13 @@ export const en = {
   "auth.invalid": "Email or password is incorrect.",
 
   "footer.travel": "Travel",
+  "flow.label": "Booking steps",
+  "flow.step1": "Route",
+  "flow.step2": "Driver",
+  "flow.step3": "Details & payment",
+  "flow.step4": "Confirmation",
+  "flow.done": "completed",
+  "flow.current": "current step",
   "footer.allRoutes": "All transfer routes",
   "footer.dayTrips": "Day trips and tours",
   "footer.faqLink": "Frequently asked questions",

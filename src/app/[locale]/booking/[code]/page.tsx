@@ -8,6 +8,7 @@ import { verifyManageToken, cancellationOutcome } from "@/lib/booking";
 import { config } from "@/lib/config";
 import { Alert, Badge, Card, EmptyState } from "@/components/ui";
 import { CancelBooking, MessageThread } from "./actions-ui";
+import { BookingSteps } from "@/components/booking-steps";
 
 export const dynamic = "force-dynamic";
 export const metadata = { robots: { index: false }, title: "Your booking" };
@@ -93,6 +94,8 @@ export default async function BookingPage({ params, searchParams }: Props) {
 
   return (
     <div className="space-y-6">
+      <BookingSteps locale={locale} current={4} />
+
       {payment === "failed" && (
         <Alert tone="danger" title={t("booking.payFailedT")}>
           {t("booking.payFailedB")}

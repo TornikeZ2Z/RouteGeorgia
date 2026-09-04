@@ -508,6 +508,13 @@ export const ka: Partial<Dictionary> = {
   "auth.invalid": "ელფოსტა ან პაროლი არასწორია.",
 
   "footer.travel": "მოგზაურობა",
+  "flow.label": "ჯავშნის ეტაპები",
+  "flow.step1": "მარშრუტი",
+  "flow.step2": "მძღოლი",
+  "flow.step3": "დეტალები და გადახდა",
+  "flow.step4": "დადასტურება",
+  "flow.done": "დასრულებული",
+  "flow.current": "მიმდინარე ეტაპი",
   "footer.allRoutes": "ყველა მარშრუტი",
   "footer.dayTrips": "ერთდღიანი ტურები",
   "footer.faqLink": "ხშირად დასმული კითხვები",
