@@ -1,6 +1,7 @@
 import Link from "next/link";
 import { Alert, Button, Card, Field, Input } from "@/components/ui";
 import { ContourField } from "@/components/contour-field";
+import { PASSWORD_MIN_LENGTH } from "@/lib/auth/password";
 
 export const dynamic = "force-dynamic";
 export const metadata = { title: "Choose a new password", robots: { index: false } };
@@ -32,14 +33,14 @@ export default async function ResetPassword({
 
               <Field
                 label="New password" htmlFor="password"
-                hint="At least 12 characters. Length matters more than symbols." required
+                hint={`At least ${PASSWORD_MIN_LENGTH} characters. Length matters more than symbols.`} required
               >
-                <Input id="password" name="password" type="password" minLength={12}
+                <Input id="password" name="password" type="password" minLength={PASSWORD_MIN_LENGTH}
                        autoComplete="new-password" required autoFocus />
               </Field>
 
               <Field label="Type it again" htmlFor="confirm" required>
-                <Input id="confirm" name="confirm" type="password" minLength={12}
+                <Input id="confirm" name="confirm" type="password" minLength={PASSWORD_MIN_LENGTH}
                        autoComplete="new-password" required />
               </Field>
 

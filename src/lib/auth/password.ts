@@ -14,13 +14,30 @@ export const hashPassword = (plain: string): Promise<string> => bcrypt.hash(plai
 export const verifyPassword = (plain: string, hash: string): Promise<boolean> =>
   bcrypt.compare(plain, hash);
 
+/**
+ * The floor, in one place so the form, its hint and the server cannot drift
+ * apart. Eight is the NIST 800-63B minimum for a user-chosen secret; this was
+ * 12 and was lowered deliberately.
+ */
+export const PASSWORD_MIN_LENGTH = 8;
+
 /** Minimum viable password policy. Deliberately length-first, not symbol-soup. */
 export function validatePassword(pw: string): string[] {
   const errors: string[] = [];
-  if (pw.length < 12) errors.push("Password must be at least 12 characters.");
+  if (pw.length < PASSWORD_MIN_LENGTH) {
+    errors.push(`Password must be at least ${PASSWORD_MIN_LENGTH} characters.`);
+  }
   if (pw.length > 200) errors.push("Password must be under 200 characters.");
   if (/^(.)\1+$/.test(pw)) errors.push("Password cannot be a single repeated character.");
-  const common = ["password", "123456789012", "qwertyuiop", "routeplanner123", "gotrip123456"];
+  /*
+   * The blocklist carries more weight at eight characters than at twelve: the
+   * short guesses an attacker actually tries were unreachable under the old
+   * floor. Matching is substring, so "password" also rejects "password1".
+   */
+  const common = [
+    "password", "12345678", "qwerty", "abc12345", "iloveyou",
+    "admin123", "letmein", "welcome", "routeplan", "gotrip",
+  ];
   if (common.some((c) => pw.toLowerCase().includes(c))) errors.push("Password is too easy to guess.");
   return errors;
 }
