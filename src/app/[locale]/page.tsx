@@ -83,11 +83,6 @@ const HERO_CHIPS = [
   ["home.chip3", ICONS.shield], ["home.chip4", ICONS.support],
 ] as const;
 
-const TRUST = [
-  ["home.trust1", ICONS.driver], ["home.trust2", ICONS.car], ["home.trust3", ICONS.price],
-  ["home.trust4", ICONS.support], ["home.trust5", ICONS.shield],
-] as const;
-
 /** Service cards: photo drop-in name, illustration seed, destination. */
 const SERVICES = [
   { t: "home.svc1t", b: "home.svc1b", photo: "airport.jpg", seed: "tbilisi-airport", href: "/transfers", icon: "M10.5 20l1-5.5L6 12l-2.5 1L3 11.5 6.8 9 6 3.5 7.5 3l3 5 5.6-2.4a1.6 1.6 0 0 1 1.3 2.9L12.5 11l1.5 5.5-1.5 1-2-5-3.5 2 .5 4-1.5 1.5Z" },
