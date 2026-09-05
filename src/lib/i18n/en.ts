@@ -1137,4 +1137,10 @@ export const en = {
   "checkout.pickupPh": "e.g. Tbilisi Airport, arrivals hall",
   "checkout.dropoffPh": "e.g. Rooms Hotel, 14 Merab Kostava St, Tbilisi",
 
+  // One line under each booking tab. The three names are nouns a visitor
+  // reads as near-synonyms; these say what actually differs between them.
+  "home.tabTransferSub": "From one place to another",
+  "home.tabToursSub": "A ready-made route with a driver",
+  "home.tabPlanSub": "Your journey — we plan it",
+
 } as const;

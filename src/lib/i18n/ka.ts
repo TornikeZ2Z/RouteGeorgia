@@ -1118,4 +1118,8 @@ export const ka: Partial<Dictionary> = {
   "checkout.pickupPh": "მაგ. თბილისის აეროპორტი, ჩამოსვლის დარბაზი",
   "checkout.dropoffPh": "მაგ. Rooms Hotel, კოსტავას 14, თბილისი",
 
+  "home.tabTransferSub": "ერთი ადგილიდან მეორეზე",
+  "home.tabToursSub": "მზა მარშრუტი მძღოლთან ერთად",
+  "home.tabPlanSub": "შენი მოგზაურობა — ჩვენ დაგეგმავთ",
+
 };

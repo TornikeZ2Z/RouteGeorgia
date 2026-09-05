@@ -1118,4 +1118,8 @@ export const ru: Partial<Dictionary> = {
   "checkout.pickupPh": "напр. аэропорт Тбилиси, зал прилёта",
   "checkout.dropoffPh": "напр. Rooms Hotel, Коставы 14, Тбилиси",
 
+  "home.tabTransferSub": "Из одной точки в другую",
+  "home.tabToursSub": "Готовый маршрут с водителем",
+  "home.tabPlanSub": "Ваша поездка — мы её спланируем",
+
 };

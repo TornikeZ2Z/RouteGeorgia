@@ -14,6 +14,12 @@ interface LocationOption { slug: string; name_en: string; type: string }
  * quiet link to hourly hire (no online pricing yet, so it routes to an
  * inquiry rather than pretending). Tours points at the curated catalogue;
  * Build my route hands over to the three-question planner.
+ *
+ * Each tab carries a line of its own saying what it is. The three names read
+ * as near-synonyms to someone who has not used the site — CR-2026-0008 item 4
+ * — and a visitor who cannot tell them apart picks the first one. That makes
+ * the tabs two-line, so they are a grid rather than a wrapping row: three
+ * columns from sm up, stacked full width below it.
  */
 export function SearchTabs({ locale, locations }: { locale: string; locations: LocationOption[] }) {
   const t = getTranslator(isLocale(locale) ? (locale as Locale) : "en");
@@ -21,28 +27,33 @@ export function SearchTabs({ locale, locations }: { locale: string; locations: L
   const [roundTrip, setRoundTrip] = useState(false);
 
   const tabs = [
-    { id: "transfer" as const, label: t("home.tabTransfer"), icon: "M3 15h18M5 15V9a2 2 0 0 1 2-2h7l4 4h1a2 2 0 0 1 2 2v2M7.5 18a1.5 1.5 0 1 0 0-3 1.5 1.5 0 0 0 0 3Zm9 0a1.5 1.5 0 1 0 0-3 1.5 1.5 0 0 0 0 3Z" },
-    { id: "tours" as const, label: t("home.tabTours"), icon: "M9 20l-5-2V5l5 2m0 13 6-2m-6 2V7m6 11 5 2V7l-5-2m0 13V5M9 7l6-2" },
-    { id: "plan" as const, label: t("nav.plan"), icon: "M9 6h11M9 12h11M9 18h11M4.5 7.5 6 6v4.5M4 13.5h3L4 17h3" },
+    { id: "transfer" as const, label: t("home.tabTransfer"), sub: t("home.tabTransferSub"), icon: "M3 15h18M5 15V9a2 2 0 0 1 2-2h7l4 4h1a2 2 0 0 1 2 2v2M7.5 18a1.5 1.5 0 1 0 0-3 1.5 1.5 0 0 0 0 3Zm9 0a1.5 1.5 0 1 0 0-3 1.5 1.5 0 0 0 0 3Z" },
+    { id: "tours" as const, label: t("home.tabTours"), sub: t("home.tabToursSub"), icon: "M9 20l-5-2V5l5 2m0 13 6-2m-6 2V7m6 11 5 2V7l-5-2m0 13V5M9 7l6-2" },
+    { id: "plan" as const, label: t("nav.plan"), sub: t("home.tabPlanSub"), icon: "M9 6h11M9 12h11M9 18h11M4.5 7.5 6 6v4.5M4 13.5h3L4 17h3" },
   ];
 
   return (
     <div>
-      <div role="tablist" aria-label={t("home.planTitle")} className="flex flex-wrap gap-1 border-b border-ink-100 pb-4">
-        {tabs.map(({ id, label, icon }) => (
+      <div role="tablist" aria-label={t("home.planTitle")} className="grid gap-2 border-b border-ink-100 pb-4 sm:grid-cols-3">
+        {tabs.map(({ id, label, sub, icon }) => (
           <button
             key={id} role="tab" type="button"
             aria-selected={tab === id}
             onClick={() => setTab(id)}
-            className={`inline-flex items-center gap-2 rounded-lg px-4 py-2.5 text-sm transition-colors ${
-              tab === id ? "bg-brand-600 font-semibold text-white" : "text-ink-500 hover:text-ink-900"
+            className={`flex items-start gap-2.5 rounded-xl px-4 py-3 text-left transition-colors ${
+              tab === id ? "bg-brand-600 text-white" : "text-ink-500 hover:bg-ink-50 hover:text-ink-900"
             }`}
           >
-            <svg viewBox="0 0 24 24" className="size-4.5" fill="none" stroke="currentColor"
+            <svg viewBox="0 0 24 24" className="mt-0.5 size-4.5 shrink-0" fill="none" stroke="currentColor"
                  strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round" aria-hidden>
               <path d={icon} />
             </svg>
-            {label}
+            <span className="min-w-0">
+              <span className="block text-sm font-semibold">{label}</span>
+              <span className={`mt-0.5 block text-xs leading-snug ${tab === id ? "text-white/80" : "text-ink-400"}`}>
+                {sub}
+              </span>
+            </span>
           </button>
         ))}
       </div>
