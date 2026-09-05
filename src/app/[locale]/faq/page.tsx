@@ -2,6 +2,7 @@ import { notFound } from "next/navigation";
 import type { Metadata } from "next";
 import { isLocale, LOCALES, getTranslator, type Locale, type MessageKey } from "@/lib/i18n";
 import { config } from "@/lib/config";
+import { getSettings } from "@/lib/settings";
 import { Card } from "@/components/ui";
 
 export const revalidate = 3600;
@@ -40,13 +41,23 @@ export default async function FaqPage({ params }: Props) {
   if (!isLocale(locale)) notFound();
   const t = getTranslator(locale as Locale);
 
+  /*
+   * The waiting answer quotes the allowance the driver agreement caps against,
+   * read from the same setting the contract renders. The FAQ used to say stops
+   * were "not time-limited" while the agreement said nothing about waiting at
+   * all — a promise to travellers that no driver had agreed to honour.
+   */
+  const { waiting_included_minutes: waitMinutes } = await getSettings();
+  const answer = (key: MessageKey) =>
+    key === "faq.a3" ? t(key, { minutes: waitMinutes }) : t(key);
+
   const jsonLd = {
     "@context": "https://schema.org",
     "@type": "FAQPage",
     mainEntity: QA.map(([q, a]) => ({
       "@type": "Question",
       name: t(q),
-      acceptedAnswer: { "@type": "Answer", text: t(a) },
+      acceptedAnswer: { "@type": "Answer", text: answer(a) },
     })),
   };
 
@@ -65,7 +76,7 @@ export default async function FaqPage({ params }: Props) {
             <Card className="p-4">
               <details>
                 <summary className="cursor-pointer font-medium text-ink-900">{t(q)}</summary>
-                <p className="mt-2 text-sm leading-relaxed text-ink-600">{t(a)}</p>
+                <p className="mt-2 text-sm leading-relaxed text-ink-600">{answer(a)}</p>
               </details>
             </Card>
           </li>

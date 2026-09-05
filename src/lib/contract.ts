@@ -135,6 +135,7 @@ async function placeholders(
     DRIVER_SHARE_PERCENT: String(100 - commissionPercent),
     SETTLEMENT_PERIOD: settlementPeriodLabel(s.settlement_period_days, locale),
     TERMINATION_NOTICE_DAYS: String(s.termination_notice_days),
+    WAITING_MINUTES: String(s.waiting_included_minutes),
 
     CANCEL_FREE_HOURS: String(s.school_cancel_free_hours),
     CANCEL_TIER_A: String(s.school_cancel_tier_a_pct),

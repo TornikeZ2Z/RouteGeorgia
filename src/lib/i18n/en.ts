@@ -209,7 +209,7 @@ export const en = {
   "faq.q2": "Why is the price different for a short trip and a long one?",
   "faq.a2": "On long or remote routes your driver usually has to return empty, and part of that return distance is included in the price. On city and airport transfers they can pick up another passenger nearby, so almost none of it is. We show this as a separate line in every price breakdown.",
   "faq.q3": "Does the driving time include stops?",
-  "faq.a3": "No. The time shown is moving time only. Stops for photographs, food or sightseeing are not time-limited and are not charged extra, but they do make the day longer — plan accordingly, especially for airport departures.",
+  "faq.a3": "No. The time shown is moving time only. Each planned stop includes up to {minutes} minutes of waiting at no extra charge, and stops make the day longer — plan accordingly, especially for airport departures. If you need a longer stop, tell us and we will arrange it with the driver before you travel.",
   "faq.q4": "Can I add stops along the way?",
   "faq.a4": "Yes. Add them when you search and the price updates to include them. Tell your driver about any additional stop before the trip rather than on the road.",
   "faq.q5": "How do I know the driver actually speaks my language?",

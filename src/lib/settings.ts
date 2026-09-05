@@ -28,6 +28,12 @@ export const SETTING_KEYS = [
   "school_cancel_tier_a_pct",
   "school_cancel_tier_b_pct",
   "school_cancel_tier_c_pct",
+  // Driver agreement 4.7 — how long a driver waits at a planned stop before
+  // more time has to be agreed through us. It exists because the agreement
+  // needs a number to cap an obligation against: without one, "waiting is
+  // included" is an unbounded promise made to travellers and never agreed to
+  // by the driver who has to honour it.
+  "waiting_included_minutes",
 ] as const;
 export type SettingKey = (typeof SETTING_KEYS)[number];
 
@@ -59,6 +65,11 @@ export const SETTING_SPECS: Record<SettingKey, SettingSpec> = {
   school_cancel_tier_b_pct: { min: 0, max: 100, fallback: () => 50 },
   // On the day itself.
   school_cancel_tier_c_pct: { min: 0, max: 100, fallback: () => 100 },
+
+  // 0 to eight hours, per planned stop. Sixty minutes is the default because
+  // it covers what the FAQ actually describes — photographs, a meal, a look
+  // around — without binding a driver to an open-ended afternoon.
+  waiting_included_minutes: { min: 0, max: 480, fallback: () => 60 },
 };
 
 const CACHE_MS = 5_000;
