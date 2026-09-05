@@ -17,3 +17,9 @@ wetransfer_*.zip
 
 # Screenshots pulled from change requests. Restricted: they show customer data.
 /.request-images/
+
+# Throwaway probes and workflow output. These are written next to the project
+# because path aliases only resolve here, and `git add -A` swept three of them
+# into a commit before this rule existed.
+/.[a-z].mjs
+/scratch_*
