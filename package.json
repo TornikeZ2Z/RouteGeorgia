@@ -43,6 +43,8 @@
   "devDependencies": {
     "@sparticuz/chromium": "^149.0.0",
     "@tailwindcss/postcss": "^4.3.3",
+    "@testing-library/react": "^16.3.3",
+    "@testing-library/user-event": "^14.6.7",
     "@types/node": "^22.10.0",
     "@types/nodemailer": "^8.0.1",
     "@types/react": "^19.2.0",
@@ -50,6 +52,7 @@
     "dotenv": "^17.0.0",
     "drizzle-kit": "^0.31.10",
     "embedded-postgres": "^17.5.0-beta.15",
+    "jsdom": "^30.0.1",
     "puppeteer-core": "^25.8.0",
     "server-only": "^0.0.1",
     "tailwindcss": "^4.3.3",

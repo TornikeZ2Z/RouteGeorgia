@@ -3,8 +3,11 @@ import { fileURLToPath } from "node:url";
 
 export default defineConfig({
   test: {
+    // Node by default: almost everything here is pure logic and a DOM would
+    // only slow it down. The component tests opt into jsdom per file with a
+    // @vitest-environment docblock.
     environment: "node",
-    include: ["tests/**/*.test.ts"],
+    include: ["tests/**/*.test.ts", "tests/**/*.test.tsx"],
     setupFiles: ["tests/setup.ts"],
     hookTimeout: 120_000,
     testTimeout: 60_000,
