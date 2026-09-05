@@ -91,20 +91,21 @@ const Schema = z.object({
   MAIL_FROM: z.string().default("RoutePlanner <noreply@routeplanner.ge>"),
 
   /*
-   * The contracting party named in the driver and school agreements.
+   * The contracting party named in the agreements, the terms and the privacy
+   * notice. Supplied by the deployment, NOT defaulted here.
    *
-   * None of it is secret — it is printed on every agreement and required on a
-   * Georgian invoice — and leaving it to unset environment variables rendered
-   * each contract with blanks where the company belongs. It defaults here so
-   * production is correct without a dashboard change; the env vars still
-   * override, which is what a rename or a move would use.
+   * A default was tried and reverted. The danger is specific: if the
+   * deployment's variables were ever cleared, a default would quietly
+   * substitute a different company into signed agreements instead of failing.
+   * missingCompanyDetails() exists precisely so that absence is loud, and a
+   * fallback would disarm it. A blank that blocks signing is a far better
+   * outcome than a contract naming the wrong legal person.
    *
-   * missingCompanyDetails() in lib/contract.ts gates signing on all three, so
-   * these being right is what allows any driver to be published at all.
+   * The live values are set in the deployment environment. See .env.example.
    */
-  COMPANY_LEGAL_NAME: z.string().default("LLC Route Georgia"),
-  COMPANY_ID_NUMBER: z.string().default("405773322"),
-  COMPANY_ADDRESS: z.string().default("Vazha-Pshavela 76, Tbilisi, Georgia"),
+  COMPANY_LEGAL_NAME: z.string().default(""),
+  COMPANY_ID_NUMBER: z.string().default(""),
+  COMPANY_ADDRESS: z.string().default(""),
 
   /**
    * The unguessable segment in the change-request form's URL.

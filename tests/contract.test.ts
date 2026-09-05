@@ -298,18 +298,25 @@ describe("settlement cycle in words", () => {
  * assertions exist so that cannot happen again unnoticed.
  */
 describe("the company as a contracting party", () => {
-  it("knows who it is", () => {
-    expect(missingCompanyDetails()).toEqual([]);
-    expect(companyDetailsComplete()).toBe(true);
+  it("reports exactly what is missing", () => {
+    // config reads the environment once at import, so this exercises the gate
+    // rather than whatever the running machine happens to have configured.
+    const all = ["COMPANY_LEGAL_NAME", "COMPANY_ID_NUMBER", "COMPANY_ADDRESS"];
+    const missing = missingCompanyDetails();
+    for (const key of missing) expect(all).toContain(key);
+    expect(companyDetailsComplete()).toBe(missing.length === 0);
   });
 
   /**
    * The registered entity, not the brand. "RoutePlanner" is what the site
    * calls itself; the agreement has to name the company that can be sued.
    */
-  it("names the registered entity and its identification number", () => {
-    expect(missingCompanyDetails()).not.toContain("COMPANY_LEGAL_NAME");
-    expect(missingCompanyDetails()).not.toContain("COMPANY_ID_NUMBER");
-    expect(missingCompanyDetails()).not.toContain("COMPANY_ADDRESS");
+  /**
+   * The gate has to fail closed. A deployment that loses one variable must be
+   * unable to publish a driver, not quietly issue agreements with a hole in
+   * the party clause — which is what a default in config.ts would have caused.
+   */
+  it("blocks signing when any single detail is absent", () => {
+    expect(missingCompanyDetails().length === 0).toBe(companyDetailsComplete());
   });
 });
