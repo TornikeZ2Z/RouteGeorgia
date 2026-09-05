@@ -67,7 +67,7 @@ export const ru: Partial<Dictionary> = {
   "search.removeStop": "Убрать",
   "search.choosePlace": "Выберите место…",
   "search.submit": "Узнать цены",
-  "search.stopsNote": "Остановки включены в цену. Время ожидания тоже — водитель не включит счётчик.",
+  "search.stopsNote": "Запланированные остановки и ожидание входят в цену. Ничего сверх не платишь.",
   "search.errBoth": "Выберите и место отправления, и место назначения.",
   "search.errSame": "Отправление и назначение должны различаться.",
   "search.errStopEmpty": "Выберите место для каждой остановки или удалите её.",
@@ -508,6 +508,8 @@ export const ru: Partial<Dictionary> = {
   "auth.invalid": "Неверная почта или пароль.",
 
   "footer.travel": "Путешествия",
+  "search.pastDateTitle": "Эта дата уже прошла",
+  "search.pastDateBody": "Выбери сегодняшнюю или более позднюю дату, и мы посчитаем поездку.",
   "footer.idNumber": "ИН",
   "flow.label": "Шаги бронирования",
   "flow.step1": "Маршрут",

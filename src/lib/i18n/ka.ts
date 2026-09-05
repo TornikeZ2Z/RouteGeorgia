@@ -67,7 +67,7 @@ export const ka: Partial<Dictionary> = {
   "search.removeStop": "წაშლა",
   "search.choosePlace": "აირჩიე ადგილი…",
   "search.submit": "ფასის ნახვა",
-  "search.stopsNote": "გაჩერებები ფასშია. ლოდინის დროც ფასშია — მძღოლი მრიცხველს არ ჩართავს.",
+  "search.stopsNote": "დაგეგმილი გაჩერებები და ლოდინი ფასში შედის. დამატებით თანხას არ გადაიხდი.",
   "search.errBoth": "აირჩიე დასაწყისიც და დანიშნულებაც.",
   "search.errSame": "დასაწყისი და დანიშნულება განსხვავებული უნდა იყოს.",
   "search.errStopEmpty": "აირჩიე ადგილი ყოველი გაჩერებისთვის, ან წაშალე.",
@@ -508,6 +508,8 @@ export const ka: Partial<Dictionary> = {
   "auth.invalid": "ელფოსტა ან პაროლი არასწორია.",
 
   "footer.travel": "მოგზაურობა",
+  "search.pastDateTitle": "ეს თარიღი უკვე გავიდა",
+  "search.pastDateBody": "აირჩიე დღევანდელი ან მომავალი თარიღი და ფასს დაგითვლით.",
   "footer.idNumber": "ს/კ",
   "flow.label": "ჯავშნის ეტაპები",
   "flow.step1": "მარშრუტი",

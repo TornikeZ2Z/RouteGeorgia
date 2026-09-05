@@ -71,6 +71,15 @@ export default async function SearchPage({ params, searchParams }: Props) {
   if (Number.isNaN(travelAt.getTime())) {
     return <EmptyState title={t("search.badDateTitle")}>{t("search.badDateBody")}</EmptyState>;
   }
+  /*
+   * CR-2026-0019. The date fields carry a min now, but the search is a plain
+   * GET: the URL is the interface, and a shared or edited link can name any
+   * date at all. A journey in the past cannot be driven, so it is refused
+   * here rather than priced and offered.
+   */
+  if (travelAt.getTime() < Date.now()) {
+    return <EmptyState title={t("search.pastDateTitle")}>{t("search.pastDateBody")}</EmptyState>;
+  }
   const returnRaw = str(sp.return);
   const returnAt = returnRaw ? new Date(returnRaw) : null;
   const roundTrip = returnAt !== null && !Number.isNaN(returnAt.getTime()) && returnAt.getTime() > travelAt.getTime();

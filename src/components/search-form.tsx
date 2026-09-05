@@ -69,6 +69,7 @@ export function SearchForm({
   const [from, setFrom] = useState(nameOf(initial?.from ?? (has("tbilisi-airport") ? "tbilisi-airport" : locations[0]?.slug ?? "")));
   const [to, setTo] = useState(nameOf(initial?.to ?? (has("tbilisi") ? "tbilisi" : locations[1]?.slug ?? "")));
   const [stops, setStops] = useState<string[]>([]);
+  const [earliest] = useState(earliestWhen);
   const [when, setWhen] = useState(defaultWhen());
   const [returnWhen, setReturnWhen] = useState(defaultReturnWhen());
   const [passengers, setPassengers] = useState(2);
@@ -171,11 +172,11 @@ export function SearchForm({
           </>
         )}
         <Field label={t("search.date")} htmlFor="when" hint={t("search.dateHint")} required>
-          <Input id="when" name="when" type="datetime-local" value={when} onChange={(e) => setWhen(e.target.value)} />
+          <Input id="when" name="when" type="datetime-local" min={earliest} value={when} onChange={(e) => setWhen(e.target.value)} />
         </Field>
         {roundTrip && (
           <Field label={t("search.return")} htmlFor="return-when" required>
-            <Input id="return-when" name="return" type="datetime-local" value={returnWhen}
+            <Input id="return-when" name="return" type="datetime-local" min={when || earliest} value={returnWhen}
                    onChange={(e) => setReturnWhen(e.target.value)} />
           </Field>
         )}
@@ -254,12 +255,12 @@ export function SearchForm({
             </Cell>
           )}
           <Cell icon={ICONS.date} label={t("search.date")} htmlFor="when" className="sm:basis-1/2 lg:basis-auto">
-            <input id="when" name="when" type="datetime-local" value={when}
+            <input id="when" name="when" type="datetime-local" min={earliest} value={when}
                    onChange={(e) => setWhen(e.target.value)} className={CELL_CONTROL} />
           </Cell>
           {roundTrip && (
             <Cell icon={ICONS.ret} label={t("search.return")} htmlFor="return-when" className="sm:basis-1/2 lg:basis-auto">
-              <input id="return-when" name="return" type="datetime-local" value={returnWhen}
+              <input id="return-when" name="return" type="datetime-local" min={when || earliest} value={returnWhen}
                      onChange={(e) => setReturnWhen(e.target.value)} className={CELL_CONTROL} />
             </Cell>
           )}
@@ -284,7 +285,7 @@ export function SearchForm({
 
       {stopsEditor}
 
-      <details className="rounded-2xl border border-ink-200 bg-white px-4 py-3">
+      <details open className="rounded-2xl border border-ink-200 bg-white px-4 py-3">
         <summary className="cursor-pointer text-sm font-medium text-ink-700">
           {t("search.exactFromL")} / {t("search.exactToL")}
         </summary>
@@ -327,14 +328,29 @@ export function SearchForm({
   );
 }
 
+/**
+ * Format for a datetime-local input, which reads LOCAL time. toISOString()
+ * returns UTC, so using it here shifted every default by the reader's offset —
+ * four hours in Georgia, which is how a 10:00 pickup showed as 06:00.
+ */
+function toLocalInput(d: Date): string {
+  return new Date(d.getTime() - d.getTimezoneOffset() * 60_000).toISOString().slice(0, 16);
+}
+
+/** The earliest a journey can be booked: now. CR-2026-0019 — the field had no
+    lower bound at all, so last Tuesday was selectable. */
+function earliestWhen() {
+  return toLocalInput(new Date());
+}
+
 function defaultWhen() {
   const d = new Date(Date.now() + 26 * 3600_000);
   d.setMinutes(0, 0, 0);
-  return d.toISOString().slice(0, 16);
+  return toLocalInput(d);
 }
 
 function defaultReturnWhen() {
   const d = new Date(Date.now() + 34 * 3600_000);
   d.setMinutes(0, 0, 0);
-  return d.toISOString().slice(0, 16);
+  return toLocalInput(d);
 }

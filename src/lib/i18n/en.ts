@@ -74,7 +74,7 @@ export const en = {
   "search.removeStop": "Remove",
   "search.choosePlace": "Choose a place…",
   "search.submit": "See prices",
-  "search.stopsNote": "Stops are included in the price. Waiting time at each stop is included — the driver will not start a meter on you.",
+  "search.stopsNote": "Planned stops and waiting are included in the price. You pay nothing extra.",
   "search.errBoth": "Choose both a pickup and a destination.",
   "search.errSame": "Pickup and destination must be different.",
   "search.errStopEmpty": "Choose a place for every stop, or remove it.",
@@ -527,6 +527,8 @@ export const en = {
   "auth.invalid": "Email or password is incorrect.",
 
   "footer.travel": "Travel",
+  "search.pastDateTitle": "That date has passed",
+  "search.pastDateBody": "Pick today or a later date and we will price the journey.",
   "footer.idNumber": "ID",
   "flow.label": "Booking steps",
   "flow.step1": "Route",
