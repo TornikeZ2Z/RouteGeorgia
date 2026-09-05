@@ -339,7 +339,7 @@ Secrets are marked ✱ — never commit them, never log them.
 | `ENFORCE_CANONICAL_HOST` | Redirect host → domain | **Leave `false` until DNS is live** |
 | `REDIRECT_FORMER_DOMAIN` | routegeorgia → routeplanner | **Same warning** |
 | `COMPANY_LEGAL_NAME` | Printed in every contract | |
-| `COMPANY_ID_NUMBER` | Printed in every contract | `437377704` |
+| `COMPANY_ID_NUMBER` | Printed in every contract | `405773322` — defaulted in `src/lib/config.ts`. This table previously said `437377704`; the two disagree and the discrepancy is unresolved. Confirm against the registry extract before anyone signs. |
 | `COMPANY_ADDRESS` | Printed in every contract | Still generic — see §12 |
 | `SUPPORT_EMAIL` | Public contact | |
 | `SUPPORT_PHONE` | Header/footer; hidden when empty | |

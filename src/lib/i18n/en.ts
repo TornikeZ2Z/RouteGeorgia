@@ -527,6 +527,7 @@ export const en = {
   "auth.invalid": "Email or password is incorrect.",
 
   "footer.travel": "Travel",
+  "footer.idNumber": "ID",
   "flow.label": "Booking steps",
   "flow.step1": "Route",
   "flow.step2": "Driver",

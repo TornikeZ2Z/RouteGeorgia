@@ -196,6 +196,20 @@ export default async function LocaleLayout({
             </ul>
           </div>
         </div>
+
+        {/*
+          The operator, named. Terms and the privacy notice identify the
+          entity in their own text; this is the same identification where a
+          reader expects to find it, on every page, without opening a legal
+          document first.
+        */}
+        <div className="border-t border-white/10">
+          <div className="mx-auto max-w-[1400px] 2xl:max-w-[1680px] px-4 py-5 text-xs leading-relaxed text-pine-300 sm:px-6 lg:px-10">
+            {config.company.legalName}
+            {config.company.idNumber && <> · {t("footer.idNumber")} {config.company.idNumber}</>}
+            {config.company.address && <> · {config.company.address}</>}
+          </div>
+        </div>
       </footer>
     </div>
   );

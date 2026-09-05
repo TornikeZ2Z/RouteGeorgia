@@ -508,6 +508,7 @@ export const ru: Partial<Dictionary> = {
   "auth.invalid": "Неверная почта или пароль.",
 
   "footer.travel": "Путешествия",
+  "footer.idNumber": "ИН",
   "flow.label": "Шаги бронирования",
   "flow.step1": "Маршрут",
   "flow.step2": "Водитель",

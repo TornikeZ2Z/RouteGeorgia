@@ -508,6 +508,7 @@ export const ka: Partial<Dictionary> = {
   "auth.invalid": "ელფოსტა ან პაროლი არასწორია.",
 
   "footer.travel": "მოგზაურობა",
+  "footer.idNumber": "ს/კ",
   "flow.label": "ჯავშნის ეტაპები",
   "flow.step1": "მარშრუტი",
   "flow.step2": "მძღოლი",

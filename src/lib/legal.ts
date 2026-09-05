@@ -1,4 +1,5 @@
 import type { Locale } from "@/lib/i18n";
+import { config } from "@/lib/config";
 
 /**
  * Terms, privacy and cancellation copy.
@@ -19,8 +20,23 @@ export interface LegalDocument {
   sections: { heading: string; body: string[] }[];
 }
 
+/*
+ * Two names, deliberately.
+ *
+ * COMPANY is the brand — what the site calls itself, and the right word in a
+ * narrative sentence. ENTITY is the registered company: the legal person that
+ * contracts, invoices, and answers to a regulator. Terms need a counterparty
+ * and a privacy notice needs a controller, and neither can be a brand: you
+ * cannot serve notice on a logo or look one up in the register.
+ *
+ * The driver and school agreements have always named the entity through
+ * placeholders. These public documents were the outlier, frozen on the brand.
+ */
 const COMPANY = "RoutePlanner";
-const CONTACT = "support@routeplanner.ge";
+const ENTITY = config.company.legalName;
+const ENTITY_ID = config.company.idNumber;
+const ENTITY_ADDRESS = config.company.address;
+const CONTACT = config.contact.email;
 
 export const LEGAL_SLUGS = ["terms", "privacy", "cancellation"] as const;
 export type LegalSlug = (typeof LEGAL_SLUGS)[number];
@@ -33,7 +49,9 @@ export function getLegalDocument(slug: string, _locale: Locale): LegalDocument |
         title: "Terms of service",
         updated: "18 August 2026",
         intro:
-          `${COMPANY} is a marketplace. We introduce travellers to independent private drivers ` +
+          `${COMPANY} is a marketplace operated by ${ENTITY}, identification number ` +
+          `${ENTITY_ID}, registered at ${ENTITY_ADDRESS}. In these terms "we" means ` +
+          `${ENTITY}. We introduce travellers to independent private drivers ` +
           `in Georgia, take the booking, and support both sides. We are not the carrier: the ` +
           `driver performs the journey and is responsible for doing so safely and lawfully.`,
         sections: [
@@ -108,7 +126,10 @@ export function getLegalDocument(slug: string, _locale: Locale): LegalDocument |
           },
           {
             heading: "Contact",
-            body: [`Write to ${CONTACT} and a person will answer.`],
+            body: [
+              `Write to ${CONTACT} and a person will answer.`,
+              `Notices in writing go to ${ENTITY}, ${ENTITY_ADDRESS}.`,
+            ],
           },
         ],
       };
@@ -123,6 +144,15 @@ export function getLegalDocument(slug: string, _locale: Locale): LegalDocument |
           `keep it. It is written from the actual database rather than from a template, so if ` +
           `something is listed here the system really does hold it.`,
         sections: [
+          {
+            heading: "Who is responsible for your data",
+            body: [
+              `The data controller is ${ENTITY}, identification number ${ENTITY_ID}, ` +
+              `registered at ${ENTITY_ADDRESS}. ${COMPANY} is the trading name of that company.`,
+              `Address any request about your data — access, correction, erasure, or a ` +
+              `complaint — to ${CONTACT}, or in writing to the registered address above.`,
+            ],
+          },
           {
             heading: "What we collect from travellers",
             body: [
