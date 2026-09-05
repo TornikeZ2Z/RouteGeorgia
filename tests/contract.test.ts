@@ -134,7 +134,7 @@ describe("contract interface strings", () => {
 // ---------------------------------------------------------------------------
 
 import { readFileSync } from "node:fs";
-import { missingDriverDetails } from "@/lib/contract";
+import { missingDriverDetails, missingCompanyDetails, companyDetailsComplete } from "@/lib/contract";
 import { settlementPeriodLabel } from "@/lib/settings";
 
 const MIGRATION = readFileSync("db/migrations/0015_contracts_v2_and_schools.sql", "utf8");
@@ -284,5 +284,32 @@ describe("settlement cycle in words", () => {
   it("describes an unusual cycle by its length", () => {
     expect(settlementPeriodLabel(10, "en")).toBe("every 10 days");
     expect(settlementPeriodLabel(10, "ka")).toContain("10");
+  });
+});
+
+/**
+ * The other half of a contract.
+ *
+ * missingCompanyDetails() gates signing, and signing gates publishing a
+ * driver, so an unset company detail is not a cosmetic blank — it silently
+ * stops the marketplace from having anyone to sell. All three lived as
+ * environment variables defaulting to "" and nobody had set them, so every
+ * agreement rendered with holes and no driver could ever go live. These
+ * assertions exist so that cannot happen again unnoticed.
+ */
+describe("the company as a contracting party", () => {
+  it("knows who it is", () => {
+    expect(missingCompanyDetails()).toEqual([]);
+    expect(companyDetailsComplete()).toBe(true);
+  });
+
+  /**
+   * The registered entity, not the brand. "RoutePlanner" is what the site
+   * calls itself; the agreement has to name the company that can be sued.
+   */
+  it("names the registered entity and its identification number", () => {
+    expect(missingCompanyDetails()).not.toContain("COMPANY_LEGAL_NAME");
+    expect(missingCompanyDetails()).not.toContain("COMPANY_ID_NUMBER");
+    expect(missingCompanyDetails()).not.toContain("COMPANY_ADDRESS");
   });
 });

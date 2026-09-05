@@ -91,15 +91,20 @@ const Schema = z.object({
   MAIL_FROM: z.string().default("RoutePlanner <noreply@routeplanner.ge>"),
 
   /*
-   * The trading entity named in the driver and school agreements. It is not a
-   * secret, and leaving it to an unset environment variable rendered every
-   * contract with a blank where the company should be — so it defaults here
-   * and the env var still overrides. ID number and address are still blank:
-   * a contract needs both, and nobody has supplied them yet.
+   * The contracting party named in the driver and school agreements.
+   *
+   * None of it is secret — it is printed on every agreement and required on a
+   * Georgian invoice — and leaving it to unset environment variables rendered
+   * each contract with blanks where the company belongs. It defaults here so
+   * production is correct without a dashboard change; the env vars still
+   * override, which is what a rename or a move would use.
+   *
+   * missingCompanyDetails() in lib/contract.ts gates signing on all three, so
+   * these being right is what allows any driver to be published at all.
    */
-  COMPANY_LEGAL_NAME: z.string().default("LVL Route Georgia"),
-  COMPANY_ID_NUMBER: z.string().default(""),
-  COMPANY_ADDRESS: z.string().default(""),
+  COMPANY_LEGAL_NAME: z.string().default("LLC Route Georgia"),
+  COMPANY_ID_NUMBER: z.string().default("405773322"),
+  COMPANY_ADDRESS: z.string().default("Vazha-Pshavela 76, Tbilisi, Georgia"),
 
   /**
    * The unguessable segment in the change-request form's URL.
